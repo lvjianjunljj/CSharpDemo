@@ -31,7 +31,8 @@ namespace CSharpDemo
         public static void SecondMethod(string filePath)
         {
             List<string> l = new List<string>();
-            StreamReader sr = new StreamReader(filePath, Encoding.Default);
+            //StreamReader sr = new StreamReader(filePath, Encoding.Default);
+            StreamReader sr = new StreamReader(filePath, Encoding.UTF8);
             String line;
             while ((line = sr.ReadLine()) != null)
             {
@@ -42,10 +43,12 @@ namespace CSharpDemo
                 }
                 l.Add(line.ToString());
             }
+            sr.Close();
         }
         public static string ThirdMethod(string filePath)
         {
-            return File.ReadAllText(filePath, Encoding.ASCII);
+            //return File.ReadAllText(filePath, Encoding.ASCII);
+            return File.ReadAllText(filePath, Encoding.UTF8);
         }
 
         public static List<List<string>> ForthMethod(string filePath)
@@ -63,7 +66,28 @@ namespace CSharpDemo
                 }
                 data.Add(list);
             }
+            sr.Close();
             return data;
+        }
+
+        public static void SummaryDirToOneFile(string folderFullName, string outputFileFullName)
+        {
+            DirectoryInfo TheFolder = new DirectoryInfo(folderFullName);
+            // Traversing folders
+            //foreach (DirectoryInfo NextFolder in TheFolder.GetDirectories())
+            //    Console.WriteLine(NextFolder.Name);
+            StreamWriter writer = new StreamWriter(outputFileFullName);
+            // Traversing files
+            foreach (FileInfo NextFile in TheFolder.GetFiles())
+            {
+                StreamReader reader = new StreamReader(NextFile.FullName, Encoding.UTF8);
+                string lineText = "";
+                while ((lineText = reader.ReadLine()) != null)
+                    writer.WriteLine(lineText);
+                reader.Close();
+            }
+            writer.Flush();
+            writer.Close();
         }
     }
 }

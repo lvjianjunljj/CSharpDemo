@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -22,31 +23,34 @@ namespace CSharpDemo
 
         public static void SecondMethod(string filePath, string content)
         {
-            FileStream fs = new FileStream(filePath, FileMode.Create);
-            StreamWriter sw = new StreamWriter(fs);
+            //FileStream fs = new FileStream(filePath, FileMode.Create);
+            //StreamWriter sw = new StreamWriter(fs);
+            // Maybe just function using StreamWriter(string path) is better.
+            StreamWriter sw = new StreamWriter(filePath);
             //开始写入
             sw.Write(content);
             //清空缓冲区
             sw.Flush();
             //关闭流
             sw.Close();
-            fs.Close();
+            //fs.Close();
         }
 
         public static void Save(string filePath, List<string> content)
         {
-            FileStream fs = new FileStream(filePath, FileMode.Create);
-            StreamWriter sw = new StreamWriter(fs);
-            //开始写入
+            //FileStream fs = new FileStream(filePath, FileMode.Create);
+            //StreamWriter sw = new StreamWriter(fs);
+            // Maybe just function using StreamWriter(string path) is better.
+            StreamWriter sw = new StreamWriter(filePath);
+            // Start to write
             foreach (string line in content)
             {
                 sw.WriteLine(line);
             }
-            //清空缓冲区
+            // 清空缓冲区
             sw.Flush();
             //关闭流
             sw.Close();
-            fs.Close();
         }
 
         public static void Save(string filePath, List<List<string>> content)
