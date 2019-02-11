@@ -224,7 +224,6 @@ namespace CSharpDemo
             StreamWriter outputStreamWriter = new StreamWriter(outputFilePath);
             List<double> offlineFinalizeInnerPartList = new List<double>();
             List<double> latOfflineSpellerRequestColumnList = new List<double>();
-            int i = 0, j = 0;
             foreach (string writeLine in rawQuerySet)
             {
                 outputStreamWriter.WriteLine(writeLine);

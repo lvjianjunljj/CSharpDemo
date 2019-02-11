@@ -9,7 +9,6 @@ namespace CSharpDemo
 {
     class GetStrValue
     {
-        string test = "12345";
         static void MainFunction(string[] args)
         {
             GetStrValue p = new GetStrValue();
