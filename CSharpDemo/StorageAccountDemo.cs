@@ -7,6 +7,11 @@ namespace CSharpDemo
 {
     class StorageAccountDemo
     {
+        /*
+         * GetAppendBlobReference is removed from Microsoft.WindowsAzure.Storage.Blob.CloudBlobContainer
+         * So we cannot release the log function based on the append function from Microsoft.WindowsAzure.Storage.
+         * stackoverflow: https://stackoverflow.com/questions/48411359/getappendblobreference-is-removed-from-microsoft-windowsazure-storage-blob-cloud
+         */
         public static void MainMethod()
         {
             CloudStorageAccount storageAccount = CloudStorageAccount.Parse(
@@ -47,30 +52,6 @@ namespace CSharpDemo
             {
                 file.UploadText("1234");
             }
-
-
-            var accountName = "<account-name>";
-
-            var accountKey = "<account-key>";
-
-            var credentials = new StorageCredentials(accountName, accountKey);
-
-            var account = new CloudStorageAccount(credentials, true);
-
-            var client = account.CreateCloudBlobClient();
-
-            var container = client.GetContainerReference("<container-name>");
-
-            container.CreateIfNotExists();
-
-            var blob = container.GetAppendBlobReference("append-blob.txt");
-
-            blob.CreateOrReplace();
-
-            for (int i = 0; i < 100; i++)
-                blob.AppendTextAsync(string.Format("Appending log number {0} to an append blob.\r\n", i));
-
-            Console.WriteLine("Press any key to exit.");
 
             Console.ReadKey();
         }
