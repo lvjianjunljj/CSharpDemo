@@ -24,10 +24,6 @@ namespace CSharpDemo
         {
             this.className = className;
         }
-        public void test(Class<?> clazz)
-        {
-
-        }
         public void writeLog(LogType logType, string logContent)
         {
             string dateInfo = DateTime.Now.ToString("yyyy-MM-dd");

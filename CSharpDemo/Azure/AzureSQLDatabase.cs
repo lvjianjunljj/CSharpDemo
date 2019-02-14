@@ -4,7 +4,7 @@ using System.Text;
 
 namespace CSharpDemo
 {
-    class AzureSQLDatabaseDemo
+    class AzureSQLDatabase
     {
         static void MainMethod()
         {

@@ -5,7 +5,7 @@ using Microsoft.WindowsAzure.Storage.File; // Namespace for Azure Files
 
 namespace CSharpDemo
 {
-    class StorageAccountDemo
+    class AzureStorageAccount
     {
         /*
          * GetAppendBlobReference is removed from Microsoft.WindowsAzure.Storage.Blob.CloudBlobContainer
