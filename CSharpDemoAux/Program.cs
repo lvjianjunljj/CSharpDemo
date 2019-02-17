@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Configuration;
 using System.Threading.Tasks;
-namespace CSharpDemo
+namespace CSharpDemoAux
 {
     class Program
     {

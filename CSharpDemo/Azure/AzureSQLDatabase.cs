@@ -2,7 +2,7 @@
 using System.Data.SqlClient;
 using System.Text;
 
-namespace CSharpDemo
+namespace CSharpDemo.Azure
 {
     class AzureSQLDatabase
     {

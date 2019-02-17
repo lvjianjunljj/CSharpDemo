@@ -3,7 +3,7 @@ using Microsoft.WindowsAzure.Storage; // Namespace for Storage Client Library
 using Microsoft.WindowsAzure.Storage.Blob; // Namespace for Azure Blobs
 using Microsoft.WindowsAzure.Storage.File; // Namespace for Azure Files
 
-namespace CSharpDemo
+namespace CSharpDemo.Azure
 {
     class AzureStorageAccount
     {
