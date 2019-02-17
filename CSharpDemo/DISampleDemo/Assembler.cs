@@ -29,8 +29,7 @@ namespace CSharpDemo.DISampleDemo
         public ITimeProvider Create(string type)
         {
             if ((type == null) || !dictionary.ContainsKey(type)) throw new NullReferenceException();
-            Type targetType = dictionary[type
-
+            Type targetType = dictionary[type];
             return (ITimeProvider)Activator.CreateInstance(targetType);
         }
     }

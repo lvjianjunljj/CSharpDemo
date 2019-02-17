@@ -138,6 +138,7 @@
     <Compile Include="DIStudy\LifetimeScopeControl\Demo3.cs" />
     <Compile Include="DIStudy\LifetimeScopeControl\Demo4.cs" />
     <Compile Include="DIStudy\LifetimeScopeControl\Demo5.cs" />
+    <Compile Include="DIStudy\LifetimeScopeControl\IExecuteSqlDbConnection.cs" />
     <Compile Include="DIStudy\ThreeLayers\Demo1.cs" />
     <Compile Include="DIStudy\ThreeLayers\Demo2.cs" />
     <Compile Include="DIStudy\ThreeLayers\Demo3.cs" />
