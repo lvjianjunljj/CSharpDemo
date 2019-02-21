@@ -120,6 +120,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Azure\AzureKeyVault.cs" />
+    <Compile Include="Azure\AzureServiceBusMultiClient.cs" />
+    <Compile Include="Azure\AzureServiceBusMultiThreadcs.cs" />
+    <Compile Include="Azure\AzureServiceBusTwoClient.cs" />
+    <Compile Include="Azure\AzureServiceBusSingleClient.cs" />
     <Compile Include="Azure\AzureSQLDatabase.cs" />
     <Compile Include="CmdHelper.cs" />
     <Compile Include="Constant.cs" />
@@ -144,6 +148,7 @@
     <Compile Include="DIStudy\ThreeLayers\Demo3.cs" />
     <Compile Include="ExcelOperation.cs" />
     <Compile Include="GetStrValue.cs" />
+    <Compile Include="JsonCovertDemo.cs" />
     <Compile Include="JsonParse.cs" />
     <Compile Include="JsonProperty.cs" />
     <Compile Include="LogFileOperation.cs" />

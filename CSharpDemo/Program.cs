@@ -1,5 +1,6 @@
-﻿using CSharpDemo.DIStudy.LifetimeScopeControl;
-using System;
+﻿using System;
+using CSharpDemo.Azure;
+using CSharpDemo.DIStudy.LifetimeScopeControl;
 
 namespace CSharpDemo
 {
@@ -7,7 +8,7 @@ namespace CSharpDemo
     {
         static void Main(string[] args)
         {
-            Demo3.Run();
+
             Console.ReadKey();
         }
     }
