@@ -8,7 +8,7 @@ namespace CSharpDemo
     {
         static void Main(string[] args)
         {
-
+            Console.WriteLine(1234);
             Console.ReadKey();
         }
     }
