@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using CSharpDemo.Azure;
 using CSharpDemo.DIStudy.LifetimeScopeControl;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace CSharpDemo
 {
@@ -8,8 +11,7 @@ namespace CSharpDemo
     {
         static void Main(string[] args)
         {
-            Console.WriteLine(1234);
-            Console.ReadKey();
+           
         }
     }
 }
