@@ -16,7 +16,7 @@ namespace CSharpDemo
                 IsAutoCloseConnection = true
             });
 
-
+            
             List<UserEntity> list = db.Queryable<UserEntity>().ToList();//查询所有（使用SqlSugarClient查询所有到LIST）
             foreach (UserEntity user in list)
             {
