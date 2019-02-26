@@ -11,7 +11,7 @@ namespace CSharpDemo
             SqlSugarClient db = new SqlSugarClient(new ConnectionConfig()
             {
                 ConnectionString = "Server=tcp:csharpmvcwebapidatabaseserver.database.windows.net;Database=CSharpMVCWebAPIDatabase;" +
-                "User ID =jianjlv@csharpmvcwebapidatabaseserver; Password = 6076361Abb; ", //必填
+                "User ID =jianjlv@csharpmvcwebapidatabaseserver; Password = <your_password>; ", //必填
                 DbType = DbType.SqlServer, //必填
                 IsAutoCloseConnection = true
             });

@@ -17,7 +17,7 @@ namespace CSharpDemo.Azure
                 // your_username
                 builder.UserID = @"jianjlv";
                 // your_password
-                builder.Password = "6076361Abb";
+                builder.Password = "<your_password>";
                 // your_database
                 builder.InitialCatalog = "CSharpMVCWebAPIDatabase";
 
