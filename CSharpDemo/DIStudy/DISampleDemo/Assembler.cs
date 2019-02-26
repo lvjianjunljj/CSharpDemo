@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace CSharpDemo.DISampleDemo
+namespace CSharpDemo.DIStudy.DISampleDemo
 {
     class Assembler
     {

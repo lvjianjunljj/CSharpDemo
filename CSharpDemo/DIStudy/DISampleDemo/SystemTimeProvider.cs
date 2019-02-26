@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CSharpDemo.DISampleDemo
+namespace CSharpDemo.DIStudy.DISampleDemo
 {
     class SystemTimeProvider : ITimeProvider
     {

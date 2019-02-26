@@ -1,9 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using CSharpDemo.Azure;
-using CSharpDemo.DIStudy.LifetimeScopeControl;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace CSharpDemo
 {
@@ -11,7 +6,9 @@ namespace CSharpDemo
     {
         static void Main(string[] args)
         {
-           
+            GetStrValue.MainFunction();
+            Console.ReadKey();
         }
+
     }
 }

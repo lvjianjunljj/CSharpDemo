@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
-namespace CSharpDemo
+namespace CSharpDemo.Json
 {
     // JSON使用JsonPropertyAttribute重命名属性名 
 
@@ -16,7 +17,6 @@ namespace CSharpDemo
 
         [JsonProperty("Chinese Director")]
         public string Director { get; set; }
-
         public int ReleaseYear { get; set; }
     }
     // 创建一个Movie对象，然后指定JsonProperty，并添加Order属性。
@@ -30,7 +30,6 @@ namespace CSharpDemo
 
         public int ReleaseYear { get; set; }
 
-        [JsonProperty(Order = -3)]
         public string ChiefActor { get; set; }
 
         [JsonProperty(Order = 2)]
@@ -38,7 +37,7 @@ namespace CSharpDemo
     }
     class JsonProperty
     {
-        static void MainMethod()
+        public static void MainMethod()
         {
             // 实例化Movie对象，然后序列化。
             Movie m = new Movie

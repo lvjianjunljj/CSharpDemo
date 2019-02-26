@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CSharpDemo.DISampleDemo
+namespace CSharpDemo.DIStudy.DISampleDemo
 {
     // I do not think this is a good demo, it cannot show the reason of using DI.
     class InjectionTest

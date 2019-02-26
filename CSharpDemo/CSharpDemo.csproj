@@ -75,6 +75,9 @@
     <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.10.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
+    <Reference Include="SqlSugar, Version=4.9.9.1, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\sqlSugar.4.9.9.1\lib\SqlSugar.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
@@ -127,10 +130,10 @@
     <Compile Include="Azure\AzureSQLDatabase.cs" />
     <Compile Include="CmdHelper.cs" />
     <Compile Include="Constant.cs" />
-    <Compile Include="DISampleDemo\Assembler.cs" />
-    <Compile Include="DISampleDemo\InjectionTest.cs" />
-    <Compile Include="DISampleDemo\ITimeProvider.cs" />
-    <Compile Include="DISampleDemo\SystemTimeProvider.cs" />
+    <Compile Include="DIStudy\DISampleDemo\Assembler.cs" />
+    <Compile Include="DIStudy\DISampleDemo\InjectionTest.cs" />
+    <Compile Include="DIStudy\DISampleDemo\ITimeProvider.cs" />
+    <Compile Include="DIStudy\DISampleDemo\SystemTimeProvider.cs" />
     <Compile Include="DIStudy\FactoryPattern\Demo1.cs" />
     <Compile Include="DIStudy\FactoryPattern\Demo2.cs" />
     <Compile Include="DIStudy\FactoryPattern\Demo3.cs" />
@@ -148,9 +151,10 @@
     <Compile Include="DIStudy\ThreeLayers\Demo3.cs" />
     <Compile Include="ExcelOperation.cs" />
     <Compile Include="GetStrValue.cs" />
-    <Compile Include="JsonCovertDemo.cs" />
-    <Compile Include="JsonParse.cs" />
-    <Compile Include="JsonProperty.cs" />
+    <Compile Include="Json\JsonCovertDemo.cs" />
+    <Compile Include="Json\JsonParse.cs" />
+    <Compile Include="Json\JsonProperty.cs" />
+    <Compile Include="Json\JTokenTestDemo.cs" />
     <Compile Include="LogFileOperation.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="PrivateConstructionMethod.cs" />
@@ -158,6 +162,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReadFile.cs" />
     <Compile Include="Azure\AzureStorageAccount.cs" />
+    <Compile Include="ReflectionTest.cs" />
+    <Compile Include="SqlSugarDemo.cs" />
+    <Compile Include="WebUIHtmlControlsDemo.cs" />
     <Compile Include="WriteFile.cs" />
     <Compile Include="TaskFriend.cs" />
     <Compile Include="TestThreadPool.cs" />

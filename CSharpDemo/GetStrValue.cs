@@ -9,7 +9,8 @@ namespace CSharpDemo
 {
     class GetStrValue
     {
-        static void MainFunction(string[] args)
+        string test;
+        public static void MainFunction()
         {
             GetStrValue p = new GetStrValue();
             p.GetStrValueMethod("test");
@@ -17,6 +18,7 @@ namespace CSharpDemo
         }
         void GetStrValueMethod(string str)
         {
+            this.test = "1234";
             Type type = this.GetType();
             //获取字符串str对应的变量名的变量值
             Console.WriteLine(type.GetField(str, BindingFlags.NonPublic | BindingFlags.Instance).GetValue(this).ToString());

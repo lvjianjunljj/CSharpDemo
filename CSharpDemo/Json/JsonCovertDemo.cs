@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 
-namespace CSharpDemo
+namespace CSharpDemo.Json
 {
     class JsonCovertDemo
     {

@@ -6,8 +6,13 @@ using System.Threading.Tasks;
 
 namespace CSharpDemo.Azure
 {
+    //AzureServiceBusSingleClient azureServiceBusSingleClient = new AzureServiceBusSingleClient();
+    //azureServiceBusSingleClient.NumberOfMessages = 10;
+    //azureServiceBusSingleClient.SendMainAsync().GetAwaiter().GetResult();
+    //azureServiceBusSingleClient.ReceiveMainAsync().GetAwaiter().GetResult();
     class AzureServiceBusSingleClient
     {
+
         const string ServiceBusConnectionString =
             "Endpoint=sb://csharpmvcwebapiapplicationservicebus.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=92y+w4AKGK7NjnU/Xtrzgehqv7sm6JN9uLuauixI2pk=";
         const string QueueName = "queue_test_single_client";
@@ -16,6 +21,8 @@ namespace CSharpDemo.Azure
         {
             queueClient = new QueueClient(ServiceBusConnectionString, QueueName);
         }
+
+        public int NumberOfMessages { set; get; }
         public async Task SendMainAsync()
         {
             const int numberOfMessages = 20;

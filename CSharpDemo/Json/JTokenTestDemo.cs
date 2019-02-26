@@ -5,7 +5,7 @@ using CSharpDemo.DIStudy.LifetimeScopeControl;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace CSharpDemo
+namespace CSharpDemo.Json
 {
     class JTokenTestDemo
     {
