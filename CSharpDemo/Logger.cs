@@ -24,7 +24,9 @@ namespace CSharpDemo
         {
             this.className = className;
         }
-        public void writeLog(LogType logType, string logContent)
+        //Logger logger = new Logger("Test.class");
+        //logger.WriteLog(LogType.Error, "Error Test");
+        public void WriteLog(LogType logType, string logContent)
         {
             string dateInfo = DateTime.Now.ToString("yyyy-MM-dd");
             string writeLogLine = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + "[" + logType + "]" +
@@ -40,9 +42,8 @@ namespace CSharpDemo
                 return;
             }
 
-            CloudStorageAccount storageAccount = CloudStorageAccount.Parse(
-                @"DefaultEndpointsProtocol=https;AccountName=" + Constant.LOGGER_ACCOUNT_NAME + ";AccountKey=" +
-                Constant.LOGGER_ACCOUNT_KEY);
+            string connectionString = $"DefaultEndpointsProtocol=https;AccountName={Constant.STORAGE_ACCOUNT_NAME};AccountKey={Constant.Instance.StorageAccountKey};EndpointSuffix=core.windows.net";
+            CloudStorageAccount storageAccount = CloudStorageAccount.Parse(connectionString);
             CloudFileClient fileClient = storageAccount.CreateCloudFileClient();
 
             CloudFileShare share = fileClient.GetShareReference(logFilePath[0]);
@@ -79,6 +80,7 @@ namespace CSharpDemo
             file.UploadText(writenLineContent + writeLogLine + "\n");
         }
 
+        // Logger.OutputLogContent("logs", "TestLogs", "2019-02-28.log");
         public static void OutputLogContent(params string[] logFilePath)
         {
             if (logFilePath.Length < 2)
@@ -86,9 +88,8 @@ namespace CSharpDemo
                 Console.WriteLine(invalidExistLogFilePath);
                 return;
             }
-            CloudStorageAccount storageAccount = CloudStorageAccount.Parse(
-                @"DefaultEndpointsProtocol=https;AccountName=" + Constant.LOGGER_ACCOUNT_NAME +
-                ";AccountKey=" + Constant.LOGGER_ACCOUNT_KEY);
+            string connectionString = $"DefaultEndpointsProtocol=https;AccountName={Constant.STORAGE_ACCOUNT_NAME};AccountKey={Constant.Instance.StorageAccountKey};EndpointSuffix=core.windows.net";
+            CloudStorageAccount storageAccount = CloudStorageAccount.Parse(connectionString);
             CloudFileClient fileClient = storageAccount.CreateCloudFileClient();
 
             CloudFileShare share = fileClient.GetShareReference(logFilePath[0]);
@@ -102,7 +103,7 @@ namespace CSharpDemo
 
             for (int i = 1; i < logFilePath.Length - 1; i++)
             {
-                CloudFileDirectory nextLevelDir = sampleDir.GetDirectoryReference("TestLogs");
+                CloudFileDirectory nextLevelDir = sampleDir.GetDirectoryReference(logFilePath[i]);
                 if (!sampleDir.Exists())
                 {
                     Console.WriteLine(invalidExistLogFilePath);

@@ -6,20 +6,21 @@ namespace CSharpDemo.Azure
 {
     class AzureSQLDatabase
     {
-        static void MainMethod()
+        public static void MainMethod()
         {
+
             try
             {
                 SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
 
                 // your_server.database.windows.net
-                builder.DataSource = @"tcp:csharpmvcwebapidatabaseserver.database.windows.net";
+                builder.DataSource = $"tcp:{Constant.SQL_SERVER_NAME}.database.windows.net";
                 // your_username
-                builder.UserID = @"jianjlv";
+                builder.UserID = $"{Constant.Instance.SQLAccountUserId}@{Constant.SQL_SERVER_NAME}";
                 // your_password
-                builder.Password = "<your_password>";
+                builder.Password = Constant.Instance.SQLAccountPassword;
                 // your_database
-                builder.InitialCatalog = "CSharpMVCWebAPIDatabase";
+                builder.InitialCatalog = Constant.SQL_DATABASE_NAME;
 
                 using (SqlConnection connection = new SqlConnection(builder.ConnectionString))
                 {
@@ -52,7 +53,6 @@ namespace CSharpDemo.Azure
                 Console.WriteLine(e.ToString());
             }
             Console.WriteLine("\nDone. Press enter.");
-            Console.ReadKey();
         }
     }
 }

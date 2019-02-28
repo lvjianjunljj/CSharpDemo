@@ -1,13 +1,14 @@
-﻿//using Microsoft.Office.Core;
-//using Microsoft.Office.Interop.Excel;
-//using System.IO;
-//using System;
-//using System.Collections.Generic;
+﻿using Microsoft.Office.Core;
+using Microsoft.Office.Interop.Excel;
+using System.IO;
+using System;
+using System.Collections.Generic;
 
-// The lib of office is based on the Office app in windows. Most of my VM do not setup the Office. 
+//// The lib of office is based on the Office app in windows.Most of my VM do not setup the Office. 
+//// But I think I can get the lib on Nuget, it is great
 //namespace CSharpDemo
 //{
-//    class ExcelOperation
+//    class ExcelOperation.FileOperation
 //    {
 //        public List<List<string>> readFile(string filePath, int itemIndex, int rowStart, int rowEnd, int lineStart, int lineEnd)
 //        {
