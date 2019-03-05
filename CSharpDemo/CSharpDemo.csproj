@@ -159,6 +159,7 @@
   <ItemGroup>
     <Compile Include="Application\ISecretProvider.cs" />
     <Compile Include="Application\KeyVaultSecretProvider.cs" />
+    <Compile Include="AttributesDemo.cs" />
     <Compile Include="Azure\AzureCosmosDB.cs" />
     <Compile Include="Azure\AzureKeyVault.cs" />
     <Compile Include="Azure\AzureServiceBusMultiClient.cs" />
