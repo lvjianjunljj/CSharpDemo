@@ -61,6 +61,20 @@ namespace CSharpDemo.Json
 
             string json2 = JsonConvert.SerializeObject(m2, Formatting.Indented);
             Console.WriteLine(json2);
+
+
+            Movie2 m3 = new Movie2
+            {
+                Name = "FeiChengWuRao",
+                Director = "FengXiaoGang",
+            };
+            // For more info, see https://www.newtonsoft.com/json/help/html/T_Newtonsoft_Json_NullValueHandling.htm
+            JsonSerializerSettings jsonSerializerSettings = new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore };
+
+            string json3 = JsonConvert.SerializeObject(m3, Formatting.Indented, jsonSerializerSettings);
+            string json4 = JsonConvert.SerializeObject(m3, Formatting.Indented);
+            Console.WriteLine(json3);
+            Console.WriteLine(json4);
         }
     }
 }

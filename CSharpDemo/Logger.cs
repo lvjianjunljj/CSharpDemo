@@ -1,4 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
 using Microsoft.WindowsAzure.Storage; // Namespace for Storage Client Library
 using Microsoft.WindowsAzure.Storage.Blob; // Namespace for Azure Blobs
 using Microsoft.WindowsAzure.Storage.File; // Namespace for Azure Files
@@ -14,6 +18,7 @@ namespace CSharpDemo
 
     class Logger
     {
+
         private enum WriteWay
         {
             Cover,
@@ -66,18 +71,39 @@ namespace CSharpDemo
 
             CloudFile file = sampleDir.GetFileReference(logFilePath[logFilePath.Length - 1]);
 
-            string writenLineContent = "";
-            if (file.Exists())
+            lock ("")
             {
-                if (writeWay == WriteWay.Cover)
+                CloudBlobClient blobClient = storageAccount.CreateCloudBlobClient();
+                CloudBlobContainer blobContainer = blobClient.GetContainerReference("logs");
+                blobContainer.CreateIfNotExistsAsync();
+                CloudBlockBlob blockBlob = blobContainer.GetBlockBlobReference("testBlob");
+
+                List<string> blockIds = new List<string>();
+                DateTime before = DateTime.Now;
+
+                blockIds.AddRange(blockBlob.DownloadBlockList(BlockListingFilter.Committed).Select(b => b.Name));
+                DateTime after = DateTime.Now;
+                TimeSpan ts = after.Subtract(before);
+                Console.WriteLine(ts.Seconds + "_" + ts.Milliseconds);
+
+                var newId = Convert.ToBase64String(Encoding.Default.GetBytes(blockIds.Count.ToString()));
+                blockBlob.PutBlock(newId, new MemoryStream(Encoding.Default.GetBytes(writeLogLine + "\n")), null);
+                blockIds.Add(newId);
+                blockBlob.PutBlockList(blockIds);
+
+                string writenLineContent = "";
+                if (file.Exists())
                 {
+                    if (writeWay == WriteWay.Cover)
+                    {
+                    }
+                    else if (writeWay == WriteWay.Append)
+                    {
+                        writenLineContent = file.DownloadTextAsync().Result;
+                    }
                 }
-                else if (writeWay == WriteWay.Append)
-                {
-                    writenLineContent = file.DownloadTextAsync().Result;
-                }
+                file.UploadText(writenLineContent + writeLogLine + "\n");
             }
-            file.UploadText(writenLineContent + writeLogLine + "\n");
         }
 
         // Logger.OutputLogContent("logs", "TestLogs", "2019-02-28.log");

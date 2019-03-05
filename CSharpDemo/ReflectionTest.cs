@@ -14,7 +14,7 @@ namespace CSharpDemo
     {
 
         /// <summary>
-        /// 字段
+        /// 字段 Fields
         /// </summary>
         public string name = "Hathway";
         private int id = 32;
@@ -23,7 +23,7 @@ namespace CSharpDemo
 
 
         /// <summary>
-        /// 属性
+        /// 属性 Attributes 
         /// </summary>
         public string Name { get; set; }
         public GenderEnum Gender { get; set; }
@@ -31,7 +31,7 @@ namespace CSharpDemo
         protected bool IsAdmin { get; set; }
 
         /// <summary>
-        /// 方法
+        /// 方法 Function
         /// </summary>
         public void Android()
         {
@@ -45,7 +45,7 @@ namespace CSharpDemo
 
 
         /// <summary>
-        /// 构造方法
+        /// 构造方法 Constructor
         /// </summary>
         public WorkerModel()
         {
