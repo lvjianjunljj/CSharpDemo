@@ -5,8 +5,10 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
+using System.Threading;
 using System.Web.Script.Serialization; //lib name in Assemblies: System.Web.Extensions.
-
+using CSharpDemo.FileOperation;
 using Microsoft.AzureAd.Icm.Types;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -18,8 +20,140 @@ namespace CSharpDemo.IcMTest
         public static void MainMethod()
         {
             // ignore all cert errors in this sample
-            ServicePointManager.ServerCertificateValidationCallback = (a, b, c, d) => true;
-            GetIncident(7252196);
+            //ServicePointManager.ServerCertificateValidationCallback = (a, b, c, d) => true;
+            //string jsonString = GetIncident();
+            //SaveFile.FirstMethod(@"D:\data\company_work\IDEAs\IcMWork\test\incident2_test.txt", jsonString);
+
+
+            //LinkRootCause();
+            //CreateRootCause();
+            //string rootCauseString = .GetRootCause(107063448);
+            //Console.WriteLine(rootCauseString);
+            //SaveFile.FirstMethod(@"D:\data\company_work\IDEAs\IcMWork\root_cause_test.txt", rootCauseString);
+
+            //SaveFile.FirstMethod(@"D:\data\company_work\IDEAs\IcMWork\tenants_list.html", GetTenants());
+
+            //EditIncidentCustomFieldsSimple();
+
+            //AddDescriptionEntry();
+            //string descriptionEntriesJsonString = GetDescriptionEntries();
+            //SaveFile.FirstMethod(@"D:\data\company_work\IDEAs\IcMWork\test\description_entries_test.txt", descriptionEntriesJsonString);
+
+            //Thread[] threads = new Thread[10];
+            //for (int i = 0; i < 10; i++)
+            //{
+            //    threads[i] = new Thread(OneThread);
+            //    threads[i].Start();
+            //}
+            //for (int i = 0; i < 10; i++)
+            //{
+            //    threads[i].Join();
+            //}
+        }
+        static void OneThread()
+        {
+            double totalTimeCost = 0;
+            for (int i = 0; i < 10; i++)
+            {
+                DateTime beforDT = System.DateTime.Now;
+                List<long> activeIncidentIdList = GetIncidentIdList(@"IDEAS\IDEAsDataCopTest");
+                DateTime afterDT = System.DateTime.Now;
+                TimeSpan ts = afterDT.Subtract(beforDT);
+                //Console.WriteLine(activeIncidentIdList.Count);
+                //Console.WriteLine("get incident list time cost: {0}ms.", ts.TotalMilliseconds);
+                totalTimeCost += ts.TotalMilliseconds;
+            }
+            Console.WriteLine(totalTimeCost / 10);
+        }
+
+        public static void AddDescriptionEntry()
+        {
+            string EditIncidentDescriptionEntryContent = @"
+                {
+                  'NewDescriptionEntry' : { 
+                    'Text' : 'add new description entry test', 
+                    'RenderType' : 'Html',
+                    'Cause' : 'Transferred'
+                  }
+                }";
+            NewDescriptionEntry newDescriptionEntry = new NewDescriptionEntry
+            {
+                Text = "add new descriptionEntry",
+
+            };
+            Incident editIncident = new Incident
+            {
+                NewDescriptionEntry = newDescriptionEntry,
+                Status = IncidentStatus.Active
+            };
+
+            //Dictionary<string, NewDescriptionEntry> descriptionEntryDict = new Dictionary<string, NewDescriptionEntry>();
+            //descriptionEntryDict.Add("NewDescriptionEntry", newDescriptionEntry);
+            //JsonSerializerSettings jsonSerializerSettings = new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore };
+            //string EditIncidentDescriptionEntryContent = JsonConvert.SerializeObject(descriptionEntryDict, jsonSerializerSettings).ToString();
+
+
+            Console.WriteLine(EditIncidentDescriptionEntryContent);
+            // Must set the certificate in current machine.
+            X509Certificate2 certificate = GetCert("87a1331eac328ec321578c10ebc8cc4c356b005f");
+
+            string url = "https://icm.ad.msft.net/api/cert/incidents(108097160)";
+            HttpWebRequest req = WebRequest.CreateHttp(url);
+            req.ClientCertificates.Add(certificate);
+            req.Method = "PATCH";
+
+            byte[] buffer = Encoding.UTF8.GetBytes(EditIncidentDescriptionEntryContent);
+
+            req.ContentType = "application/json";
+            req.ContentLength = buffer.Length;
+            Stream reqStream = req.GetRequestStream();
+            reqStream.Write(buffer, 0, buffer.Length);
+            reqStream.Close();
+
+            req.GetResponse();
+        }
+
+        public static void EditIncidentCustomFieldsSimple()
+        {
+            string EditIncidentCustomFieldsContent = @"
+                {
+                    'CustomFieldGroups':[
+                        {
+                            'PublicId':'00000000-0000-0000-0000-000000000000',
+                            'ContainerId':'54671',
+                            'GroupType':'Team',
+                            'CustomFields':[
+                                {
+                                    'Name':'DatasetId',
+                                    'DisplayName':'Dataset Id',
+                                    'Value':'1111',
+                                    'Type':'ShortString'
+                                }
+                            ]
+                        }
+                    ]
+                }";
+            X509Certificate2 certificate = GetCert("87a1331eac328ec321578c10ebc8cc4c356b005f");
+
+            string url = "https://icm.ad.msft.net/api/cert/incidents(108097160)";
+            HttpWebRequest req = WebRequest.CreateHttp(url);
+            req.ClientCertificates.Add(certificate);
+            req.Method = "PATCH";
+
+            byte[] buffer = Encoding.UTF8.GetBytes(EditIncidentCustomFieldsContent);
+
+            req.ContentType = "application/json";
+            req.ContentLength = buffer.Length;
+            Stream reqStream = req.GetRequestStream();
+            reqStream.Write(buffer, 0, buffer.Length);
+            reqStream.Close();
+
+            HttpWebResponse resp = (HttpWebResponse)req.GetResponse();
+            Stream respStream = resp.GetResponseStream();
+            StreamReader reader = new StreamReader(respStream, Encoding.UTF8);
+            string responseString = reader.ReadToEnd();
+            reader.Close();
+            Console.WriteLine(responseString);
         }
 
         class CustomFields
@@ -43,8 +177,9 @@ namespace CSharpDemo.IcMTest
 
         public static void EditIncidentCustomFields()
         {
+            string EditIncidentCustomFieldsContent = @"{'CustomFieldGroups':[{'PublicId':'00000000-0000-0000-0000-000000000000','ContainerId':'54671','GroupType':'Team','CustomFields':[{'Name':'DatasetId','DisplayName':'Dataset Id','Value':'12341234','Type':'ShortString'}]}]}";
             WebRequestHandler handler = new WebRequestHandler();
-            X509Certificate2 certificate = QueryIncidents.GetCert("87a1331eac328ec321578c10ebc8cc4c356b005f");
+            X509Certificate2 certificate = GetCert("87a1331eac328ec321578c10ebc8cc4c356b005f");
             handler.ClientCertificates.Add(certificate);
             HttpClient client = new HttpClient(handler);
 
@@ -69,13 +204,15 @@ namespace CSharpDemo.IcMTest
             };
             customFields.CustomFieldGroups.Add(customFieldGroup);
 
+            List<CustomFieldGroup> customFieldGroups = new List<CustomFieldGroup>();
+            customFieldGroups.Add(customFieldGroup);
             string myContent = JsonConvert.SerializeObject(customFields);
-            Console.WriteLine(myContent);
-            byte[] buffer = System.Text.Encoding.UTF8.GetBytes(myContent);
+            //Console.WriteLine(myContent);
+            byte[] buffer = System.Text.Encoding.UTF8.GetBytes(EditIncidentCustomFieldsContent);
             ByteArrayContent content = new ByteArrayContent(buffer);
             content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
-            HttpRequestMessage request = new HttpRequestMessage(new HttpMethod("PATCH"), "https://icm.ad.msft.net/api/cert/incidents(107215017)");
+            HttpRequestMessage request = new HttpRequestMessage(new HttpMethod("PATCH"), "https://icm.ad.msft.net/api/cert/incidents(108097160)");
             request.Content = content;
             content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
             HttpResponseMessage response = client.SendAsync(request).Result;
@@ -93,7 +230,7 @@ namespace CSharpDemo.IcMTest
         public static void CreateRootCause()
         {
             WebRequestHandler handler = new WebRequestHandler();
-            X509Certificate2 certificate = QueryIncidents.GetCert("87a1331eac328ec321578c10ebc8cc4c356b005f");
+            X509Certificate2 certificate = GetCert("87a1331eac328ec321578c10ebc8cc4c356b005f");
             handler.ClientCertificates.Add(certificate);
             HttpClient client = new HttpClient(handler);
             Dictionary<string, string> values = new Dictionary<string, string>
@@ -127,7 +264,7 @@ namespace CSharpDemo.IcMTest
         public static void LinkRootCause()
         {
             WebRequestHandler handler = new WebRequestHandler();
-            X509Certificate2 certificate = QueryIncidents.GetCert("87a1331eac328ec321578c10ebc8cc4c356b005f");
+            X509Certificate2 certificate = GetCert("87a1331eac328ec321578c10ebc8cc4c356b005f");
             handler.ClientCertificates.Add(certificate);
             HttpClient client = new HttpClient(handler);
             Dictionary<string, string> values = new Dictionary<string, string>
@@ -146,7 +283,7 @@ namespace CSharpDemo.IcMTest
         public static string GetRootCause(long id)
         {
             WebRequestHandler handler = new WebRequestHandler();
-            X509Certificate2 certificate = QueryIncidents.GetCert("87a1331eac328ec321578c10ebc8cc4c356b005f");
+            X509Certificate2 certificate = GetCert("87a1331eac328ec321578c10ebc8cc4c356b005f");
             handler.ClientCertificates.Add(certificate);
             HttpClient client = new HttpClient(handler);
 
@@ -159,7 +296,7 @@ namespace CSharpDemo.IcMTest
         public static string GetTenants()
         {
             WebRequestHandler handler = new WebRequestHandler();
-            X509Certificate2 certificate = QueryIncidents.GetCert("87a1331eac328ec321578c10ebc8cc4c356b005f");
+            X509Certificate2 certificate = GetCert("87a1331eac328ec321578c10ebc8cc4c356b005f");
             handler.ClientCertificates.Add(certificate);
             HttpClient client = new HttpClient(handler);
 
@@ -171,37 +308,26 @@ namespace CSharpDemo.IcMTest
 
         public static void AddChildIncident()
         {
-
         }
 
-        public static string GetIncident(long id)
+        public static string GetDescriptionEntries()
         {
-
             JavaScriptSerializer serializer = new JavaScriptSerializer();
             HttpWebResponse result;
             HttpWebRequest req;
             string json = null;
             string url;
 
-            // build the URL we'll hit
-            // "icm.ad.msft.net" is the OdataServiceBaseUri
-            //url = string.Format("https://{0}/api/cert/incidents({1})", "icm.ad.msoppe.msft.net", id);
-            //url = @"https://icm.ad.msft.net/api/cert/incidents?$filter=OwningTeamId eq 'IDEAS\IDEAsDataCopTest' and Id eq 106845925";
-            //url = @"https://icm.ad.msft.net/api/cert/incidents?$filter=Id eq 106843121";
-            //url = string.Format("https://{0}/api/cert/incidents({1})", "icm.ad.msft.net", id);
-
-            url = @"https://icm.ad.msft.net/api/cert/incidents?$filter=OwningTeamId eq 'IDEAS\IDEAsDataCopTest' and 
-                CustomFieldGroups/any(cfg:cfg/CustomFields/any
-                (cf:cf/Name eq 'DatasetId' and cf/Type eq 'ShortString' and cf/Value eq 'Test')
-                ) and  Status eq 'ACTIVE'";
+            url = @"https://icm.ad.msft.net/api/cert/incidents(108097160)/DescriptionEntries?$inlinecount=allpages";
 
             // create the request
             req = WebRequest.CreateHttp(url);
+            //req.Method
             // add in the cert we'll authenticate with
             // "87a1331eac328ec321578c10ebc8cc4c356b005f" is the CertThumbprint
             try
             {
-                X509Certificate cert = QueryIncidents.GetCert("87a1331eac328ec321578c10ebc8cc4c356b005f");
+                X509Certificate cert = GetCert("87a1331eac328ec321578c10ebc8cc4c356b005f");
                 if (cert == null)
                 {
                     Console.WriteLine("cert is null");
@@ -220,24 +346,310 @@ namespace CSharpDemo.IcMTest
                         json = tr.ReadToEnd();
                     }
                 }
+                Console.WriteLine(json);
+                List<DescriptionEntry> enrtyList = new List<DescriptionEntry>();
 
+                return json;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+                return null;
+            }
+        }
+
+        public static List<long> GetIncidentIdList(string owningTeamId, string incidentStatus = null)
+        {
+            HttpWebResponse result;
+            HttpWebRequest req;
+            string json = null;
+            string url;
+
+            url = $@"https://icm.ad.msft.net/api/cert/incidents?&$filter=OwningTeamId eq '{owningTeamId}'";
+            List<long> incidentIdList = new List<long>();
+            while (url != null)
+            {
+                // ACTIVE
+                if (incidentStatus != null)
+                {
+                    url += $@" and Status eq '{incidentStatus}'";
+                }
+                req = WebRequest.CreateHttp(url);
+                url = null;
+                try
+                {
+                    X509Certificate cert = GetCert("87a1331eac328ec321578c10ebc8cc4c356b005f");
+                    if (cert == null)
+                    {
+                        Console.WriteLine("cert is null");
+                        return incidentIdList;
+                    }
+                    req.ClientCertificates.Add(cert);
+                    // submit the request
+                    result = (HttpWebResponse)req.GetResponse();
+
+                    // read out the response stream as text
+                    using (Stream data = result.GetResponseStream())
+                    {
+                        if (data != null)
+                        {
+                            TextReader tr = new StreamReader(data);
+                            json = tr.ReadToEnd();
+                        }
+                    }
+                    JObject jsonObject = JObject.Parse(json);
+                    //Console.WriteLine(json);
+                    List<Incident> incidentList = JsonConvert.DeserializeObject<List<Incident>>(jsonObject["value"].ToString());
+                    foreach (Incident i in incidentList) incidentIdList.Add(i.Id);
+                    if (jsonObject["odata.nextLink"] != null)
+                    {
+                        url = jsonObject["odata.nextLink"].ToString();
+                    }
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                    return incidentIdList;
+                }
+            }
+            //Console.WriteLine(incidentIdList.Count);
+            return incidentIdList;
+        }
+        public static void AcknowledgeIncident(long incidentId)
+        {
+            string EditIncidentDescriptionEntryContent = @"
+                {
+                  'NewDescriptionEntry' : { 
+                    'Text' : 'add new description entry test', 
+                    'RenderType' : 'Html',
+                    'Cause' : 'Transferred'
+                  }
+                }";
+            HttpWebRequest req;
+            string url;
+
+            url = $"https://icm.ad.msft.net/api/cert/incidents({incidentId})/AcknowledgeIncident";
+            req = WebRequest.CreateHttp(url);
+            req.Method = "POST";
+
+            try
+            {
+                X509Certificate cert = GetCert("87a1331eac328ec321578c10ebc8cc4c356b005f");
+                if (cert == null)
+                {
+                    Console.WriteLine("cert is null");
+                }
+                req.ClientCertificates.Add(cert);
+                byte[] buffer = Encoding.UTF8.GetBytes(EditIncidentDescriptionEntryContent);
+
+                req.ContentType = "application/json";
+                req.ContentLength = 0;
+                //Stream reqStream = req.GetRequestStream();
+                //reqStream.Write(buffer, 0, buffer.Length);
+                //reqStream.Close();
+                req.GetResponse();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+        }
+
+        public static void MitigateIncident(long incidentId)
+        {
+            string MitigateIncidentContent = @"
+                {
+                  'MitigateParameters' : { 
+                    'IsCustomerImpacting' : 'True', 
+                    'IsNoise' : 'False',
+                    'Mitigation' : 'just mitigate the incident this is purely for demo sake',
+                    'HowFixed' : 'Fixed with Hotfix',
+                    'MitigateContactAlias' : 'jianjlv'
+                  }
+                }";
+            HttpWebRequest req;
+            string url;
+
+            url = $"https://icm.ad.msft.net/api/cert/incidents({incidentId})/MitigateIncident";
+            req = WebRequest.CreateHttp(url);
+            req.Method = "POST";
+
+            try
+            {
+                X509Certificate cert = GetCert("87a1331eac328ec321578c10ebc8cc4c356b005f");
+                if (cert == null)
+                {
+                    Console.WriteLine("cert is null");
+                }
+
+                req.ClientCertificates.Add(cert);
+                byte[] buffer = Encoding.UTF8.GetBytes(MitigateIncidentContent);
+
+                req.ContentType = "application/json";
+                req.ContentLength = buffer.Length;
+                Stream reqStream = req.GetRequestStream();
+                reqStream.Write(buffer, 0, buffer.Length);
+                reqStream.Close();
+                req.GetResponse();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+        }
+        public static void ResolveIncident(long incidentId)
+        {
+            string MitigateIncidentContent = @"
+                {
+                  'ResolveParameters' : { 
+                    'IsCustomerImpacting' : 'False', 
+                    'IsNoise' : 'True',
+                    'Description' : {
+                        'Text' : 'just resolve the incident....check it out',
+                        'RenderType' : 'Plaintext'
+                    },
+                    'ResolveContactAlias' : 'jianjlv'
+                  }
+                }";
+            HttpWebRequest req;
+            string url;
+
+            url = $"https://icm.ad.msft.net/api/cert/incidents({incidentId})/ResolveIncident";
+            req = WebRequest.CreateHttp(url);
+            req.Method = "POST";
+
+            try
+            {
+                X509Certificate cert = GetCert("87a1331eac328ec321578c10ebc8cc4c356b005f");
+                if (cert == null)
+                {
+                    Console.WriteLine("cert is null");
+                }
+
+                req.ClientCertificates.Add(cert);
+                byte[] buffer = Encoding.UTF8.GetBytes(MitigateIncidentContent);
+
+                req.ContentType = "application/json";
+                req.ContentLength = buffer.Length;
+                Stream reqStream = req.GetRequestStream();
+                reqStream.Write(buffer, 0, buffer.Length);
+                reqStream.Close();
+                req.GetResponse();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+        }
+
+        public static string GetIncident(long incidentId)
+        {
+            //JavaScriptSerializer serializer = new JavaScriptSerializer();
+            HttpWebResponse result;
+            HttpWebRequest req;
+            string json = null;
+            string url;
+
+            url = $@"https://icm.ad.msft.net/api/cert/incidents({incidentId})";
+            req = WebRequest.CreateHttp(url);
+            try
+            {
+                X509Certificate cert = GetCert("87a1331eac328ec321578c10ebc8cc4c356b005f");
+                if (cert == null)
+                {
+                    Console.WriteLine("cert is null");
+                    return "cert is null";
+                }
+                req.ClientCertificates.Add(cert);
+                // submit the request
+                result = (HttpWebResponse)req.GetResponse();
+
+                // read out the response stream as text
+                using (Stream data = result.GetResponseStream())
+                {
+                    if (data != null)
+                    {
+                        TextReader tr = new StreamReader(data);
+                        json = tr.ReadToEnd();
+                    }
+                }
+                Incident incident = JsonConvert.DeserializeObject<Incident>(json);
+                return json;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+                return null;
+            }
+        }
+
+        public static string GetIncident()
+        {
+            //JavaScriptSerializer serializer = new JavaScriptSerializer();
+            HttpWebResponse result;
+            HttpWebRequest req;
+            string json = null;
+            string url;
+
+            // build the URL we'll hit
+            // "icm.ad.msft.net" is the OdataServiceBaseUri
+            //url = string.Format("https://{0}/api/cert/incidents({1})", "icm.ad.msoppe.msft.net", id);
+            //url = @"https://icm.ad.msft.net/api/cert/incidents?$filter=OwningTeamId eq 
+            //    'IDEAS\IDEAsDataCopTest' and Id eq 108097160";
+            url = @"https://icm.ad.msft.net/api/cert/incidents?$filter=OwningTeamId eq 'IDEAS\IDEAsDataCopTest' and Id eq 109578527";
+            //url = @"https://icm.ad.msft.net/api/cert/incidents(108097160)";
+            //url = string.Format("https://{0}/api/cert/incidents({1})", "icm.ad.msft.net", id);
+
+            //url = @"https://icm.ad.msft.net/api/cert/incidents?$filter=OwningTeamId eq 'IDEAS\IDEAsDataCopTest' and 
+            //    CustomFieldGroups/any(cfg:cfg/CustomFields/any
+            //    (cf:cf/Name eq 'DatasetId' and cf/Type eq 'ShortString' and cf/Value eq 'Test')
+            //    ) and  Status eq 'RESOLVED'";
+
+            // create the request
+            req = WebRequest.CreateHttp(url);
+            // add in the cert we'll authenticate with
+            // "87a1331eac328ec321578c10ebc8cc4c356b005f" is the CertThumbprint
+            try
+            {
+                X509Certificate cert = GetCert("87a1331eac328ec321578c10ebc8cc4c356b005f");
+                if (cert == null)
+                {
+                    Console.WriteLine("cert is null");
+                    return "cert is null";
+                }
+                req.ClientCertificates.Add(cert);
+                // submit the request
+                result = (HttpWebResponse)req.GetResponse();
+
+                // read out the response stream as text
+                using (Stream data = result.GetResponseStream())
+                {
+                    if (data != null)
+                    {
+                        TextReader tr = new StreamReader(data);
+                        json = tr.ReadToEnd();
+                    }
+                }
+                //Console.WriteLine(json);
                 // deserialize it into an incident object
                 //Incident incident = serializer.Deserialize<Incident>(json);
 
-                JObject jObject = JObject.Parse(json);
-                List<Incident> incidentList = new List<Incident>();
-                foreach (JToken jToken in jObject.GetValue("value"))
-                {
-                    incidentList.Add(serializer.Deserialize<Incident>(jToken.ToString()));
-                }
+                //JObject jObject = JObject.Parse(json);
+                //List<Incident> incidentList = new List<Incident>();
+                //foreach (JToken jToken in jObject.GetValue("value"))
+                //{
+                //    incidentList.Add(serializer.Deserialize<Incident>(jToken.ToString()));
+                //}
 
 
-                // TODO: do something with the incident
-                foreach (Incident inci in incidentList)
-                {
-                    Console.WriteLine(inci.IncidentLocation.ServiceInstanceId);
-                }
-
+                //// TODO: do something with the incident
+                //foreach (Incident inci in incidentList)
+                //{
+                //    Console.WriteLine(inci.IncidentLocation.ServiceInstanceId);
+                //}
+                JObject jsonObject = JObject.Parse(json);
+                List<Incident> i = JsonConvert.DeserializeObject<List<Incident>>(jsonObject["value"].ToString());
+                Console.WriteLine(i.Count);
                 return json;
             }
             catch (Exception e)
@@ -280,8 +692,8 @@ namespace CSharpDemo.IcMTest
                 return null;
             }
 
-            return QueryIncidents.GetCert(certId, StoreLocation.CurrentUser) ??
-                   QueryIncidents.GetCert(certId, StoreLocation.LocalMachine);
+            return GetCert(certId, StoreLocation.CurrentUser) ??
+                   GetCert(certId, StoreLocation.LocalMachine);
         }
     }
 }

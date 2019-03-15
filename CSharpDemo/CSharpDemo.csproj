@@ -188,6 +188,7 @@
     <Compile Include="DIStudy\ThreeLayers\Demo1.cs" />
     <Compile Include="DIStudy\ThreeLayers\Demo2.cs" />
     <Compile Include="DIStudy\ThreeLayers\Demo3.cs" />
+    <Compile Include="EnumDemo.cs" />
     <Compile Include="ExplicitOperatorDemo.cs" />
     <Compile Include="FileOperation\ExcelOperation.cs" />
     <Compile Include="GetStrValue.cs" />

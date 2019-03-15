@@ -9,7 +9,7 @@ namespace CSharpDemo
 {
     class AttributesDemo
     {
-        static void MainMethod()
+        public static void MainMethod()
         {
             Test t = new Test();
             t.T1 = "tt1";
@@ -40,11 +40,8 @@ namespace CSharpDemo
                 Console.WriteLine("-------------------------------------------------------------------");
 
             }
-
-            Console.ReadKey();
         }
     }
-
     public class Test
     {
         [JsonProperty(PropertyName = "tt1")]

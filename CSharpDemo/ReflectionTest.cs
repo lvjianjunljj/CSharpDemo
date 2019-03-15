@@ -162,5 +162,39 @@ namespace CSharpDemo
 
             }
         }
+
+        // ReflectionTest r = new ReflectionTest();
+        // r.Test();
+        public void Test()
+        {
+            Func<object, string> fuc = new Func<object, string>(FuncBook3);
+
+            // The first binding flag is to call public function and the next two is to call private function.
+            MethodInfo method = this.GetType().GetMethod("FuncBook3", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+            if (method != null)
+            {
+                // new Program() is for this.
+                fuc = (Func<object, string>)Delegate.CreateDelegate(typeof(Func<object, string>), this, method);
+            }
+            else
+            {
+                Console.WriteLine("method is null");
+            }
+            string res = fuc.Invoke(123);
+            Console.WriteLine(res);
+        }
+
+        public string FuncBook(object o1, object o2)
+        {
+            return o1 + "送书来了1" + o2;
+        }
+        private string FuncBook2(object o1)
+        {
+            return o1 + "送书来了2";
+        }
+        public string FuncBook3(object o1)
+        {
+            return o1 + "送书来了3";
+        }
     }
 }
