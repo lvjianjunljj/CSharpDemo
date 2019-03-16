@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
 
-namespace CSharpDemo
+namespace CSharpDemo.Parallel
 {
     class TestThreadPool
     {

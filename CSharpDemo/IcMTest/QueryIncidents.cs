@@ -21,8 +21,8 @@ namespace CSharpDemo.IcMTest
         {
             // ignore all cert errors in this sample
             //ServicePointManager.ServerCertificateValidationCallback = (a, b, c, d) => true;
-            //string jsonString = GetIncident();
-            //SaveFile.FirstMethod(@"D:\data\company_work\IDEAs\IcMWork\test\incident2_test.txt", jsonString);
+            string jsonString = GetIncident();
+            SaveFile.FirstMethod(@"D:\data\company_work\IDEAs\IcMWork\test\incident2_test.txt", jsonString);
 
 
             //LinkRootCause();
@@ -596,7 +596,9 @@ namespace CSharpDemo.IcMTest
             //url = string.Format("https://{0}/api/cert/incidents({1})", "icm.ad.msoppe.msft.net", id);
             //url = @"https://icm.ad.msft.net/api/cert/incidents?$filter=OwningTeamId eq 
             //    'IDEAS\IDEAsDataCopTest' and Id eq 108097160";
-            url = @"https://icm.ad.msft.net/api/cert/incidents?$filter=OwningTeamId eq 'IDEAS\IDEAsDataCopTest' and Id eq 109578527";
+            string LastSyncTimeString = DateTime.UtcNow.AddHours(-20).ToString("s");
+            url = $@"https://icm.ad.msft.net/api/cert/incidents?$filter=OwningTeamId eq 'IDEAS\IDEAsDataCopTest' and Id eq 109578527 and ModifiedDate ge datetime'{LastSyncTimeString}'";
+            Console.WriteLine(url);
             //url = @"https://icm.ad.msft.net/api/cert/incidents(108097160)";
             //url = string.Format("https://{0}/api/cert/incidents({1})", "icm.ad.msft.net", id);
 
