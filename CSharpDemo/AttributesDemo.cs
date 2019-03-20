@@ -11,7 +11,7 @@ namespace CSharpDemo
     {
         public static void MainMethod()
         {
-            Test t = new Test();
+            AttributesTestClass t = new AttributesTestClass();
             t.T1 = "tt1";
             t.T2 = "tt2";
             t.T3 = "tt3";
@@ -42,7 +42,7 @@ namespace CSharpDemo
             }
         }
     }
-    public class Test
+    public class AttributesTestClass
     {
         [JsonProperty(PropertyName = "tt1")]
         [HtmlStyle(false, "1", "2", "3", "4", "5", "6", "7", "8", "9", "10")]

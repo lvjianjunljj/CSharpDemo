@@ -15,7 +15,7 @@ using Newtonsoft.Json.Linq;
 namespace CSharpDemo.Azure
 {
 
-    class Test
+    class AzureCosmosDBTestClass
     {
         [JsonProperty("Testa")]
         public string TestA { get; set; } = "1234";
@@ -41,19 +41,31 @@ namespace CSharpDemo.Azure
     {
         public static void MainMethod()
         {
+            QueryAlertSettingDemo();
             //QueryTestDemo();
             //UpdateTestDemo();
-            UpsertAlertDemoToDev();
+            //UpsertAlertDemoToDev();
             //UpsertTestDemoToCosmosDB();
             //UpsertDatasetDemoToDev();
             //UpsertDatcopScoreDemoToDev();
+        }
+
+        public static void QueryAlertSettingDemo()
+        {
+            AzureCosmosDB azureCosmosDB = new AzureCosmosDB("DataCop", "AlertSettings");
+            // Collation: asc and desc is ascending and descending
+            IList<JObject> list = azureCosmosDB.GetAllDocumentsInQueryAsync<JObject>(azureCosmosDB.collectionLink, new SqlQuerySpec(@"SELECT distinct c.suppressionMins FROM c")).Result;
+            foreach (JObject jObject in list)
+            {
+                Console.WriteLine(jObject);
+            }
         }
         public static void QueryTestDemo()
         {
             AzureCosmosDB azureCosmosDB = new AzureCosmosDB("CosmosDBTest", "TestCollectionId");
             // Collation: asc and desc is ascending and descending
-            IList<Test> list = azureCosmosDB.GetAllDocumentsInQueryAsync<Test>(azureCosmosDB.collectionLink, new SqlQuerySpec(@"SELECT * FROM c order by c.timestampTicks asc")).Result;
-            foreach (Test t in list)
+            IList<AzureCosmosDBTestClass> list = azureCosmosDB.GetAllDocumentsInQueryAsync<AzureCosmosDBTestClass>(azureCosmosDB.collectionLink, new SqlQuerySpec(@"SELECT * FROM c order by c.timestampTicks asc")).Result;
+            foreach (AzureCosmosDBTestClass t in list)
             {
                 Console.WriteLine(t.Id);
             }
@@ -61,7 +73,7 @@ namespace CSharpDemo.Azure
 
         public static void UpdateTestDemo()
         {
-            Test t = new Test();
+            AzureCosmosDBTestClass t = new AzureCosmosDBTestClass();
             t.TestA = "AAAA";
             t.Id = "1235";
             AzureCosmosDB azureCosmosDB = new AzureCosmosDB("CosmosDBTest", "TestCollectionId");
@@ -73,7 +85,7 @@ namespace CSharpDemo.Azure
         {
             AzureCosmosDB azureCosmosDB = new AzureCosmosDB("CosmosDBTest", "TestCollectionId");
 
-            Test t = new Test();
+            AzureCosmosDBTestClass t = new AzureCosmosDBTestClass();
             t.TestA = "a";
             t.TestB = "b";
             t.TestC = "c";
@@ -81,6 +93,7 @@ namespace CSharpDemo.Azure
 
             ResourceResponse<Document> resource = azureCosmosDB.UpsertDocumentAsync(t).Result;
         }
+
         public static void UpsertAlertDemoToDev()
         {
             AzureCosmosDB azureCosmosDB = new AzureCosmosDB("DataCop", "Alert");
@@ -167,7 +180,8 @@ namespace CSharpDemo.Azure
             ResourceResponse<Document> resource2 = azureCosmosDB.UpsertDocumentAsync(dc).Result;
         }
 
-        public async Task<string> UpdateTestDemo(string testId, Test t)
+        // It is useless.
+        public async Task<string> UpdateTestDemo(string testId, AzureCosmosDBTestClass t)
         {
             SqlQuerySpec sqlQuerySpec = new SqlQuerySpec($@"UPDATE c.Testa = '{t.TestA}' WHERE c.id='{testId}'");
 

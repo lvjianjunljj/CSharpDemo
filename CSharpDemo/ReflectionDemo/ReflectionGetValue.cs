@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Reflection;
 
-namespace CSharpDemo
+namespace CSharpDemo.ReflectionDemo
 {
     public enum GenderEnum
     {
@@ -57,7 +57,7 @@ namespace CSharpDemo
 
 
     }
-    class ReflectionTest
+    class ReflectionGetValue
     {
         static void MainMethod(string[] args)
         {

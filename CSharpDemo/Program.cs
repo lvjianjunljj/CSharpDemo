@@ -20,9 +20,8 @@ namespace CSharpDemo
     {
         static void Main(string[] args)
         {
-            //QueryIncidents.MainMethod();
+            QueryIncidents.MainMethod();
             //AzureCosmosDB.MainMethod();
-            TaskVsThread.MainMethod();
 
             Console.ReadKey();
         }

@@ -6,6 +6,8 @@ using Microsoft.Azure.Services.AppAuthentication;
 
 namespace CSharpDemo.Azure
 {
+    // The doc link: https://docs.microsoft.com/en-us/azure/key-vault/key-vault-whatis#basic-concepts
+    // https://docs.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/overview
     class AzureKeyVault
     {
         // string connectionString = AzureKeyVault.GetSecret("datacopdev", "ServiceBusConnectionString");

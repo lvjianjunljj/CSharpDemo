@@ -10,19 +10,21 @@ using System.Threading;
 using System.Web.Script.Serialization; //lib name in Assemblies: System.Web.Extensions.
 using CSharpDemo.FileOperation;
 using Microsoft.AzureAd.Icm.Types;
+using Microsoft.AzureAd.Icm.Types.Api;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace CSharpDemo.IcMTest
 {
+    // The doc link: https://icmdocs.azurewebsites.net/
     class QueryIncidents
     {
         public static void MainMethod()
         {
             // ignore all cert errors in this sample
             //ServicePointManager.ServerCertificateValidationCallback = (a, b, c, d) => true;
-            string jsonString = GetIncident();
-            SaveFile.FirstMethod(@"D:\data\company_work\IDEAs\IcMWork\test\incident2_test.txt", jsonString);
+            //string jsonString = GetIncident();
+            //SaveFile.FirstMethod(@"D:\data\company_work\IDEAs\IcMWork\test\incident2_test.txt", jsonString);
 
 
             //LinkRootCause();
@@ -49,6 +51,9 @@ namespace CSharpDemo.IcMTest
             //{
             //    threads[i].Join();
             //}
+
+            //EditIncidentCustomFields();
+            GetIncidentTeamCustomField(110867568);
         }
         static void OneThread()
         {
@@ -156,24 +161,24 @@ namespace CSharpDemo.IcMTest
             Console.WriteLine(responseString);
         }
 
-        class CustomFields
-        {
-            public List<CustomFieldGroup> CustomFieldGroups { get; set; }
-        }
-        class CustomFieldGroup
-        {
-            public string PublicId { get; set; }
-            public string ContainerId { get; set; }
-            public string GroupType { get; set; }
-            public List<CustomField> CustomFields { get; set; }
-        }
-        class CustomField
-        {
-            public string Name { get; set; }
-            public string DisplayName { get; set; }
-            public string Value { get; set; }
-            public string Type { get; set; }
-        }
+        //class CustomFields
+        //{
+        //    public List<CustomFieldGroup> CustomFieldGroups { get; set; }
+        //}
+        //class CustomFieldGroup
+        //{
+        //    public string PublicId { get; set; }
+        //    public string ContainerId { get; set; }
+        //    public string GroupType { get; set; }
+        //    public List<CustomField> CustomFields { get; set; }
+        //}
+        //class CustomField
+        //{
+        //    public string Name { get; set; }
+        //    public string DisplayName { get; set; }
+        //    public string Value { get; set; }
+        //    public string Type { get; set; }
+        //}
 
         public static void EditIncidentCustomFields()
         {
@@ -183,36 +188,37 @@ namespace CSharpDemo.IcMTest
             handler.ClientCertificates.Add(certificate);
             HttpClient client = new HttpClient(handler);
 
-            CustomField customField = new CustomField
-            {
-                Name = "DatasetId",
-                DisplayName = "Dataset Id",
-                Value = "Test",
-                Type = "ShortString"
-            };
-            CustomFieldGroup customFieldGroup = new CustomFieldGroup
-            {
-                PublicId = "00000000-0000-0000-0000-000000000000",
-                ContainerId = "54671",
-                GroupType = "Team",
-                CustomFields = new List<CustomField>()
-            };
-            customFieldGroup.CustomFields.Add(customField);
-            CustomFields customFields = new CustomFields
-            {
-                CustomFieldGroups = new List<CustomFieldGroup>()
-            };
-            customFields.CustomFieldGroups.Add(customFieldGroup);
+            //CustomField customField = new CustomField
+            //{
+            //    Name = "DatasetId",
+            //    DisplayName = "Dataset Id",
+            //    Value = "Test",
+            //    Type = "ShortString"
+            //};
+            //CustomFieldGroup customFieldGroup = new CustomFieldGroup
+            //{
+            //    PublicId = "00000000-0000-0000-0000-000000000000",
+            //    ContainerId = "54671",
+            //    GroupType = "Team",
+            //    CustomFields = new List<CustomField>()
+            //};
+            //customFieldGroup.CustomFields.Add(customField);
+            //CustomFields customFields = new CustomFields
+            //{
+            //    CustomFieldGroups = new List<CustomFieldGroup>()
+            //};
+            //customFields.CustomFieldGroups.Add(customFieldGroup);
 
-            List<CustomFieldGroup> customFieldGroups = new List<CustomFieldGroup>();
-            customFieldGroups.Add(customFieldGroup);
-            string myContent = JsonConvert.SerializeObject(customFields);
+            //List<CustomFieldGroup> customFieldGroups = new List<CustomFieldGroup>();
+            //customFieldGroups.Add(customFieldGroup);
+            //string myContent = JsonConvert.SerializeObject(customFields);
             //Console.WriteLine(myContent);
+
             byte[] buffer = System.Text.Encoding.UTF8.GetBytes(EditIncidentCustomFieldsContent);
             ByteArrayContent content = new ByteArrayContent(buffer);
             content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
-            HttpRequestMessage request = new HttpRequestMessage(new HttpMethod("PATCH"), "https://icm.ad.msft.net/api/cert/incidents(108097160)");
+            HttpRequestMessage request = new HttpRequestMessage(new HttpMethod("PATCH"), "https://icm.ad.msft.net/api/cert/incidents(109578527)");
             request.Content = content;
             content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
             HttpResponseMessage response = client.SendAsync(request).Result;
@@ -544,7 +550,6 @@ namespace CSharpDemo.IcMTest
 
         public static string GetIncident(long incidentId)
         {
-            //JavaScriptSerializer serializer = new JavaScriptSerializer();
             HttpWebResponse result;
             HttpWebRequest req;
             string json = null;
@@ -575,6 +580,60 @@ namespace CSharpDemo.IcMTest
                 }
                 Incident incident = JsonConvert.DeserializeObject<Incident>(json);
                 return json;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+                return null;
+            }
+        }
+
+        public static string GetIncidentTeamCustomField(long incidentId)
+        {
+            HttpWebResponse result;
+            HttpWebRequest req;
+            string json = null;
+            string url;
+
+            url = $@"https://icm.ad.msft.net/api/cert/incidents({incidentId})";
+            req = WebRequest.CreateHttp(url);
+            try
+            {
+                X509Certificate cert = GetCert("87a1331eac328ec321578c10ebc8cc4c356b005f");
+                if (cert == null)
+                {
+                    Console.WriteLine("cert is null");
+                    return "cert is null";
+                }
+                req.ClientCertificates.Add(cert);
+                // submit the request
+                result = (HttpWebResponse)req.GetResponse();
+
+                // read out the response stream as text
+                using (Stream data = result.GetResponseStream())
+                {
+                    if (data != null)
+                    {
+                        TextReader tr = new StreamReader(data);
+                        json = tr.ReadToEnd();
+                    }
+                }
+                Incident incident = JsonConvert.DeserializeObject<Incident>(json);
+                ICollection<CustomFieldGroup> customFieldGroups = incident.CustomFieldGroups;
+                foreach (CustomFieldGroup customFieldGroup in customFieldGroups)
+                {
+                    Console.WriteLine($"PublicId: {customFieldGroup.PublicId}");
+                    Console.WriteLine($"ContainerId: {customFieldGroup.ContainerId}");
+                    Console.WriteLine($"GroupType: {customFieldGroup.GroupType}");
+                    ICollection<CustomField> customFields = customFieldGroup.CustomFields;
+                    foreach (CustomField customField in customFields)
+                    {
+                        Console.WriteLine("{0}\t{1}\t{2}\t{3}", customField.Name, customField.DisplayName, customField.Value, customField.Type);
+                    }
+                    Console.WriteLine();
+                }
+
+                return "";
             }
             catch (Exception e)
             {

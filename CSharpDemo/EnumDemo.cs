@@ -27,6 +27,21 @@ namespace CSharpDemo
             Console.WriteLine((En)Enum.Parse(typeof(En), str));
             Console.WriteLine((En)Enum.Parse(typeof(En), "123"));
             Console.WriteLine((En)Enum.Parse(typeof(En), "1"));
+
+
+            // It is the reason of setting int 1, 2, 4, 8... for an enum: 
+            // We can combine multiple states with the "|" operator
+            EnumTest three = EnumTest.One | EnumTest.One | EnumTest.Two;
+
+            // If there is not [Flags] tab, here will print "3".
+            Console.WriteLine(three.ToString());
+            foreach (EnumTest e in Enum.GetValues(three.GetType()))
+            {
+                if (three.HasFlag(e))
+                {
+                    Console.WriteLine(e);
+                }
+            }
         }
     }
     public class TestClass
@@ -42,5 +57,15 @@ namespace CSharpDemo
         one = 1,
         two = 2,
         three = 3
+    }
+
+    // I think Flags tab is just make function ToString for this enum can return the string of enum not int.
+    [Flags]
+    public enum EnumTest
+    {
+        One = 1,
+        Two = 2,
+        Three = 4,
+        Four = 8
     }
 }
