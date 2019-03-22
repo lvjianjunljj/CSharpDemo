@@ -36,12 +36,9 @@ namespace CSharpDemo.FileOperation
             String line;
             while ((line = sr.ReadLine()) != null)
             {
-                string[] sps = line.Split(new char[] { '\t' });
-                if (sps.Length != 3 && (!sps[0].StartsWith("http")))
-                {
-                    Console.WriteLine(line);
-                }
-                l.Add(line.ToString());
+
+                Console.WriteLine(line);
+                l.Add(line);
             }
             sr.Close();
         }

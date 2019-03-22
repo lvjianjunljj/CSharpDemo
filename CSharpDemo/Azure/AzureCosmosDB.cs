@@ -54,10 +54,11 @@ namespace CSharpDemo.Azure
         {
             AzureCosmosDB azureCosmosDB = new AzureCosmosDB("DataCop", "AlertSettings");
             // Collation: asc and desc is ascending and descending
-            IList<JObject> list = azureCosmosDB.GetAllDocumentsInQueryAsync<JObject>(azureCosmosDB.collectionLink, new SqlQuerySpec(@"SELECT distinct c.suppressionMins FROM c")).Result;
+            IList<JObject> list = azureCosmosDB.GetAllDocumentsInQueryAsync<JObject>(azureCosmosDB.collectionLink, new SqlQuerySpec(@"SELECT distinct c.owningTeamId FROM c")).Result;
             foreach (JObject jObject in list)
             {
-                Console.WriteLine(jObject);
+                if (jObject["owningTeamId"] != null)
+                    Console.WriteLine(jObject["owningTeamId"]);
             }
         }
         public static void QueryTestDemo()
@@ -108,7 +109,7 @@ namespace CSharpDemo.Azure
                     'description': 'The description',
                     'timestamp': '2019-02-14T00:01:10.6699545Z',
                     'timestampTicks': 636856992706699500,
-                    'incidentId': 109578527,
+                    'incidentId': 109849040,
                     'routingId': 'IDEAs://datacop',
                     'owningTeamId': 'IDEAS\\IDEAsDataCop',
                     'environment': 'Dev'
