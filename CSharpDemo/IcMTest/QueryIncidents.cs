@@ -53,7 +53,8 @@ namespace CSharpDemo.IcMTest
             //}
 
             //EditIncidentCustomFields();
-            GetIncidentTeamCustomField(110867568);
+            //GetIncidentTeamCustomField(110867568);
+            GetIncident();
         }
         static void OneThread()
         {
@@ -656,7 +657,9 @@ namespace CSharpDemo.IcMTest
             //url = @"https://icm.ad.msft.net/api/cert/incidents?$filter=OwningTeamId eq 
             //    'IDEAS\IDEAsDataCopTest' and Id eq 108097160";
             string LastSyncTimeString = DateTime.UtcNow.AddHours(-20).ToString("s");
-            url = $@"https://icm.ad.msft.net/api/cert/incidents?$filter=OwningTeamId eq 'IDEAS\IDEAsDataCopTest' and Id eq 109578527 and ModifiedDate ge datetime'{LastSyncTimeString}'";
+            //url = $@"https://icm.ad.msft.net/api/cert/incidents?$filter=OwningTeamId eq 'IDEAS\IDEAsDataCopTest' and Id eq 112584043 and ModifiedDate ge datetime'{LastSyncTimeString}'";
+
+            url = $@"https://icm.ad.msft.net/api/cert/incidents?$filter=IncidentLocation/ServiceInstanceId eq 'DataCopAlertMicroService' and Status eq 'Active' and IncidentLocation/Environment eq 'PROD'";
             Console.WriteLine(url);
             //url = @"https://icm.ad.msft.net/api/cert/incidents(108097160)";
             //url = string.Format("https://{0}/api/cert/incidents({1})", "icm.ad.msft.net", id);
@@ -708,9 +711,15 @@ namespace CSharpDemo.IcMTest
                 //{
                 //    Console.WriteLine(inci.IncidentLocation.ServiceInstanceId);
                 //}
+
+                //Console.WriteLine(json);
                 JObject jsonObject = JObject.Parse(json);
                 List<Incident> i = JsonConvert.DeserializeObject<List<Incident>>(jsonObject["value"].ToString());
                 Console.WriteLine(i.Count);
+                foreach (Incident item in i)
+                {
+                    Console.WriteLine(item.Id);
+                }
                 return json;
             }
             catch (Exception e)

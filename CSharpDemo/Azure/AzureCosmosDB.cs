@@ -41,13 +41,14 @@ namespace CSharpDemo.Azure
     {
         public static void MainMethod()
         {
-            QueryAlertSettingDemo();
+            //QueryAlertSettingDemo();
             //QueryTestDemo();
             //UpdateTestDemo();
             //UpsertAlertDemoToDev();
             //UpsertTestDemoToCosmosDB();
             //UpsertDatasetDemoToDev();
             //UpsertDatcopScoreDemoToDev();
+            UpsertActiveAlertTrendToDev();
         }
 
         public static void QueryAlertSettingDemo()
@@ -179,6 +180,24 @@ namespace CSharpDemo.Azure
             DataCopScore dc = JsonConvert.DeserializeObject<DataCopScore>(datcopScoreDemoString);
 
             ResourceResponse<Document> resource2 = azureCosmosDB.UpsertDocumentAsync(dc).Result;
+        }
+
+        public static void UpsertActiveAlertTrendToDev()
+        {
+            AzureCosmosDB azureCosmosDB = new AzureCosmosDB("DataCop", "ActiveAlertTrend");
+            string dateStr = "2019-04-30 23:59:59";
+            DateTime d = DateTime.Now;
+            DateTime date = new DateTime(d.Year, d.Month + 1, 1).AddSeconds(-1);
+
+            string activeAlertTrendString =
+                "{" + 
+                    $@"'id': 'ActiveAlertTrend_{date.ToString("yyyyMM")}',
+                    'timeStamp': '{date}',
+                    'activeAlertCount': 45" + 
+                "}";
+            ActiveAlertTrend aat = JsonConvert.DeserializeObject<ActiveAlertTrend>(activeAlertTrendString);
+
+            ResourceResponse<Document> resource2 = azureCosmosDB.UpsertDocumentAsync(aat).Result;
         }
 
         // It is useless.
@@ -804,6 +823,24 @@ namespace CSharpDemo.Azure
 
     }
 
+    class ActiveAlertTrend
+    {
+        [JsonProperty(PropertyName = "id")]
+        public string Id
+        {
+            get; set;
+        }
+        [JsonProperty(PropertyName = "timeStamp")]
+        public DateTime TimeStamp
+        {
+            get; set;
+        }
+        [JsonProperty(PropertyName = "activeAlertCount")]
+        public long ActiveAlertCount
+        {
+            get; set;
+        }
+    }
     class DataCopScore
     {
         /// <summary>
