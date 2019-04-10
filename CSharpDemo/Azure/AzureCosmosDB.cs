@@ -185,8 +185,7 @@ namespace CSharpDemo.Azure
         public static void UpsertActiveAlertTrendToDev()
         {
             AzureCosmosDB azureCosmosDB = new AzureCosmosDB("DataCop", "ActiveAlertTrend");
-            string dateStr = "2019-04-30 23:59:59";
-            DateTime d = DateTime.Now;
+            DateTime d = DateTime.Now.AddMonths(-0);
             DateTime date = new DateTime(d.Year, d.Month + 1, 1).AddSeconds(-1);
 
             string activeAlertTrendString =
@@ -414,8 +413,10 @@ namespace CSharpDemo.Azure
             ISecretProvider secretProvider = KeyVaultSecretProvider.Instance;
 
             // for datacopdev
-            string endpoint = @"https://datacopdev.documents.azure.com:443/";
-            string key = secretProvider.GetSecretAsync("datacopdev", "CosmosDBAuthKey").Result;
+            string endpoint = @"https://datacopppe.documents.azure.com:443/";
+            string key = secretProvider.GetSecretAsync("DataCopPPE", "CosmosDBAuthKey").Result;
+            //key = "4OGFKJLdwmwEZd30rYOPcVeeWyhF9Ig7fb4tQPJoCMWGnfRVaCP17N0bBtFnGi7Nn7dIydvlmsVfRurvYZxVpw==";
+
             // for csharpmvcwebapicosmosdb
             //string endpoint = @"https://csharpmvcwebapicosmosdb.documents.azure.com:443/";
             //string key = secretProvider.GetSecretAsync("csharpmvcwebapikeyvault", "CosmosDBAuthKey").Result;

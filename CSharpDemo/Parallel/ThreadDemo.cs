@@ -84,6 +84,12 @@ namespace CSharpDemo.Parallel
         // The type of parameter must be object
         static void Run1(object i)
         {
+            //if ((int)i == 3)
+            //{
+            //    Thread.Sleep(1000);
+            //    //int b = 1 / ((int)i - 3);
+            //    throw new Exception("Test Exception!!!!");
+            //}
             Thread.Sleep(1000);
             Console.WriteLine($@"index1: {i}");
 
