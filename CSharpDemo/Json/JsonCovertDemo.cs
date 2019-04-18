@@ -13,6 +13,7 @@ namespace CSharpDemo.Json
         {
             Tex a = JsonConvert.DeserializeObject<Tex>("{'a':'b'}");
             Console.WriteLine(a.a);
+            Console.WriteLine(JsonConvert.SerializeObject(a));
         }
     }
 }

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using CSharpDemo.Application;
+using CSharpDemo.CosmosDBModel;
 using Microsoft.Azure.Documents;
 using Microsoft.Azure.Documents.Client;
 using Microsoft.Azure.Documents.Linq;
@@ -15,40 +16,36 @@ using Newtonsoft.Json.Linq;
 namespace CSharpDemo.Azure
 {
 
-    class AzureCosmosDBTestClass
-    {
-        [JsonProperty("Testa")]
-        public string TestA { get; set; } = "1234";
-        [JsonProperty("Testb")]
-        public string TestB { get; set; }
-        [JsonProperty("Testc")]
-        public string TestC { get; set; }
-        public bool ShouldSerializeTestC()
-        {
-            return this.TestC == "c";
-        }
-        [JsonProperty("Testd")]
-        private string TestD { get; set; } = "private testd";
-        [JsonProperty("id")]
-        public string Id { get; set; }
-        [JsonProperty("timestampTicks")]
-        public long TimestampTicks
-        {
-            get { return DateTime.UtcNow.Ticks; }
-        }
-    }
     class AzureCosmosDB
     {
         public static void MainMethod()
         {
+            UpdateAllAlertSettingsDemo();
             //QueryAlertSettingDemo();
+            //QueryAlertDemo();
             //QueryTestDemo();
             //UpdateTestDemo();
             //UpsertAlertDemoToDev();
             //UpsertTestDemoToCosmosDB();
             //UpsertDatasetDemoToDev();
             //UpsertDatcopScoreDemoToDev();
-            UpsertActiveAlertTrendToDev();
+            //UpsertActiveAlertTrendToDev();
+        }
+
+        public static void UpdateAllAlertSettingsDemo()
+        {
+            AzureCosmosDB azureCosmosDB = new AzureCosmosDB("DataCop", "AlertSettings");
+            // Collation: asc and desc is ascending and descending
+            IList<TestRunAlertSettings> list = azureCosmosDB.GetAllDocumentsInQueryAsync<TestRunAlertSettings>(azureCosmosDB.collectionLink, new SqlQuerySpec(@"SELECT * FROM c")).Result;
+            foreach (TestRunAlertSettings alert in list)
+            {
+                Console.WriteLine(alert.Id);
+                alert.ServiceCustomFieldNames = new string[] {"DatasetId",
+                                                            "AlertType",
+                                                            "DisplayInSurface",
+                                                            "BusinessOwner" };
+                ResourceResponse<Document> resource = azureCosmosDB.UpsertDocumentAsync(alert).Result;
+            }
         }
 
         public static void QueryAlertSettingDemo()
@@ -60,6 +57,18 @@ namespace CSharpDemo.Azure
             {
                 if (jObject["owningTeamId"] != null)
                     Console.WriteLine(jObject["owningTeamId"]);
+            }
+        }
+
+        public static void QueryAlertDemo()
+        {
+            AzureCosmosDB azureCosmosDB = new AzureCosmosDB("DataCop", "Alert");
+            // Collation: asc and desc is ascending and descending
+            IList<JObject> list = azureCosmosDB.GetAllDocumentsInQueryAsync<JObject>(azureCosmosDB.collectionLink,
+                new SqlQuerySpec(@"SELECT c.issuedOnDate AS aaaa, c.impactedDate AS bbbb, time(c.issuedOnDate), time(c.impactedDate) AS cccc FROM c")).Result;
+            foreach (JObject jObject in list)
+            {
+                Console.WriteLine(jObject);
             }
         }
         public static void QueryTestDemo()
@@ -189,10 +198,10 @@ namespace CSharpDemo.Azure
             DateTime date = new DateTime(d.Year, d.Month + 1, 1).AddSeconds(-1);
 
             string activeAlertTrendString =
-                "{" + 
+                "{" +
                     $@"'id': 'ActiveAlertTrend_{date.ToString("yyyyMM")}',
                     'timeStamp': '{date}',
-                    'activeAlertCount': 45" + 
+                    'activeAlertCount': 45" +
                 "}";
             ActiveAlertTrend aat = JsonConvert.DeserializeObject<ActiveAlertTrend>(activeAlertTrendString);
 
@@ -412,14 +421,10 @@ namespace CSharpDemo.Azure
         {
             ISecretProvider secretProvider = KeyVaultSecretProvider.Instance;
 
-            // for datacopdev
-            string endpoint = @"https://datacopppe.documents.azure.com:443/";
-            string key = secretProvider.GetSecretAsync("DataCopPPE", "CosmosDBAuthKey").Result;
-            //key = "4OGFKJLdwmwEZd30rYOPcVeeWyhF9Ig7fb4tQPJoCMWGnfRVaCP17N0bBtFnGi7Nn7dIydvlmsVfRurvYZxVpw==";
-
-            // for csharpmvcwebapicosmosdb
-            //string endpoint = @"https://csharpmvcwebapicosmosdb.documents.azure.com:443/";
-            //string key = secretProvider.GetSecretAsync("csharpmvcwebapikeyvault", "CosmosDBAuthKey").Result;
+            // "datacopdev", "datacopprod" or "csharpmvcwebapikeyvault"(csharpmvcwebapicosmosdb)
+            string keyVaultName = "ideasdatacopppe";
+            string endpoint = secretProvider.GetSecretAsync(keyVaultName, "CosmosDBEndPoint").Result;
+            string key = secretProvider.GetSecretAsync(keyVaultName, "CosmosDBAuthKey").Result;
 
             // https://docs.microsoft.com/en-us/azure/cosmos-db/performance-tips has more details.
             ConnectionPolicy connectionPolicy = new ConnectionPolicy()
@@ -667,458 +672,6 @@ namespace CSharpDemo.Azure
                 this.client.Dispose();
                 this.disposedValue = true;
             }
-        }
-    }
-    class Dataset
-    {
-        /// <summary>
-        /// Gets or sets the identifier.
-        /// </summary>
-        /// <value>The identifier.</value>
-        [JsonProperty(PropertyName = "id")]
-        public string Id { get; set; }
-
-        /// <summary>
-        /// Gets or sets the name.
-        /// </summary>
-        /// <value>The name.</value>
-        [JsonProperty(PropertyName = "name")]
-        public string Name { get; set; }
-
-        /// <summary>
-        /// Gets or sets the create time.
-        /// </summary>
-        /// <value>The create time.</value>
-        [JsonProperty(PropertyName = "createTime")]
-        public DateTime CreateTime { get; set; }
-
-        /// <summary>
-        /// Gets or sets the last modified time.
-        /// </summary>
-        /// <value>The last modified time.</value>
-        [JsonProperty(PropertyName = "lastModifiedTime")]
-        public DateTime LastModifiedTime { get; set; }
-
-        /// <summary>
-        /// Gets or sets the created by.
-        /// </summary>
-        /// <value>The created by.</value>
-        [JsonProperty(PropertyName = "createdBy")]
-        public string CreatedBy { get; set; }
-
-        /// <summary>
-        /// Gets or sets the last modified by.
-        /// </summary>
-        /// <value>The last modified by.</value>
-        [JsonProperty(PropertyName = "lastModifiedBy")]
-        public string LastModifiedBy { get; set; }
-
-        /// <summary>
-        /// Gets or sets the connection information.
-        /// </summary>
-        /// <value>The connection information.</value>
-        [JsonProperty(PropertyName = "connectionInfo")]
-        public JToken ConnectionInfo { get; set; }
-
-        // TODO - Possible enum value.
-
-        /// <summary>
-        /// Gets or sets the state.
-        /// </summary>
-        /// <value>The state.</value>
-        [JsonProperty(PropertyName = "state")]
-        public string State { get; set; }
-
-        /// <summary>
-        /// Gets or sets the data fabric.
-        /// </summary>
-        /// <value>The data fabric.</value>
-        [JsonProperty(PropertyName = "dataFabric")]
-        public string DataFabric { get; set; }
-
-        /// <summary>
-        /// Gets or sets the type.
-        /// </summary>
-        /// <value>The type.</value>
-        [JsonProperty(PropertyName = "type")]
-        public string Type { get; set; }
-
-        /// <summary>
-        /// Gets or sets the category.
-        /// </summary>
-        /// <value>The category.</value>
-        [JsonProperty(PropertyName = "category")]
-        public string Category { get; set; }
-
-        /// <summary>
-        /// Gets or sets the start date.
-        /// </summary>
-        /// <value>The start date.</value>
-        [JsonProperty(PropertyName = "startDate")]
-        public string StartDate { get; set; }
-
-        /// <summary>
-        /// Gets or sets the end date.
-        /// </summary>
-        /// <value>The end date.</value>
-        [JsonProperty(PropertyName = "endDate")]
-        public string EndDate { get; set; }
-
-        /// <summary>
-        /// Gets or sets the start serial number.
-        /// </summary>
-        /// <value>The start serial number.</value>
-        [JsonProperty(PropertyName = "startSerialNumber")]
-        public int? StartSerialNumber { get; set; }
-
-        /// <summary>
-        /// Gets or sets the end serial number.
-        /// </summary>
-        /// <value>The end serial number.</value>
-        [JsonProperty(PropertyName = "endSerialNumber")]
-        public int? EndSerialNumber { get; set; }
-
-        /// <summary>
-        /// Gets or sets the rolling window.
-        /// </summary>
-        /// <value>The rolling window.</value>
-        [JsonProperty(PropertyName = "rollingWindow")]
-        public TimeSpan? RollingWindow { get; set; }
-
-        /// <summary>
-        /// Gets or sets the grain.
-        /// </summary>
-        /// <value>The grain.</value>
-        [JsonProperty(PropertyName = "grain")]
-        public string Grain { get; set; }
-
-        /// <summary>
-        /// Gets or sets the sla.
-        /// </summary>
-        /// <value>The sla.</value>
-        [JsonProperty(PropertyName = "sla")]
-        public string SLA { get; set; }
-
-        /// <summary>
-        /// Gets or sets the schema.
-        /// </summary>
-        /// <value>The schema.</value>
-        [JsonProperty(PropertyName = "schema")]
-        public string Schema { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance is enabled.
-        /// </summary>
-        /// <value><c>true</c> if this instance is enabled; otherwise, <c>false</c>.</value>
-        [JsonProperty("isEnabled")]
-        public bool IsEnabled { get; set; }
-
-        /// <summary>
-        /// Gets or sets the children.
-        /// The list contains dataset Ids that the dataset depends on
-        /// </summary>
-        /// <value>The children.</value>
-        /// Hashset is not directly serialisable. Since the size of the list will be small, using list is fine here.
-        [JsonProperty("children")]
-        public List<string> Children { get; set; }
-
-    }
-
-    class ActiveAlertTrend
-    {
-        [JsonProperty(PropertyName = "id")]
-        public string Id
-        {
-            get; set;
-        }
-        [JsonProperty(PropertyName = "timeStamp")]
-        public DateTime TimeStamp
-        {
-            get; set;
-        }
-        [JsonProperty(PropertyName = "activeAlertCount")]
-        public long ActiveAlertCount
-        {
-            get; set;
-        }
-    }
-    class DataCopScore
-    {
-        /// <summary>
-        /// Gets the DataCopScore Id.
-        /// The Id should be a combination of DataCopScore Name and ScoreTime to make sure for each workload/metric at one ScoreTime, just has one score
-        /// </summary>
-        /// <value>The identifier.</value>
-        [JsonProperty(PropertyName = "id")]
-        public string Id
-        {
-            get; set;
-        }
-
-        /// <summary>
-        /// Gets or sets the DataCopScore name.
-        /// The name should be workload or metric name
-        /// </summary>
-        /// <value>The name.</value>
-        [JsonProperty("name")]
-        public string Name { get; set; }
-
-        /// <summary>
-        /// Gets or sets Id of the dataset against which the score is computed.
-        /// </summary>
-        /// <value>The dataset identifier.</value>
-        [JsonProperty("datasetId")]
-        public string DatasetId { get; set; }
-
-        /// <summary>
-        /// Gets or sets category of the dataset. Persisting this to optimize for
-        /// query performance and to avoid join while returning back
-        /// in REST APIs.
-        /// </summary>
-        /// <value>The dataset category.</value>
-        [JsonProperty("datasetCategory")]
-        public string DatasetCategory { get; set; }
-
-        /// <summary>
-        /// Gets or sets the scoreTime - the time when the DQ score is computed.
-        /// </summary>
-        /// <value>The score time.</value>
-        [JsonProperty(PropertyName = "scoreTime")]
-        public DateTime ScoreTime { get; set; }
-
-        /// <summary>
-        /// Gets or sets the score.
-        /// </summary>
-        /// <value>The score.</value>
-        [JsonProperty(PropertyName = "score")]
-        public double? Score { get; set; }
-
-        /// <summary>
-        /// Gets or sets the availability score.
-        /// </summary>
-        /// <value>The availability score.</value>
-        [JsonProperty(PropertyName = "availabilityScore")]
-        public double? AvailabilityScore { get; set; }
-
-        /// <summary>
-        /// Gets or sets the latency score.
-        /// </summary>
-        /// <value>The latency score.</value>
-        [JsonProperty(PropertyName = "latencyScore")]
-        public double? LatencyScore { get; set; }
-
-        /// <summary>
-        /// Gets or sets the completeness score.
-        /// </summary>
-        /// <value>The completeness score.</value>
-        [JsonProperty(PropertyName = "completenessScore")]
-        public double? CompletenessScore { get; set; }
-
-        /// <summary>
-        /// Gets or sets the correctness score.
-        /// </summary>
-        /// <value>The correctness score.</value>
-        [JsonProperty(PropertyName = "correctnessScore")]
-        public double? CorrectnessScore { get; set; }
-
-        /// <summary>
-        /// Gets or sets the test run ids.
-        /// </summary>
-        /// <value>The test run ids.</value>
-        [JsonProperty(PropertyName = "testRunIds")]
-        public List<string> TestRunIds { get; set; } = new List<string>();
-    }
-    public class TestRunAlert
-    {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="TestRunAlert" /> class.
-        /// Default ctor for Deserialize
-        /// </summary>
-        public TestRunAlert()
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="TestRunAlert"/> class.
-        /// </summary>
-        /// <param name="testRun">The test run.</param>
-
-        /// <summary>
-        /// Gets or sets the id of test run alert feed
-        /// Should be equal to the Guid of the test run, as one test run can only have one test run alert feed/type
-        /// </summary>
-        /// <value>The identifier.</value>
-        [JsonProperty("id")]
-        public Guid Id { get; set; }
-
-        /// <summary>
-        /// Gets or sets the alias of owning contact
-        /// </summary>
-        /// <value>The alias of owning contact.</value>
-        [JsonProperty(PropertyName = "owningContactAlias")]
-        public string OwningContactAlias { get; set; }
-        [JsonProperty(PropertyName = "description")]
-        public string Description { get; set; }
-        /// <summary>
-        /// Gets or sets the id for this test type
-        /// </summary>
-        /// <value>The dataset test identifier.</value>
-        [JsonProperty(PropertyName = "datasetTestId")]
-        public string DatasetTestId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the id for the dataset of this test
-        /// </summary>
-        /// <value>The dataset identifier.</value>
-        [JsonProperty(PropertyName = "datasetId")]
-        public string DatasetId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the alert setting id, equals the test id and used to get the alert settings
-        /// </summary>
-        /// <value>The alert setting identifier.</value>
-        [JsonProperty("alertSettingId")]
-        public string AlertSettingId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the severity.
-        /// </summary>
-        /// <value>The severity.</value>
-        [JsonProperty("severity")]
-        public int? Severity { get; set; }
-
-        /// <summary>
-        /// Gets or sets the title.
-        /// </summary>
-        /// <value>The title.</value>
-        [JsonProperty("title")]
-        public string Title { get; set; }
-
-        /// <summary>
-        /// Gets or sets the content shown in Surface
-        /// </summary>
-        /// <value>The content shown in Surface.</value>
-        [JsonProperty(PropertyName = "showInSurface")]
-        public string ShowInSurface { get; set; }
-
-        /// <summary>
-        /// Gets or sets the timestamp.
-        /// </summary>
-        /// <value>The timestamp.</value>
-        [JsonProperty("timestamp")]
-        public DateTime? Timestamp { get; set; }
-
-        /// <summary>
-        /// Gets the timestamp ticks.
-        /// </summary>
-        /// <value>The timestamp ticks.</value>
-        [JsonProperty("timestampTicks")]
-        public long TimestampTicks
-        {
-            get { return this.Timestamp.HasValue ? this.Timestamp.Value.Ticks : 0; }
-        }
-
-        /// <summary>
-        /// Gets or sets the issuedOnDate.
-        /// </summary>
-        /// <value>The issuedOnDate.</value>
-        [JsonProperty("issuedOnDate")]
-        public DateTime? IssuedOnDate { get; set; }
-
-        /// <summary>
-        /// Gets or sets the impactedDate.
-        /// </summary>
-        /// <value>The impactedDate.</value>
-        [JsonProperty("impactedDate")]
-        public DateTime? ImpactedDate { get; set; }
-
-        /// <summary>
-        /// Gets or sets the resolvedDate.
-        /// </summary>i
-        /// <value>The resolvedDate.</value>
-        [JsonProperty("resolvedDate")]
-        public DateTime? ResolvedDate { get; set; }
-
-        /// <summary>
-        /// Gets or sets the lastUpdateDate.
-        /// </summary>
-        /// <value>The lastUpdateDate.</value>
-        [JsonProperty("lastUpdateDate")]
-        public DateTime LastUpdateDate { get; set; }
-
-        /// <summary>
-        /// Gets or sets the lastUpdate content.
-        /// </summary>
-        /// <value>The lastUpdate content.</value>
-        [JsonProperty("lastUpdate")]
-        public string LastUpdate { get; set; }
-
-        /// <summary>
-        /// Gets or sets the last sync from IcM date.
-        /// </summary>
-        /// <value>The lastUpdateDate.</value>
-        [JsonProperty("lastSyncDate")]
-        public DateTime LastSyncDate { get; set; }
-
-        /// <summary>
-        /// Gets or sets the incident identifier.
-        /// </summary>
-        /// <value>The incident identifier.</value>
-        [JsonProperty("incidentId")]
-        public long? IncidentId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the routing identifier.
-        /// </summary>
-        /// <value>The routing identifier.</value>
-        [JsonProperty("routingId")]
-        public string RoutingId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the owning team identifier.
-        /// </summary>
-        /// <value>The owning team identifier.</value>
-        [JsonProperty("owningTeamId")]
-        public string OwningTeamId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the environment.
-        /// </summary>
-        /// <value>The environment.</value>
-        [JsonProperty("environment")]
-        public string Environment { get; set; }
-
-        /// <summary>
-        /// Gets or sets the alertStatus.
-        /// </summary>
-        /// <value>The alertStatus.</value>
-        [JsonProperty("alertStatus")]
-        public string AlertStatus { get; set; }
-
-        /// <summary>
-        /// Gets or sets the on call playbook link.
-        /// </summary>
-        /// <value>The on call playbook link.</value>
-        [JsonProperty("onCallPlaybookLink")]
-        public string OnCallPlaybookLink { get; set; }
-
-        /// <summary>
-        /// Gets or sets the datacop portal link.
-        /// </summary>
-        /// <value>The datacop portal link.</value>
-        [JsonProperty("dataCopPortalLink")]
-        public string DataCopPortalLink { get; set; }
-
-        /// <summary>
-        /// Returns a <see cref="string" /> that represents this instance.
-        /// </summary>
-        /// <returns>A <see cref="string" /> that represents this instance.</returns>
-        public override string ToString()
-        {
-            // For more info, see https://www.newtonsoft.com/json/help/html/T_Newtonsoft_Json_NullValueHandling.htm
-            JsonSerializerSettings jsonSerializerSettings = new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore };
-
-            return JsonConvert.SerializeObject(this, jsonSerializerSettings);
         }
     }
 }

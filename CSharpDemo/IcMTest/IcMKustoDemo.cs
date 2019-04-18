@@ -10,7 +10,7 @@ using System.Data;
  */
 namespace CSharpDemo.IcMTest
 {
-    class IcMKustoDemo  
+    class IcMKustoDemo
     {
         public static void MainMethod()
         {

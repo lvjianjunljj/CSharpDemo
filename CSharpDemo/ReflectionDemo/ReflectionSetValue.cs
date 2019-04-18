@@ -12,6 +12,7 @@ namespace CSharpDemo.ReflectionDemo
             PropertyInfo propertyInfo = type.GetProperty("A");
             propertyInfo.SetValue(t, "AAA");
             propertyInfo = type.GetProperty("B");
+            Console.WriteLine($"property value: {propertyInfo?.GetValue(t)}");
             if (propertyInfo == null)
             {
                 Console.WriteLine(1234);

@@ -17,6 +17,7 @@ namespace CSharpDemo.Json
 
         [JsonProperty("Chinese Director")]
         public string Director { get; set; }
+        [JsonIgnore]
         public int ReleaseYear { get; set; }
     }
     // 创建一个Movie对象，然后指定JsonProperty，并添加Order属性。

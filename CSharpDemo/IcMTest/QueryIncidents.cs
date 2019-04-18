@@ -660,7 +660,7 @@ namespace CSharpDemo.IcMTest
             //url = $@"https://icm.ad.msft.net/api/cert/incidents?$filter=OwningTeamId eq 'IDEAS\IDEAsDataCopTest' and Id eq 112584043 and ModifiedDate ge datetime'{LastSyncTimeString}'";
 
             url = $@"https://icm.ad.msft.net/api/cert/incidents?$filter=IncidentLocation/ServiceInstanceId eq 'DataCopAlertMicroService' and Status eq 'Active' and IncidentLocation/Environment eq 'PROD'";
-            Console.WriteLine(url);
+            url = @"https://icm.ad.msft.net/api/cert/incidents?&$filter=OwningTeamId eq '<The SQL oncall team>' and ModifiedDate ge datetime'2019-04-11T15:24:41'";
             //url = @"https://icm.ad.msft.net/api/cert/incidents(108097160)";
             //url = string.Format("https://{0}/api/cert/incidents({1})", "icm.ad.msft.net", id);
 
@@ -726,6 +726,55 @@ namespace CSharpDemo.IcMTest
             {
                 Console.WriteLine(e.Message);
                 return null;
+            }
+        }
+
+        public IEnumerable<T> GetIncidentList<T>(string owningTeamId, DateTime cutOffTime)
+        {
+            string icMRESTAPIQueryByTeamUriTemplate = "https://icm.ad.msft.net/api/cert/incidents?&$filter=OwningTeamId eq '{0}' and ModifiedDate ge datetime'{1}'";
+            // build the URL we'll hit
+            string url = string.Format(icMRESTAPIQueryByTeamUriTemplate, owningTeamId, cutOffTime.ToString("s"));
+            while (url != null)
+            {
+                // create the request
+                HttpWebRequest req = WebRequest.CreateHttp(url);
+
+                // set url null first to avoid falling into an infinite loop
+                url = null;
+
+                // add in the cert we'll authenticate with
+
+                X509Certificate cert = GetCert("87a1331eac328ec321578c10ebc8cc4c356b005f");
+                if (cert == null)
+                {
+                    Console.WriteLine("cert is null");
+                }
+                req.ClientCertificates.Add(cert);
+
+                // submit the request
+                HttpWebResponse result = (HttpWebResponse)(req.GetResponseAsync().Result);
+
+                //TODO: Log the response status and request time usage to record the IcM OData API throttling strategy.
+
+                // read out the response stream as text
+                using (Stream data = result.GetResponseStream())
+                {
+                    if (data != null)
+                    {
+                        TextReader tr = new StreamReader(data);
+                        string json = tr.ReadToEnd();
+                        JObject jsonObject = JObject.Parse(json);
+                        List<T> incidentList = JsonConvert.DeserializeObject<List<T>>(jsonObject["value"].ToString());
+                        foreach (T incident in incidentList)
+                        {
+                            yield return incident;
+                        }
+                        if (jsonObject["odata.nextLink"] != null)
+                        {
+                            url = jsonObject["odata.nextLink"].ToString();
+                        }
+                    }
+                }
             }
         }
 
