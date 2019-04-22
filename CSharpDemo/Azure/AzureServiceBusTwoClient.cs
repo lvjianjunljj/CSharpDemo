@@ -60,7 +60,9 @@ namespace CSharpDemo.Azure
         }
         public static async Task ReceiveMainAsync()
         {
-            queueClient = new QueueClient(ServiceBusConnectionString, QueueName);
+            ISecretProvider secretProvider = KeyVaultSecretProvider.Instance;
+            string serviceBusConnectionString = secretProvider.GetSecretAsync(AzureCosmosDB.KeyVaultName, "ServiceBusConnectionString").Result;
+            queueClient = new QueueClient(serviceBusConnectionString, QueueName);
 
             Console.WriteLine("======================================================");
             Console.WriteLine("Press ENTER key to exit after receiving all the messages.");

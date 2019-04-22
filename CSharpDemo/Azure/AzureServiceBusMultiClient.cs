@@ -83,6 +83,8 @@ namespace CSharpDemo.Azure
 
         static async Task RegisterOnMessageHandlerAndReceiveMessages()
         {
+            ISecretProvider secretProvider = KeyVaultSecretProvider.Instance;
+            string serviceBusConnectionString = secretProvider.GetSecretAsync(AzureCosmosDB.KeyVaultName, "ServiceBusConnectionString").Result;
             // Configure the MessageHandler Options in terms of exception handling, number of concurrent messages to deliver etc.
             var messageHandlerOptions = new MessageHandlerOptions(ExceptionReceivedHandler)
             {
@@ -95,7 +97,7 @@ namespace CSharpDemo.Azure
                 AutoComplete = true
             };
 
-            IQueueClient queueClient = new QueueClient(ServiceBusConnectionString, QueueName);
+            IQueueClient queueClient = new QueueClient(serviceBusConnectionString, QueueName);
             // Register the function that will process messages
             queueClient.RegisterMessageHandler(ProcessMessagesAsync, messageHandlerOptions);
 
