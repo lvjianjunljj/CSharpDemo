@@ -1,5 +1,0 @@
-C:\Users\jianjlv\source\repos\CSharpDemo\CSharpDemoReferenceAux\bin\Debug\CSharpDemoReferenceAux.dll
-C:\Users\jianjlv\source\repos\CSharpDemo\CSharpDemoReferenceAux\bin\Debug\CSharpDemoReferenceAux.pdb
-C:\Users\jianjlv\source\repos\CSharpDemo\CSharpDemoReferenceAux\obj\Debug\CSharpDemoReferenceAux.csproj.CoreCompileInputs.cache
-C:\Users\jianjlv\source\repos\CSharpDemo\CSharpDemoReferenceAux\obj\Debug\CSharpDemoReferenceAux.dll
-C:\Users\jianjlv\source\repos\CSharpDemo\CSharpDemoReferenceAux\obj\Debug\CSharpDemoReferenceAux.pdb
