@@ -1,6 +1,6 @@
-﻿using Microsoft.Azure.ServiceBus;
+﻿using CSharpDemo.Application;
+using Microsoft.Azure.ServiceBus;
 using System;
-using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,13 +12,13 @@ namespace CSharpDemo.Azure
     //azureServiceBusMultiThread.ReceiveMainAsync().GetAwaiter().GetResult();
     class AzureServiceBusMultiThread
     {
-        const string ServiceBusConnectionString =
-            "Endpoint=sb://csharpmvcwebapiapplicationservicebus.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=92y+w4AKGK7NjnU/Xtrzgehqv7sm6JN9uLuauixI2pk=";
         const string QueueName = "queue_test_single_client";
         private IQueueClient queueClient;
         public AzureServiceBusMultiThread()
         {
-            queueClient = new QueueClient(ServiceBusConnectionString, QueueName);
+            ISecretProvider secretProvider = KeyVaultSecretProvider.Instance;
+            string serviceBusConnectionString = secretProvider.GetSecretAsync(AzureCosmosDB.KeyVaultName, "ServiceBusConnectionString").Result;
+            queueClient = new QueueClient(serviceBusConnectionString, QueueName);
         }
         public async Task SendMainAsync()
         {

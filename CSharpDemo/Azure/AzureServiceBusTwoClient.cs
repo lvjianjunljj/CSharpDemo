@@ -2,6 +2,7 @@
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using CSharpDemo.Application;
 using Microsoft.Azure.ServiceBus;
 
 namespace CSharpDemo.Azure
@@ -13,13 +14,13 @@ namespace CSharpDemo.Azure
         // AzureServiceBusTwoClient.ReceiveMainAsync().GetAwaiter().GetResult();
 
         public static int NumberOfMessages { set; get; }
-        const string ServiceBusConnectionString =
-            "Endpoint=sb://csharpmvcwebapiapplicationservicebus.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=92y+w4AKGK7NjnU/Xtrzgehqv7sm6JN9uLuauixI2pk=";
         const string QueueName = "queue_test_multi_client";
         static IQueueClient queueClient;
         public static async Task SendMainAsync()
         {
-            queueClient = new QueueClient(ServiceBusConnectionString, QueueName);
+            ISecretProvider secretProvider = KeyVaultSecretProvider.Instance;
+            string serviceBusConnectionString = secretProvider.GetSecretAsync(AzureCosmosDB.KeyVaultName, "ServiceBusConnectionString").Result;
+            queueClient = new QueueClient(serviceBusConnectionString, QueueName);
 
             Console.WriteLine("======================================================");
             Console.WriteLine("Press ENTER key to exit after sending all the messages.");

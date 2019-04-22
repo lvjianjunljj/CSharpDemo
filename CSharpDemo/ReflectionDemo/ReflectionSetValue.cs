@@ -1,11 +1,12 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Reflection;
 
 namespace CSharpDemo.ReflectionDemo
 {
     class ReflectionSetValue
     {
-        static void MainMethod()
+        public static void MainMethod()
         {
             Test t = new Test();
             Type type = t.GetType();
@@ -24,15 +25,17 @@ namespace CSharpDemo.ReflectionDemo
             propertyInfo = type.GetProperty("C");
             propertyInfo.SetValue(t, Convert.ChangeType("1", propertyInfo.PropertyType));
             propertyInfo = type.GetProperty("Enu");
-            if (propertyInfo.PropertyType.IsEnum)
-            {
-                // Cannot convert string to Enum with Convert.ChangeType function.
-                propertyInfo.SetValue(t, Enum.Parse(propertyInfo.PropertyType, "One"));
-            }
-            else
-            {
-                propertyInfo.SetValue(t, Convert.ChangeType("One", propertyInfo.PropertyType));
-            }
+            //if (propertyInfo.PropertyType.IsEnum)
+            //{
+            //    // Cannot convert string to Enum with Convert.ChangeType function.
+            //    propertyInfo.SetValue(t, Enum.Parse(propertyInfo.PropertyType, "One"));
+            //}
+            //else
+            //{
+            //    propertyInfo.SetValue(t, Convert.ChangeType("One", propertyInfo.PropertyType));
+            //}
+            propertyInfo?.SetValue(t, TypeDescriptor.GetConverter(propertyInfo.PropertyType).ConvertFromString("Two"));
+
             Console.WriteLine(t.A);
             Console.WriteLine(t.Enu);
             Console.WriteLine(t.C);
@@ -46,6 +49,7 @@ namespace CSharpDemo.ReflectionDemo
     }
     enum EnumClass
     {
+        Zero = 0,
         One = 1,
         Two = 2,
         Four = 4

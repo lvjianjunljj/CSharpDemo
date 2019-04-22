@@ -1,4 +1,5 @@
-﻿using Microsoft.Azure.ServiceBus;
+﻿using CSharpDemo.Application;
+using Microsoft.Azure.ServiceBus;
 using System;
 using System.Text;
 using System.Threading;
@@ -13,13 +14,13 @@ namespace CSharpDemo.Azure
     class AzureServiceBusSingleClient
     {
 
-        const string ServiceBusConnectionString =
-            "Endpoint=sb://csharpmvcwebapiapplicationservicebus.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=92y+w4AKGK7NjnU/Xtrzgehqv7sm6JN9uLuauixI2pk=";
         const string QueueName = "queue_test_single_client";
         private IQueueClient queueClient;
         public AzureServiceBusSingleClient()
         {
-            queueClient = new QueueClient(ServiceBusConnectionString, QueueName);
+            ISecretProvider secretProvider = KeyVaultSecretProvider.Instance;
+            string serviceBusConnectionString = secretProvider.GetSecretAsync(AzureCosmosDB.KeyVaultName, "ServiceBusConnectionString").Result;
+            queueClient = new QueueClient(serviceBusConnectionString, QueueName);
         }
 
         public int NumberOfMessages { set; get; }

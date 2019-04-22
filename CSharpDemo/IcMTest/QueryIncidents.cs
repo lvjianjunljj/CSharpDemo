@@ -659,8 +659,8 @@ namespace CSharpDemo.IcMTest
             string LastSyncTimeString = DateTime.UtcNow.AddHours(-20).ToString("s");
             //url = $@"https://icm.ad.msft.net/api/cert/incidents?$filter=OwningTeamId eq 'IDEAS\IDEAsDataCopTest' and Id eq 112584043 and ModifiedDate ge datetime'{LastSyncTimeString}'";
 
-            url = $@"https://icm.ad.msft.net/api/cert/incidents?$filter=IncidentLocation/ServiceInstanceId eq 'DataCopAlertMicroService' and Status eq 'Active' and IncidentLocation/Environment eq 'PROD'";
-            url = @"https://icm.ad.msft.net/api/cert/incidents?&$filter=OwningTeamId eq '<The SQL oncall team>' and ModifiedDate ge datetime'2019-04-11T15:24:41'";
+            url = $@"https://icm.ad.msft.net/api/cert/incidents?$filter=IncidentLocation/ServiceInstanceId eq 'DataCopAlertMicroService' and Status eq 'Active' and IncidentLocation/Environment eq 'prod'";
+            //url = @"https://icm.ad.msft.net/api/cert/incidents?&$filter=OwningTeamId eq '<The SQL oncall team>' and ModifiedDate ge datetime'2019-04-11T15:24:41'";
             //url = @"https://icm.ad.msft.net/api/cert/incidents(108097160)";
             //url = string.Format("https://{0}/api/cert/incidents({1})", "icm.ad.msft.net", id);
 

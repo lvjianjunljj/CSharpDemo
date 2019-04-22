@@ -3,6 +3,7 @@ using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -25,8 +26,12 @@ namespace CSharpDemo
 
             string str = "one";
             Console.WriteLine((En)Enum.Parse(typeof(En), str));
-            Console.WriteLine((En)Enum.Parse(typeof(En), "123"));
+            Console.WriteLine((En)Enum.Parse(typeof(En), "12"));
             Console.WriteLine((En)Enum.Parse(typeof(En), "1"));
+
+            // We cant convert string to enum using Convert.ChangeType function but can use TypeDescriptor.GetConverter function.
+            //Console.WriteLine(Convert.ChangeType(str, typeof(En)));
+            Console.WriteLine((En)TypeDescriptor.GetConverter(typeof(En)).ConvertFromString(str));
 
 
             // It is the reason of setting int 1, 2, 4, 8... for an enum: 
@@ -52,11 +57,13 @@ namespace CSharpDemo
         public En EN3 { get; set; }
 
     }
+
+    [DefaultValue(En.two)]
     public enum En
     {
-        one = 1,
-        two = 2,
-        three = 3
+        one = 0,
+        two,
+        three
     }
 
     // I think Flags tab is just make function ToString for this enum can return the string of enum not int.

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -15,18 +14,18 @@ using Newtonsoft.Json.Linq;
 
 namespace CSharpDemo.Azure
 {
-
     class AzureCosmosDB
     {
+        // "datacopdev", "datacopprod" or "csharpmvcwebapikeyvault"(csharpmvcwebapicosmosdb)
+        public static string KeyVaultName = "csharpmvcwebapikeyvault";
         public static void MainMethod()
         {
-            UpdateAllAlertSettingsDemo();
+            //UpdateAllAlertSettingsDemo();
             //QueryAlertSettingDemo();
             //QueryAlertDemo();
             //QueryTestDemo();
-            //UpdateTestDemo();
             //UpsertAlertDemoToDev();
-            //UpsertTestDemoToCosmosDB();
+            UpsertTestDemoToCosmosDB();
             //UpsertDatasetDemoToDev();
             //UpsertDatcopScoreDemoToDev();
             //UpsertActiveAlertTrendToDev();
@@ -44,6 +43,7 @@ namespace CSharpDemo.Azure
                                                             "AlertType",
                                                             "DisplayInSurface",
                                                             "BusinessOwner" };
+                alert.ContainerPublicId = new Guid("965b31d9-e7e4-45bf-85d3-39810e289096");
                 ResourceResponse<Document> resource = azureCosmosDB.UpsertDocumentAsync(alert).Result;
             }
         }
@@ -82,12 +82,14 @@ namespace CSharpDemo.Azure
             }
         }
 
+        // This function is useless and we abandon it.
         public static void UpdateTestDemo()
         {
             AzureCosmosDBTestClass t = new AzureCosmosDBTestClass();
             t.TestA = "AAAA";
-            t.Id = "1235";
+            t.Id = "1111";
             AzureCosmosDB azureCosmosDB = new AzureCosmosDB("CosmosDBTest", "TestCollectionId");
+
             string updateResult = azureCosmosDB.UpdateTestDemo(t.Id, t).Result;
             Console.WriteLine(updateResult);
         }
@@ -99,8 +101,8 @@ namespace CSharpDemo.Azure
             AzureCosmosDBTestClass t = new AzureCosmosDBTestClass();
             t.TestA = "a";
             t.TestB = "b";
-            t.TestC = "c";
-            t.Id = "1235";
+            t.TestC = "cc";
+            t.Id = "1111";
 
             ResourceResponse<Document> resource = azureCosmosDB.UpsertDocumentAsync(t).Result;
         }
@@ -421,10 +423,8 @@ namespace CSharpDemo.Azure
         {
             ISecretProvider secretProvider = KeyVaultSecretProvider.Instance;
 
-            // "datacopdev", "datacopprod" or "csharpmvcwebapikeyvault"(csharpmvcwebapicosmosdb)
-            string keyVaultName = "ideasdatacopppe";
-            string endpoint = secretProvider.GetSecretAsync(keyVaultName, "CosmosDBEndPoint").Result;
-            string key = secretProvider.GetSecretAsync(keyVaultName, "CosmosDBAuthKey").Result;
+            string endpoint = secretProvider.GetSecretAsync(AzureCosmosDB.KeyVaultName, "CosmosDBEndPoint").Result;
+            string key = secretProvider.GetSecretAsync(AzureCosmosDB.KeyVaultName, "CosmosDBAuthKey").Result;
 
             // https://docs.microsoft.com/en-us/azure/cosmos-db/performance-tips has more details.
             ConnectionPolicy connectionPolicy = new ConnectionPolicy()

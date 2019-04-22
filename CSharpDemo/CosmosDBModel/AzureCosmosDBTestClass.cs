@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace CSharpDemo.CosmosDBModel
 {
-    public class AzureCosmosDBTestClass
+    public class AzureCosmosDBTestClass : TestParentClass
     {
         [JsonProperty("Testa")]
         public string TestA { get; set; } = "1234";
@@ -28,5 +28,10 @@ namespace CSharpDemo.CosmosDBModel
         {
             get { return DateTime.UtcNow.Ticks; }
         }
+    }
+    public class TestParentClass
+    {
+        [JsonProperty("TestParent")]
+        private string TestParent { get; set; } = "private parent property";
     }
 }

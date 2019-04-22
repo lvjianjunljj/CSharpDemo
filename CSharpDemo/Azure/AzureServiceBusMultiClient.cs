@@ -1,4 +1,5 @@
-﻿using Microsoft.Azure.ServiceBus;
+﻿using CSharpDemo.Application;
+using Microsoft.Azure.ServiceBus;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,8 +15,6 @@ namespace CSharpDemo.Azure
         //AzureServiceBusMultiClient.SendMainAsync().GetAwaiter().GetResult();
         //AzureServiceBusMultiClient.ReceiveMainAsync().GetAwaiter().GetResult();
 
-        const string ServiceBusConnectionString =
-            "Endpoint=sb://csharpmvcwebapiapplicationservicebus.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=92y+w4AKGK7NjnU/Xtrzgehqv7sm6JN9uLuauixI2pk=";
         const string QueueName = "queue_test_multi_client";
 
         public static int NumberOfMessages { get; set; }
@@ -32,6 +31,8 @@ namespace CSharpDemo.Azure
         }
         static async Task SendMessagesAsync()
         {
+            ISecretProvider secretProvider = KeyVaultSecretProvider.Instance;
+            string serviceBusConnectionString = secretProvider.GetSecretAsync(AzureCosmosDB.KeyVaultName, "ServiceBusConnectionString").Result;
             try
             {
                 for (var i = 0; i < NumberOfMessages; i++)
@@ -39,7 +40,7 @@ namespace CSharpDemo.Azure
                     DateTime beforDT = System.DateTime.Now;
 
                     //耗时巨大的代码
-                    IQueueClient queueClient = new QueueClient(ServiceBusConnectionString, QueueName);
+                    IQueueClient queueClient = new QueueClient(serviceBusConnectionString, QueueName);
 
                     DateTime afterDT = System.DateTime.Now;
                     TimeSpan ts = afterDT.Subtract(beforDT);

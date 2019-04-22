@@ -235,6 +235,7 @@
     <Compile Include="SqlSugarDemo.cs" />
     <Compile Include="Parallel\ThreadDemo.cs" />
     <Compile Include="StringDemo.cs" />
+    <Compile Include="TimerDemo.cs" />
     <Compile Include="WebUIHtmlControlsDemo.cs" />
     <Compile Include="FileOperation\WriteFile.cs" />
     <Compile Include="FileOperation\TaskFriend.cs" />
