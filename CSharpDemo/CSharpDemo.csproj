@@ -182,6 +182,7 @@
     <Compile Include="Azure\AzureSQLDatabase.cs" />
     <Compile Include="CmdHelper.cs" />
     <Compile Include="Constant.cs" />
+    <Compile Include="ConvertDemo.cs" />
     <Compile Include="CosmosDBModel\ActiveAlertTrend.cs" />
     <Compile Include="CosmosDBModel\AzureCosmosDBTestClass.cs" />
     <Compile Include="CosmosDBModel\DataCopScore.cs" />
