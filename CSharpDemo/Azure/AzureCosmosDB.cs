@@ -9,6 +9,7 @@ using CSharpDemo.CosmosDBModel;
 using Microsoft.Azure.Documents;
 using Microsoft.Azure.Documents.Client;
 using Microsoft.Azure.Documents.Linq;
+using Microsoft.IDEAs.DataCop.DataCopModelLib.Models.Alert;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -17,15 +18,15 @@ namespace CSharpDemo.Azure
     class AzureCosmosDB
     {
         // "datacopdev", "datacopprod" or "csharpmvcwebapikeyvault"(csharpmvcwebapicosmosdb)
-        public static string KeyVaultName = "csharpmvcwebapikeyvault";
+        public static string KeyVaultName = "datacopprod";
         public static void MainMethod()
         {
-            //UpdateAllAlertSettingsDemo();
+            UpdateAllAlertSettingsDemo();
             //QueryAlertSettingDemo();
             //QueryAlertDemo();
             //QueryTestDemo();
             //UpsertAlertDemoToDev();
-            UpsertTestDemoToCosmosDB();
+            //UpsertTestDemoToCosmosDB();
             //UpsertDatasetDemoToDev();
             //UpsertDatcopScoreDemoToDev();
             //UpsertActiveAlertTrendToDev();

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
 
 namespace CSharpDemo.ReflectionDemo
@@ -29,6 +30,7 @@ namespace CSharpDemo.ReflectionDemo
         public GenderEnum Gender { get; set; }
         private int Id { get; set; }
         protected bool IsAdmin { get; set; }
+        public IList<string> StringList { get; set; }
 
         /// <summary>
         /// 方法 Function
@@ -59,14 +61,14 @@ namespace CSharpDemo.ReflectionDemo
     }
     class ReflectionGetValue
     {
-        static void MainMethod(string[] args)
+        public static void MainMethod()
         {
             WorkerModel wm = new WorkerModel("name", 1, GenderEnum.Girl, true);
             wm.Name = "Name";
             wm.Gender = GenderEnum.Dog;
+            wm.StringList = new List<string>();
+            wm.StringList.Add("1234");
             GetPropertyInfo(wm);
-
-            Console.ReadKey();
         }
 
         // 字段信息

@@ -53,7 +53,7 @@ namespace CSharpDemo.IcMTest
             //}
 
             //EditIncidentCustomFields();
-            //GetIncidentTeamCustomField(110867568);
+            //GetIncidentTeamCustomField(116142489);
             GetIncident();
         }
         static void OneThread()
@@ -77,20 +77,23 @@ namespace CSharpDemo.IcMTest
             string EditIncidentDescriptionEntryContent = @"
                 {
                   'NewDescriptionEntry' : { 
-                    'Text' : 'add new description entry test', 
+                    'Text' : 'TestRun Alert XXXX suppressed', 
                     'RenderType' : 'Html',
                     'Cause' : 'Transferred'
-                  }
+                  },
+                   'Summary' : 'Summary Test'
                 }";
             NewDescriptionEntry newDescriptionEntry = new NewDescriptionEntry
             {
                 Text = "add new descriptionEntry",
-
+                RenderType = DescriptionTextRenderType.Html,
+                Cause = DescriptionEntryCause.Edited
             };
             Incident editIncident = new Incident
             {
                 NewDescriptionEntry = newDescriptionEntry,
-                Status = IncidentStatus.Active
+                //Status = IncidentStatus.Active
+                HitCount = 3
             };
 
             //Dictionary<string, NewDescriptionEntry> descriptionEntryDict = new Dictionary<string, NewDescriptionEntry>();
@@ -98,15 +101,15 @@ namespace CSharpDemo.IcMTest
             //JsonSerializerSettings jsonSerializerSettings = new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore };
             //string EditIncidentDescriptionEntryContent = JsonConvert.SerializeObject(descriptionEntryDict, jsonSerializerSettings).ToString();
 
-
             Console.WriteLine(EditIncidentDescriptionEntryContent);
             // Must set the certificate in current machine.
             X509Certificate2 certificate = GetCert("87a1331eac328ec321578c10ebc8cc4c356b005f");
 
-            string url = "https://icm.ad.msft.net/api/cert/incidents(108097160)";
+            string url = "https://icm.ad.msft.net/api/cert/incidents(116142489)";
             HttpWebRequest req = WebRequest.CreateHttp(url);
             req.ClientCertificates.Add(certificate);
             req.Method = "PATCH";
+
 
             byte[] buffer = Encoding.UTF8.GetBytes(EditIncidentDescriptionEntryContent);
 
@@ -652,22 +655,29 @@ namespace CSharpDemo.IcMTest
             string url;
 
             // build the URL we'll hit
-            // "icm.ad.msft.net" is the OdataServiceBaseUri
-            //url = string.Format("https://{0}/api/cert/incidents({1})", "icm.ad.msoppe.msft.net", id);
-            //url = @"https://icm.ad.msft.net/api/cert/incidents?$filter=OwningTeamId eq 
-            //    'IDEAS\IDEAsDataCopTest' and Id eq 108097160";
             string LastSyncTimeString = DateTime.UtcNow.AddHours(-20).ToString("s");
             //url = $@"https://icm.ad.msft.net/api/cert/incidents?$filter=OwningTeamId eq 'IDEAS\IDEAsDataCopTest' and Id eq 112584043 and ModifiedDate ge datetime'{LastSyncTimeString}'";
 
             url = $@"https://icm.ad.msft.net/api/cert/incidents?$filter=IncidentLocation/ServiceInstanceId eq 'DataCopAlertMicroService' and Status eq 'Active' and IncidentLocation/Environment eq 'prod'";
+
+            // "icm.ad.msft.net" is the OdataServiceBaseUri
+            //url = string.Format("https://{0}/api/cert/incidents({1})", "icm.ad.msoppe.msft.net", id);
+
+            //url = @"https://icm.ad.msft.net/api/cert/incidents?$filter=OwningTeamId eq 'IDEAS\IDEAsDataCopTest' and Id eq 108097160";
+
+
             //url = @"https://icm.ad.msft.net/api/cert/incidents?&$filter=OwningTeamId eq '<The SQL oncall team>' and ModifiedDate ge datetime'2019-04-11T15:24:41'";
-            //url = @"https://icm.ad.msft.net/api/cert/incidents(108097160)";
+
+            url = @"https://icm.ad.msft.net/api/cert/incidents(116550556)";
+
             //url = string.Format("https://{0}/api/cert/incidents({1})", "icm.ad.msft.net", id);
 
             //url = @"https://icm.ad.msft.net/api/cert/incidents?$filter=OwningTeamId eq 'IDEAS\IDEAsDataCopTest' and 
             //    CustomFieldGroups/any(cfg:cfg/CustomFields/any
             //    (cf:cf/Name eq 'DatasetId' and cf/Type eq 'ShortString' and cf/Value eq 'Test')
             //    ) and  Status eq 'RESOLVED'";
+
+
 
             // create the request
             req = WebRequest.CreateHttp(url);
@@ -694,6 +704,7 @@ namespace CSharpDemo.IcMTest
                         json = tr.ReadToEnd();
                     }
                 }
+                Console.WriteLine(json);
                 //Console.WriteLine(json);
                 // deserialize it into an incident object
                 //Incident incident = serializer.Deserialize<Incident>(json);

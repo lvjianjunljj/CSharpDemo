@@ -18,13 +18,13 @@ namespace CSharpDemo
             //AzureCosmosDB.MainMethod();
 
             TestClass t = new TestClass();
-            t.EN1 = En.one;
+            t.EN1 = En.ONE;
             t.EN2 = En.two;
             t.EN3 = En.three;
             JObject j = JObject.FromObject(t);
             Console.WriteLine(j.ToString());
 
-            string str = "one";
+            string str = "One";
             Console.WriteLine((En)Enum.Parse(typeof(En), str));
             Console.WriteLine((En)Enum.Parse(typeof(En), "12"));
             Console.WriteLine((En)Enum.Parse(typeof(En), "1"));
@@ -61,7 +61,8 @@ namespace CSharpDemo
     [DefaultValue(En.two)]
     public enum En
     {
-        one = 0,
+        ONE,
+        One,
         two,
         three
     }

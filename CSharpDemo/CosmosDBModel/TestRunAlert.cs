@@ -1,12 +1,26 @@
-﻿using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace CSharpDemo.CosmosDBModel
+﻿// ***********************************************************************
+// Assembly         : Microsoft.Ideas.Common.DataCopModelLib
+// Author           : alolivar
+// Created          : 02-05-2019
+//
+// Last Modified By : alolivar
+// Last Modified On : 02-05-2019
+// ***********************************************************************
+// <copyright file="TestRunAlert.cs" company="Microsoft Corporation">
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// </copyright>
+// <summary></summary>
+// ***********************************************************************
+namespace Microsoft.IDEAs.DataCop.DataCopModelLib.Models.Alert
 {
+    using System;
+    using System.Reflection;
+    using Newtonsoft.Json;
+    using Newtonsoft.Json.Converters;
+
+    /// <summary>
+    /// Class TestRunAlert.
+    /// </summary>
     public class TestRunAlert
     {
         /// <summary>
@@ -18,11 +32,6 @@ namespace CSharpDemo.CosmosDBModel
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="TestRunAlert"/> class.
-        /// </summary>
-        /// <param name="testRun">The test run.</param>
-
-        /// <summary>
         /// Gets or sets the id of test run alert feed
         /// Should be equal to the Guid of the test run, as one test run can only have one test run alert feed/type
         /// </summary>
@@ -31,13 +40,35 @@ namespace CSharpDemo.CosmosDBModel
         public Guid Id { get; set; }
 
         /// <summary>
+        /// Gets or sets the status.
+        /// </summary>
+        /// <value>The status.</value>
+        [JsonProperty("status")]
+        public string Status { get; set; }
+
+        /// <summary>
+        /// Gets or sets the alertType.
+        /// We will save this message in service level CustomField in IcM with name "AlertType".
+        /// </summary>
+        /// <value>The status.</value>
+        [JsonProperty("alertType")]
+        public string AlertType { get; set; }
+
+        /// <summary>
         /// Gets or sets the alias of owning contact
         /// </summary>
         /// <value>The alias of owning contact.</value>
         [JsonProperty(PropertyName = "owningContactAlias")]
         public string OwningContactAlias { get; set; }
-        [JsonProperty(PropertyName = "description")]
-        public string Description { get; set; }
+
+        /// <summary>
+        /// Gets or sets the business owner
+        /// We will save this message in service level CustomField in IcM with name "BusinessOwner".
+        /// </summary>
+        /// <value>The business owner</value>
+        [JsonProperty(PropertyName = "businessOwner")]
+        public string BusinessOwner { get; set; }
+
         /// <summary>
         /// Gets or sets the id for this test type
         /// </summary>
@@ -46,11 +77,26 @@ namespace CSharpDemo.CosmosDBModel
         public string DatasetTestId { get; set; }
 
         /// <summary>
+        /// Gets or sets the test category for the dataset
+        /// </summary>
+        /// <value>The dataset test category.</value>
+        [JsonProperty(PropertyName = "testCategory")]
+        public string TestCategory { get; set; }
+
+        /// <summary>
         /// Gets or sets the id for the dataset of this test
+        /// We will save this message in service level CustomField in IcM with name "DatasetId".
         /// </summary>
         /// <value>The dataset identifier.</value>
         [JsonProperty(PropertyName = "datasetId")]
         public string DatasetId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name for the dataset of this test
+        /// </summary>
+        /// <value>The dataset name.</value>
+        [JsonProperty(PropertyName = "datasetName")]
+        public string DatasetName { get; set; }
 
         /// <summary>
         /// Gets or sets the alert setting id, equals the test id and used to get the alert settings
@@ -58,6 +104,20 @@ namespace CSharpDemo.CosmosDBModel
         /// <value>The alert setting identifier.</value>
         [JsonProperty("alertSettingId")]
         public string AlertSettingId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the target icm container publicId.
+        /// </summary>
+        /// <value>The target icm container publicId.</value>
+        [JsonProperty("containerPublicId")]
+        public Guid ContainerPublicId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the service level custom field name list.
+        /// </summary>
+        /// <value>The service level custom field name list.</value>
+        [JsonProperty("serviceCustomFieldNames")]
+        public string[] ServiceCustomFieldNames { get; set; }
 
         /// <summary>
         /// Gets or sets the severity.
@@ -74,11 +134,19 @@ namespace CSharpDemo.CosmosDBModel
         public string Title { get; set; }
 
         /// <summary>
-        /// Gets or sets the content shown in Surface
+        /// Gets or sets the testRun id.
+        /// </summary>
+        /// <value>The testRunId.</value>
+        [JsonProperty("testRunId")]
+        public string TestRunId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the content shown in Surface.
+        /// We will save this message in service level CustomField in IcM with name "DisplayInSurface".
         /// </summary>
         /// <value>The content shown in Surface.</value>
-        [JsonProperty(PropertyName = "showInSurface")]
-        public string ShowInSurface { get; set; }
+        [JsonProperty(PropertyName = "displayInSurface")]
+        public string DisplayInSurface { get; set; }
 
         /// <summary>
         /// Gets or sets the timestamp.
@@ -103,6 +171,13 @@ namespace CSharpDemo.CosmosDBModel
         /// <value>The issuedOnDate.</value>
         [JsonProperty("issuedOnDate")]
         public DateTime? IssuedOnDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the acknowledgeDate.
+        /// </summary>
+        /// <value>The acknowledgeDate.</value>
+        [JsonProperty("acknowledgeDate")]
+        public DateTime? AcknowledgeDate { get; set; }
 
         /// <summary>
         /// Gets or sets the impactedDate.
