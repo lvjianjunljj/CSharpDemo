@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using Newtonsoft.Json;
@@ -10,18 +11,18 @@ namespace CSharpDemo
     {
         public static void MainMethod()
         {
-            ConvertDemo p = new ConvertDemo();
-            p.array = new string[] { "1234", "1234" };
-            p.list = new List<string>();
-            p.list.Add("1234");
-            Console.WriteLine(JsonConvert.DeserializeObject<IList<string>>(JsonConvert.SerializeObject(p.list)));
-            Console.WriteLine(JsonConvert.DeserializeObject<object[]>(JsonConvert.SerializeObject(p.array)));
+            ConvertDemo convertDemo = new ConvertDemo();
+            convertDemo.array = new string[] { "1234", "1234" };
+            convertDemo.list = new List<string>();
+            convertDemo.list.Add("1234");
+            Console.WriteLine(JsonConvert.DeserializeObject<IList<string>>(JsonConvert.SerializeObject(convertDemo.list)));
+            Console.WriteLine(JsonConvert.DeserializeObject<object[]>(JsonConvert.SerializeObject(convertDemo.array)));
 
 
             try
             {
-                Console.WriteLine(TypeDescriptor.GetConverter(p.array.GetType()).ConvertFromString(JsonConvert.SerializeObject(p.array)));
-                Console.WriteLine(TypeDescriptor.GetConverter(p.list.GetType()).ConvertFromString(JsonConvert.SerializeObject(p.list)));
+                Console.WriteLine(TypeDescriptor.GetConverter(convertDemo.array.GetType()).ConvertFromString(JsonConvert.SerializeObject(convertDemo.array)));
+                Console.WriteLine(TypeDescriptor.GetConverter(convertDemo.list.GetType()).ConvertFromString(JsonConvert.SerializeObject(convertDemo.list)));
             }
             catch (Exception e)
             {
@@ -32,44 +33,38 @@ namespace CSharpDemo
 
 
 
-            //Type type = typeof(Foo); // possibly from a string
-            //IList list = (IList)Activator.CreateInstance(
-            //    typeof(List<>).MakeGenericType(type));
+            Type type = typeof(Foo); // possibly from a string
+            IList list = (IList)Activator.CreateInstance(
+                typeof(List<>).MakeGenericType(type));
 
-            //object obj = Activator.CreateInstance(type);
-            //type.GetProperty("Bar").SetValue(obj, "abc", null);
-            //list.Add(obj);
-            //Console.WriteLine(list);
-
-
-            //string json = "{\"Id\":1,\"Name\":\"刘备\",\"Age\":\"22\"}";
-            ////此处模拟在不建实体类的情况下，反转将json返回回dynamic对象
-            //dynamic DynamicObject = JsonConvert.DeserializeObject<dynamic>(json);
-            //Console.WriteLine(DynamicObject.Name);  //刘备
+            object obj = Activator.CreateInstance(type);
+            type.GetProperty("Bar").SetValue(obj, "abc", null);
+            list.Add(obj);
+            Console.WriteLine(list);
 
 
+            string json = "{\"Id\":1,\"Name\":\"Tom\",\"Age\":\"22\"}";
+            //此处模拟在不建实体类的情况下，反转将json返回回dynamic对象
+            dynamic DynamicObject = JsonConvert.DeserializeObject<dynamic>(json);
+            Console.WriteLine(DynamicObject.Name);  //Tom
 
 
 
-            //ReflectionSetValue.MainMethod();
-            //ReflectionGetValue.MainMethod();
 
 
+            convertDemo.list = new List<string>();
+            convertDemo.list.Add("1234");
+            convertDemo.list.Add("4321");
 
-            //Program p = new Program();
-            p.list = new List<string>();
-            p.list.Add("1234");
-            p.list.Add("4321");
-
-            string attrString = JToken.Parse(p.ToString())["list"].ToString();
+            string attrString = JToken.Parse(convertDemo.ToString())["list"].ToString();
             Console.WriteLine(attrString);
 
 
-            p.list = new List<string>();
+            convertDemo.list = new List<string>();
             JToken attrJToken = JToken.Parse(attrString);
-            p.list = attrJToken.ToObject<List<string>>();
-            Console.WriteLine(p.list[1]);
-            Console.WriteLine(p.GetType().GetProperty("list").PropertyType.IsArray);
+            convertDemo.list = attrJToken.ToObject<List<string>>();
+            Console.WriteLine(convertDemo.list[1]);
+            Console.WriteLine(convertDemo.GetType().GetProperty("list").PropertyType.IsArray);
 
 
 
