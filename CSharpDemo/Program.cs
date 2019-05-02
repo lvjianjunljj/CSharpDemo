@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using CSharpDemo.Azure;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -11,13 +12,13 @@ namespace CSharpDemo
         static void Main(string[] args)
         {
             //IcMKustoDemo.MainMethod();
-            //AzureCosmosDB.MainMethod();
+            AzureCosmosDB.MainMethod();
             //QueryIncidents.MainMethod();
 
             //ReferenceDemoAux referenceDemoAux = new ReferenceDemoAux();
             //referenceDemoAux.TestReferenceError();
 
-            ConvertDemo.MainMethod();
+            //ConvertDemo.MainMethod();
 
 
             Console.ReadKey();

@@ -18,7 +18,7 @@ namespace CSharpDemo.Azure
     class AzureCosmosDB
     {
         // "datacopdev", "datacopprod" or "csharpmvcwebapikeyvault"(csharpmvcwebapicosmosdb)
-        public static string KeyVaultName = "datacopprod";
+        public static string KeyVaultName = "csharpmvcwebapikeyvault";
         public static void MainMethod()
         {
             UpdateAllAlertSettingsDemo();
@@ -43,7 +43,9 @@ namespace CSharpDemo.Azure
                 alert.ServiceCustomFieldNames = new string[] {"DatasetId",
                                                             "AlertType",
                                                             "DisplayInSurface",
-                                                            "BusinessOwner" };
+                                                            "BusinessOwner",
+                                                            "ImpactedDates",
+                                                            "SuppressedAlertTestRunIds"};
                 alert.ContainerPublicId = new Guid("965b31d9-e7e4-45bf-85d3-39810e289096");
                 ResourceResponse<Document> resource = azureCosmosDB.UpsertDocumentAsync(alert).Result;
             }
