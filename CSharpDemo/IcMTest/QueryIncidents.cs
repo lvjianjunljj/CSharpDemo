@@ -52,7 +52,7 @@ namespace CSharpDemo.IcMTest
             //    threads[i].Join();
             //}
 
-            //EditIncidentCustomFields();
+            EditIncidentCustomFields();
             //GetIncidentTeamCustomField(116142489);
             GetIncident();
         }
@@ -191,32 +191,6 @@ namespace CSharpDemo.IcMTest
             X509Certificate2 certificate = GetCert("87a1331eac328ec321578c10ebc8cc4c356b005f");
             handler.ClientCertificates.Add(certificate);
             HttpClient client = new HttpClient(handler);
-
-            //CustomField customField = new CustomField
-            //{
-            //    Name = "DatasetId",
-            //    DisplayName = "Dataset Id",
-            //    Value = "Test",
-            //    Type = "ShortString"
-            //};
-            //CustomFieldGroup customFieldGroup = new CustomFieldGroup
-            //{
-            //    PublicId = "00000000-0000-0000-0000-000000000000",
-            //    ContainerId = "54671",
-            //    GroupType = "Team",
-            //    CustomFields = new List<CustomField>()
-            //};
-            //customFieldGroup.CustomFields.Add(customField);
-            //CustomFields customFields = new CustomFields
-            //{
-            //    CustomFieldGroups = new List<CustomFieldGroup>()
-            //};
-            //customFields.CustomFieldGroups.Add(customFieldGroup);
-
-            //List<CustomFieldGroup> customFieldGroups = new List<CustomFieldGroup>();
-            //customFieldGroups.Add(customFieldGroup);
-            //string myContent = JsonConvert.SerializeObject(customFields);
-            //Console.WriteLine(myContent);
 
             byte[] buffer = System.Text.Encoding.UTF8.GetBytes(EditIncidentCustomFieldsContent);
             ByteArrayContent content = new ByteArrayContent(buffer);
