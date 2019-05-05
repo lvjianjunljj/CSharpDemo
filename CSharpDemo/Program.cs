@@ -4,6 +4,7 @@ using System.ComponentModel;
 using CSharpDemo.Application;
 using CSharpDemo.Azure;
 using CSharpDemo.IcMTest;
+using CSharpDemoAux;
 using Microsoft.Azure.KeyVault;
 using Microsoft.Azure.KeyVault.Models;
 using Microsoft.Azure.Services.AppAuthentication;
@@ -18,13 +19,15 @@ namespace CSharpDemo
         {
             //IcMKustoDemo.MainMethod();
             //AzureCosmosDB.MainMethod();
-            QueryIncidents.MainMethod();
+            //QueryIncidents.MainMethod();
 
             //ReferenceDemoAux referenceDemoAux = new ReferenceDemoAux();
             //referenceDemoAux.TestReferenceError();
 
             //ConvertDemo.MainMethod();
 
+
+            KeyVaultAux.TestKeyVault();
 
             //AzureServiceTokenProvider azureServiceTokenProvider = new AzureServiceTokenProvider();
             //KeyVaultClient keyVaultClient = new KeyVaultClient(new KeyVaultClient.AuthenticationCallback(azureServiceTokenProvider.KeyVaultTokenCallback));
