@@ -14,6 +14,7 @@
 namespace Microsoft.IDEAs.DataCop.DataCopModelLib.Models.Alert
 {
     using System;
+    using System.Collections.Generic;
     using System.Reflection;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Converters;
@@ -97,6 +98,14 @@ namespace Microsoft.IDEAs.DataCop.DataCopModelLib.Models.Alert
         /// <value>The dataset name.</value>
         [JsonProperty(PropertyName = "datasetName")]
         public string DatasetName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the string of impacted date list.
+        /// We save the impacted date list in a long string and separate them with semicolon
+        /// </summary>
+        /// <value>The string of impacted date list.</value>
+        [JsonProperty(PropertyName = "impactedDates")]
+        public ISet<DateTime> ImpactedDates { get; set; }
 
         /// <summary>
         /// Gets or sets the alert setting id, equals the test id and used to get the alert settings

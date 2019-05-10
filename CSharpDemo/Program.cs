@@ -18,8 +18,9 @@ namespace CSharpDemo
         static void Main(string[] args)
         {
             //IcMKustoDemo.MainMethod();
-            //AzureCosmosDB.MainMethod();
+            AzureCosmosDB.MainMethod();
             //QueryIncidents.MainMethod();
+
 
             //ReferenceDemoAux referenceDemoAux = new ReferenceDemoAux();
             //referenceDemoAux.TestReferenceError();
@@ -27,14 +28,6 @@ namespace CSharpDemo
             //ConvertDemo.MainMethod();
 
 
-            KeyVaultAux.TestKeyVault();
-
-            //AzureServiceTokenProvider azureServiceTokenProvider = new AzureServiceTokenProvider();
-            //KeyVaultClient keyVaultClient = new KeyVaultClient(new KeyVaultClient.AuthenticationCallback(azureServiceTokenProvider.KeyVaultTokenCallback));
-            //string vaultUri = @"https://csharpmvcwebapikeyvault.vault.azure.net/";
-            //SecretBundle secret = keyVaultClient.GetSecretAsync(vaultUri, "AppSecret").Result;
-
-            //Console.WriteLine(secret.Value);
             Console.ReadKey();
         }
     }

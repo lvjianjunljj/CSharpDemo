@@ -22,6 +22,7 @@ And the updated App.config is that:
 ![AppConifgUpdate](https://github.com/lvjianjunljj/CSharpDemo/blob/master/AzureKustoDemo/info_img/AppConifgUpdate.png)
 Even though finally we update the version of Microsoft.IdentityModel.Clients.ActiveDirectory to 3.14.2, but the newVersion value of Microsoft.IdentityModel.Clients.ActiveDirectory in App.config is stiil  4.5.1.0(I think it just will only be updated up but not be updated down). So we can just delete the dependentAssembly of Microsoft.IdentityModel.Clients.ActiveDirectory in App.config or update its newVersion to 3.14.2.0. Finally the Azure KeyVault demo code will work.
 
+Note: I find there is a dependentAssembly tab for Microsoft.IdentityModel.Clients.ActiveDirectory.Platform in App.config, it also can make the Azure KeyVault demo code throw the same exception, just remove it.
 
 
 

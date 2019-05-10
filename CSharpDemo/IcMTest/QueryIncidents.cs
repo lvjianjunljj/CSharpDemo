@@ -37,7 +37,7 @@ namespace CSharpDemo.IcMTest
 
             //EditIncidentCustomFieldsSimple();
 
-            //AddDescriptionEntry();
+            AddDescriptionEntry();
             //string descriptionEntriesJsonString = GetDescriptionEntries();
             //SaveFile.FirstMethod(@"D:\data\company_work\IDEAs\IcMWork\test\description_entries_test.txt", descriptionEntriesJsonString);
 
@@ -52,9 +52,12 @@ namespace CSharpDemo.IcMTest
             //    threads[i].Join();
             //}
 
-            EditIncidentCustomFields();
+            //EditIncidentCustomFields();
+            //EditIncidentCustomFields();
+            //EditIncidentCustomFieldsSimple();
+
             //GetIncidentTeamCustomField(116142489);
-            GetIncident();
+            //GetIncident();
         }
         static void OneThread()
         {
@@ -76,12 +79,13 @@ namespace CSharpDemo.IcMTest
         {
             string EditIncidentDescriptionEntryContent = @"
                 {
-                  'NewDescriptionEntry' : { 
-                    'Text' : 'TestRun Alert XXXX suppressed', 
+                  'NewDescriptionEntry' : {
+                    'ChangedBy' : 'DataCopAlert',
+                    'SubmittedBy' : 'DataCopAlert',
+                    'Text' : 'Suppress the alert:<br/>status: Waiting<br/>testDate: 2/8/2019 12:00:00 AM', 
                     'RenderType' : 'Html',
                     'Cause' : 'Transferred'
-                  },
-                   'Summary' : 'Summary Test'
+                  }
                 }";
             NewDescriptionEntry newDescriptionEntry = new NewDescriptionEntry
             {
@@ -105,7 +109,7 @@ namespace CSharpDemo.IcMTest
             // Must set the certificate in current machine.
             X509Certificate2 certificate = GetCert("87a1331eac328ec321578c10ebc8cc4c356b005f");
 
-            string url = "https://icm.ad.msft.net/api/cert/incidents(116142489)";
+            string url = "https://icm.ad.msft.net/api/cert/incidents(116786922)";
             HttpWebRequest req = WebRequest.CreateHttp(url);
             req.ClientCertificates.Add(certificate);
             req.Method = "PATCH";
@@ -142,9 +146,31 @@ namespace CSharpDemo.IcMTest
                         }
                     ]
                 }";
+            EditIncidentCustomFieldsContent = @"
+                {
+                   'CustomFieldGroups':[
+                        {
+                            'PublicId':'965b31d9-e7e4-45bf-85d3-39810e289096',
+                            'GroupType':'Tenant',
+                            'CustomFields':[
+                                {
+                                    'Name':'DatasetId',
+                                    'Value':'4321',
+                                    'Type':'ShortString'
+                               },
+                                {
+                                    'Name':'ImpactedDates',
+                                    'Value':'1\n2\r3\n\r4',
+                                    'Type':'BigString'
+                                }
+                            ]
+                        }
+                    ]
+                }";
+
             X509Certificate2 certificate = GetCert("87a1331eac328ec321578c10ebc8cc4c356b005f");
 
-            string url = "https://icm.ad.msft.net/api/cert/incidents(108097160)";
+            string url = "https://icm.ad.msft.net/api/cert/incidents(116786922)";
             HttpWebRequest req = WebRequest.CreateHttp(url);
             req.ClientCertificates.Add(certificate);
             req.Method = "PATCH";
@@ -165,25 +191,6 @@ namespace CSharpDemo.IcMTest
             Console.WriteLine(responseString);
         }
 
-        //class CustomFields
-        //{
-        //    public List<CustomFieldGroup> CustomFieldGroups { get; set; }
-        //}
-        //class CustomFieldGroup
-        //{
-        //    public string PublicId { get; set; }
-        //    public string ContainerId { get; set; }
-        //    public string GroupType { get; set; }
-        //    public List<CustomField> CustomFields { get; set; }
-        //}
-        //class CustomField
-        //{
-        //    public string Name { get; set; }
-        //    public string DisplayName { get; set; }
-        //    public string Value { get; set; }
-        //    public string Type { get; set; }
-        //}
-
         public static void EditIncidentCustomFields()
         {
             string EditIncidentCustomFieldsContent = @"{'CustomFieldGroups':[{'PublicId':'00000000-0000-0000-0000-000000000000','ContainerId':'54671','GroupType':'Team','CustomFields':[{'Name':'DatasetId','DisplayName':'Dataset Id','Value':'12341234','Type':'ShortString'}]}]}";
@@ -198,7 +205,6 @@ namespace CSharpDemo.IcMTest
 
             HttpRequestMessage request = new HttpRequestMessage(new HttpMethod("PATCH"), "https://icm.ad.msft.net/api/cert/incidents(109578527)");
             request.Content = content;
-            content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
             HttpResponseMessage response = client.SendAsync(request).Result;
 
             string responseString = response.Content.ReadAsStringAsync().Result;
@@ -716,9 +722,9 @@ namespace CSharpDemo.IcMTest
 
         public IEnumerable<T> GetIncidentList<T>(string owningTeamId, DateTime cutOffTime)
         {
-            string icMRESTAPIQueryByTeamUriTemplate = "https://icm.ad.msft.net/api/cert/incidents?&$filter=OwningTeamId eq '{0}' and ModifiedDate ge datetime'{1}'";
+            string icMRESTAPIQueryByTeamUriTemplate = "https://icm.ad.msft.net/api/cert/incidents?&$filter=OwningTeamId eq '{0}' and ModifiedDate ge datetime'{1}' and IncidentLocation/Environment eq '{2}'";
             // build the URL we'll hit
-            string url = string.Format(icMRESTAPIQueryByTeamUriTemplate, owningTeamId, cutOffTime.ToString("s"));
+            string url = string.Format(icMRESTAPIQueryByTeamUriTemplate, owningTeamId, cutOffTime.ToString("s"), "PROD");
             while (url != null)
             {
                 // create the request

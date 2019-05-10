@@ -18,14 +18,14 @@ namespace CSharpDemo.Azure
     class AzureCosmosDB
     {
         // "datacopdev", "datacopprod" or "csharpmvcwebapikeyvault"(csharpmvcwebapicosmosdb)
-        public static string KeyVaultName = "csharpmvcwebapikeyvault";
+        public static string KeyVaultName = "datacopdev";
         public static void MainMethod()
         {
-            UpdateAllAlertSettingsDemo();
+            //UpdateAllAlertSettingsDemo();
             //QueryAlertSettingDemo();
             //QueryAlertDemo();
             //QueryTestDemo();
-            //UpsertAlertDemoToDev();
+            UpsertAlertDemoToDev();
             //UpsertTestDemoToCosmosDB();
             //UpsertDatasetDemoToDev();
             //UpsertDatcopScoreDemoToDev();
@@ -116,8 +116,8 @@ namespace CSharpDemo.Azure
 
             string alertDemoString =
                 @"{
-                    'id': '46ef2a20-297a-42ca-a994-20249650aaaa',
-                    'status': 'Failed',
+                    'id': '46ef2a20-297a-42ca-a994-2024965017f5',
+                    'status': 'Succeed',
                     'alertSettingId': '3f49b378-40a8-4930-b39d-595381f3fb44',
                     'severity': 4,
                     'title': 'ExternalO365CommercialServicesMAU_AllUp_RL28_MonthOverMonth: Test ExternalO365CommercialServicesMAU_AllUp_RL28_MonthOverMonth fails on 2/2/2019 because percentage difference of 5.61947771497777 is above positive threshold of 5.',
@@ -131,6 +131,13 @@ namespace CSharpDemo.Azure
                 }";
 
             TestRunAlert tr = JsonConvert.DeserializeObject<TestRunAlert>(alertDemoString);
+            tr.ImpactedDates = new HashSet<DateTime>();
+            tr.ImpactedDates.Add(DateTime.Parse("2019-04-12"));
+            tr.ImpactedDates.Add(DateTime.Parse("2019-04-09"));
+            tr.ImpactedDates.Add(DateTime.Parse("2019-04-19"));
+            tr.ImpactedDates.Add(DateTime.Parse("2019-04-09"));
+            Console.WriteLine(tr.ImpactedDates.Count);
+
             Console.WriteLine(tr.Id);
 
             ResourceResponse<Document> resource = azureCosmosDB.UpsertDocumentAsync(tr).Result;
