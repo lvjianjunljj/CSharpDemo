@@ -4,10 +4,12 @@
 
 /.vs
 
+/AzureKustoDemo/bin
 /CSharpDemo/bin
 /CSharpDemoAux/bin
 /CSharpDemoReferenceAux/bin
 
+/AzureKustoDemo/obj
 /CSharpDemo/obj
 /CSharpDemoAux/obj
 /CSharpDemoReferenceAux/obj
