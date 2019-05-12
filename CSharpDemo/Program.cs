@@ -27,7 +27,6 @@ namespace CSharpDemo
 
             //ConvertDemo.MainMethod();
 
-
             Console.ReadKey();
         }
     }

@@ -1,21 +1,8 @@
-﻿// ***********************************************************************
-// Assembly         : Microsoft.Ideas.Common.DataCopModelLib
-// Author           : alolivar
-// Created          : 02-05-2019
-//
-// Last Modified By : alolivar
-// Last Modified On : 02-05-2019
-// ***********************************************************************
-// <copyright file="TestRunAlert.cs" company="Microsoft Corporation">
-// Copyright (c) Microsoft Corporation. All rights reserved.
-// </copyright>
-// <summary></summary>
-// ***********************************************************************
-namespace Microsoft.IDEAs.DataCop.DataCopModelLib.Models.Alert
+﻿namespace CSharpDemo.CosmosDBModel
 {
     using System;
     using System.Collections.Generic;
-    using System.Reflection;
+    using System.Net;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Converters;
 
@@ -30,6 +17,24 @@ namespace Microsoft.IDEAs.DataCop.DataCopModelLib.Models.Alert
         /// </summary>
         public TestRunAlert()
         {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TestRunAlert"/> class.
+        /// </summary>
+        /// <param name="testRun">The test run.</param>
+        public TestRunAlert(TestRun testRun)
+        {
+            this.Id = new Guid(testRun.Id);
+            this.DatasetTestId = testRun.DatasetTestId;
+            this.DatasetId = testRun.DatasetId;
+            this.AlertSettingId = testRun.AlertSettingId;
+            this.Title = $"{testRun.TestName}: {testRun.Message}";
+            this.TestCategory = testRun.TestCategory;
+            this.TestRunId = testRun.Id;
+            this.TestDate = testRun.TestDate;
+            this.Status = testRun.Status;
+            this.ErrorCode = testRun.ErrorCode;
         }
 
         /// <summary>
@@ -108,6 +113,21 @@ namespace Microsoft.IDEAs.DataCop.DataCopModelLib.Models.Alert
         public ISet<DateTime> ImpactedDates { get; set; }
 
         /// <summary>
+        /// Gets or sets the test date.
+        /// </summary>
+        /// <value>The test date.</value>
+        [JsonProperty(PropertyName = "testDate")]
+        public DateTime? TestDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the string of other test run ids list that got suppressed due to the same alert.
+        /// We save the test run id list in a long string and separate them with semicolon
+        /// </summary>
+        /// <value>The string of other test run ids list that got suppressed due to the same alert.</value>
+        [JsonProperty(PropertyName = "suppressedAlertTestRunIds")]
+        public string SuppressedAlertTestRunIds { get; set; }
+
+        /// <summary>
         /// Gets or sets the alert setting id, equals the test id and used to get the alert settings
         /// </summary>
         /// <value>The alert setting identifier.</value>
@@ -150,6 +170,13 @@ namespace Microsoft.IDEAs.DataCop.DataCopModelLib.Models.Alert
         public string TestRunId { get; set; }
 
         /// <summary>
+        /// Gets or sets the error code.
+        /// </summary>
+        /// <value>The error code.</value>
+        [JsonProperty("errorCode")]
+        public HttpStatusCode? ErrorCode { get; set; }
+
+        /// <summary>
         /// Gets or sets the content shown in Surface.
         /// We will save this message in service level CustomField in IcM with name "DisplayInSurface".
         /// </summary>
@@ -189,11 +216,11 @@ namespace Microsoft.IDEAs.DataCop.DataCopModelLib.Models.Alert
         public DateTime? AcknowledgeDate { get; set; }
 
         /// <summary>
-        /// Gets or sets the impactedDate.
+        /// Gets or sets the mitigation date.
         /// </summary>
-        /// <value>The impactedDate.</value>
-        [JsonProperty("impactedDate")]
-        public DateTime? ImpactedDate { get; set; }
+        /// <value>The mitigation date.</value>
+        [JsonProperty("mitigationDate")]
+        public DateTime? MitigationDate { get; set; }
 
         /// <summary>
         /// Gets or sets the resolvedDate.
@@ -243,13 +270,6 @@ namespace Microsoft.IDEAs.DataCop.DataCopModelLib.Models.Alert
         /// <value>The owning team identifier.</value>
         [JsonProperty("owningTeamId")]
         public string OwningTeamId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the environment.
-        /// </summary>
-        /// <value>The environment.</value>
-        [JsonProperty("environment")]
-        public string Environment { get; set; }
 
         /// <summary>
         /// Gets or sets the alertStatus.

@@ -9,7 +9,6 @@ using CSharpDemo.CosmosDBModel;
 using Microsoft.Azure.Documents;
 using Microsoft.Azure.Documents.Client;
 using Microsoft.Azure.Documents.Linq;
-using Microsoft.IDEAs.DataCop.DataCopModelLib.Models.Alert;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -18,18 +17,56 @@ namespace CSharpDemo.Azure
     class AzureCosmosDB
     {
         // "datacopdev", "datacopprod" or "csharpmvcwebapikeyvault"(csharpmvcwebapicosmosdb)
-        public static string KeyVaultName = "datacopdev";
+        public static string KeyVaultName = "datacopprod";
         public static void MainMethod()
         {
+            //UpdateNoneAlertTypeDemo();
             //UpdateAllAlertSettingsDemo();
             //QueryAlertSettingDemo();
             //QueryAlertDemo();
             //QueryTestDemo();
-            UpsertAlertDemoToDev();
+            //UpsertAlertDemoToDev();
             //UpsertTestDemoToCosmosDB();
             //UpsertDatasetDemoToDev();
             //UpsertDatcopScoreDemoToDev();
             //UpsertActiveAlertTrendToDev();
+        }
+
+        public static void UpdateNoneAlertTypeDemo()
+        {
+            AzureCosmosDB azureCosmosDB = new AzureCosmosDB("DataCop", "Alert");
+            // Collation: asc and desc is ascending and descending
+            IList<JObject> list = azureCosmosDB.GetAllDocumentsInQueryAsync<JObject>(azureCosmosDB.collectionLink,
+                new SqlQuerySpec(@"SELECT * FROM c where c.testCategory = 'None' ORDER BY c.issuedOnDate ASC")).Result;
+            foreach (JObject alert in list)
+            {
+                try
+                {
+                    JObject testRun = GetTestRunBy(alert["id"].ToString());
+                    if (testRun == null)
+                    {
+                        Console.WriteLine($"testRun with id '{alert["id"]}' is null");
+                        continue;
+                    }
+                    alert["testCategory"] = testRun["testCategory"];
+                    ResourceResponse<Document> resource = azureCosmosDB.UpsertDocumentAsync(alert).Result;
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("Error");
+                    Console.WriteLine(alert);
+                }
+            }
+        }
+
+
+        private static JObject GetTestRunBy(string testRunId)
+        {
+            AzureCosmosDB azureCosmosDB = new AzureCosmosDB("DataCop", "TestRun");
+            // Collation: asc and desc is ascending and descending
+            IList<JObject> list = azureCosmosDB.GetAllDocumentsInQueryAsync<JObject>(azureCosmosDB.collectionLink,
+                new SqlQuerySpec($@"SELECT * FROM c where c.id = '{testRunId}'")).Result;
+            return list.Count > 0 ? list[0] : null;
         }
 
         public static void UpdateAllAlertSettingsDemo()
@@ -46,7 +83,6 @@ namespace CSharpDemo.Azure
                                                             "BusinessOwner",
                                                             "ImpactedDates",
                                                             "SuppressedAlertTestRunIds"};
-                alert.ContainerPublicId = new Guid("965b31d9-e7e4-45bf-85d3-39810e289096");
                 ResourceResponse<Document> resource = azureCosmosDB.UpsertDocumentAsync(alert).Result;
             }
         }
