@@ -21,13 +21,7 @@ namespace CSharpDemo
             //IcMKustoDemo.MainMethod();
             //AzureCosmosDB.MainMethod();
             //QueryIncidents.MainMethod();
-            TaskFriend.MainMethod();
 
-
-            //ReferenceDemoAux referenceDemoAux = new ReferenceDemoAux();
-            //referenceDemoAux.TestReferenceError();
-
-            //ConvertDemo.MainMethod();
 
             Console.ReadKey();
         }

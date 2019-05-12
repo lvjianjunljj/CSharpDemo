@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 
 namespace CSharpDemoAux
 {
+    //ReferenceDemoAux referenceDemoAux = new ReferenceDemoAux();
+    //referenceDemoAux.TestReferenceError();
     public class ReferenceDemoAux
     {
         public void TestReferenceError()

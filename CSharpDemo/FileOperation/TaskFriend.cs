@@ -11,18 +11,18 @@ namespace CSharpDemo.FileOperation
     {
         public static void MainMethod()
         {
-            string filePath = @"D:\data\personal_data\Yang Yu\Intern work\excel分类\7_2\{0}";
+            //string filePath = @"D:\data\personal_data\Yang Yu\Intern work\excel分类\7_2\{0}";
 
-            DateTime beforDT = System.DateTime.Now;
-            Console.WriteLine(beforDT.ToString("[HH:mm:ss] "));
+            //DateTime beforDT = System.DateTime.Now;
+            //Console.WriteLine(beforDT.ToString("yyyy-MM-dd [HH:mm:ss] "));
 
-            // Step 1: Move all data in Excel to txt file for the next work
-            // Read data from txt file is much quicker than from excel file
-            ExcelOperation e = new ExcelOperation();
+            //// Step 1: Move all data in Excel to txt file for the next work
+            //// Read data from txt file is much quicker than from excel file
+            //ExcelOperation e = new ExcelOperation();
 
-            List<List<string>> data = e.readFile(string.Format(filePath, "固定资产卡片.xlsm"), "固定资产卡片", 2, 2445, 1, 24);
-            SaveFile.Save("D:\\test0.txt", data);
-            Console.WriteLine("done 0");
+            //List<List<string>> data = e.readFile(string.Format(filePath, "固定资产卡片.xlsm"), "固定资产卡片", 2, 2445, 1, 24);
+            //SaveFile.Save("D:\\test0.txt", data);
+            //Console.WriteLine("done 0");
 
             //List<List<string>> dataSplit1 = e.readFile(string.Format(filePath, "明波评估明细表八点半发2018.06.30.xlsm"), "4-6-1房屋建筑物", 4, 117, 2, 17);
             //SaveFile.Save("D:\\test1.txt", dataSplit1);
