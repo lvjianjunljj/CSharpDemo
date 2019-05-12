@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using CSharpDemo.Application;
 using CSharpDemo.Azure;
+using CSharpDemo.FileOperation;
 using CSharpDemo.IcMTest;
 using CSharpDemoAux;
 using Microsoft.Azure.KeyVault;
@@ -18,8 +19,9 @@ namespace CSharpDemo
         static void Main(string[] args)
         {
             //IcMKustoDemo.MainMethod();
-            AzureCosmosDB.MainMethod();
+            //AzureCosmosDB.MainMethod();
             //QueryIncidents.MainMethod();
+            TaskFriend.MainMethod();
 
 
             //ReferenceDemoAux referenceDemoAux = new ReferenceDemoAux();
