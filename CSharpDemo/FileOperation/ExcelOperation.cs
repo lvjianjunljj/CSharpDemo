@@ -2,8 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-// The lib of office is based on the Office app in windows.Most of my VM do not setup the Office. 
-// But I think I can get the lib on Nuget, it is great
+// I think We should get the lib on Nuget, it is better than lib of office is based on the Office app in windows
 namespace CSharpDemo.FileOperation
 {
     class ExcelOperation
