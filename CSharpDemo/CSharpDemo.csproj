@@ -223,6 +223,7 @@
     <Compile Include="ExplicitOperatorDemo.cs" />
     <Compile Include="FileOperation\ExcelOperation.cs" />
     <Compile Include="GetStrValue.cs" />
+    <Compile Include="IDisposableImplementDemo.cs" />
     <Compile Include="Json\JsonCovertDemo.cs" />
     <Compile Include="Json\JsonParse.cs" />
     <Compile Include="Json\JsonProperty.cs" />

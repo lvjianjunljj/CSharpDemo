@@ -17,7 +17,7 @@ namespace CSharpDemo.Azure
     class AzureCosmosDB
     {
         // "datacopdev", "datacopprod" or "csharpmvcwebapikeyvault"(csharpmvcwebapicosmosdb)
-        public static string KeyVaultName = "datacopprod";
+        public static string KeyVaultName = "datacopdev";
         public static void MainMethod()
         {
             //UpdateNoneAlertTypeDemo();
@@ -29,7 +29,7 @@ namespace CSharpDemo.Azure
             //UpsertTestDemoToCosmosDB();
             //UpsertDatasetDemoToDev();
             //UpsertDatcopScoreDemoToDev();
-            //UpsertActiveAlertTrendToDev();
+            UpsertActiveAlertTrendToDev();
         }
 
         public static void UpdateNoneAlertTypeDemo()
@@ -252,8 +252,17 @@ namespace CSharpDemo.Azure
                     'activeAlertCount': 45" +
                 "}";
             ActiveAlertTrend aat = JsonConvert.DeserializeObject<ActiveAlertTrend>(activeAlertTrendString);
+            aat = null;
+            if (aat != null)
+            {
+                ResourceResponse<Document> resource2 = azureCosmosDB.UpsertDocumentAsync(aat).Result;
+                Console.WriteLine(resource2);
+            }
+            else
+            {
+                Console.WriteLine("aat is null");
+            }
 
-            ResourceResponse<Document> resource2 = azureCosmosDB.UpsertDocumentAsync(aat).Result;
         }
 
         // It is useless.

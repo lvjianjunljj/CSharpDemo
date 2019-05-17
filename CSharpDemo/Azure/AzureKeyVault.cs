@@ -146,21 +146,21 @@ namespace CSharpDemo.Azure
 
         public static void MainMethod()
         {
-            //AzureKeyVault AzureKeyVaultClass = new AzureKeyVault();
-            //Task<string> azureKeyVaultTask = AzureKeyVaultClass.GetSecretAsync("AppSecret");
-            //Console.WriteLine(azureKeyVaultTask.Result);
-            //string appSecretValue = GetSecret("AppSecret");
-            //Console.WriteLine(appSecretValue);
+            AzureKeyVault AzureKeyVaultClass = new AzureKeyVault();
+            Task<string> azureKeyVaultTask = AzureKeyVaultClass.GetSecretAsync("AppSecret");
+            Console.WriteLine(azureKeyVaultTask.Result);
+            string appSecretValue = GetSecret("AppSecret");
+            Console.WriteLine(appSecretValue);
 
             // There are four ways to get the secret from Azure keyvault and this is the way according to the appId and AppSecret.
             //  This code is to get all the secrets for Substrate Portal.
 
 
             // This three parameter is for Substrate Portal, you can get it from the team members.
-            string vaultName = "";
-            string appId = "";
-            string appSecret = "";
-            GetAllFromKeyVault(vaultName, appId, appSecret);
+            //string vaultName = "";
+            //string appId = "";
+            //string appSecret = "";
+            //GetAllFromKeyVault(vaultName, appId, appSecret);
         }
     }
 }

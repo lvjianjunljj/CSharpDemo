@@ -37,7 +37,7 @@ namespace CSharpDemo.IcMTest
 
             //EditIncidentCustomFieldsSimple();
 
-            AddDescriptionEntry();
+            //AddDescriptionEntry();
             //string descriptionEntriesJsonString = GetDescriptionEntries();
             //SaveFile.FirstMethod(@"D:\data\company_work\IDEAs\IcMWork\test\description_entries_test.txt", descriptionEntriesJsonString);
 
@@ -57,7 +57,7 @@ namespace CSharpDemo.IcMTest
             //EditIncidentCustomFieldsSimple();
 
             //GetIncidentTeamCustomField(116142489);
-            //GetIncident();
+            GetIncident();
         }
         static void OneThread()
         {
@@ -648,7 +648,8 @@ namespace CSharpDemo.IcMTest
 
             //url = @"https://icm.ad.msft.net/api/cert/incidents?&$filter=OwningTeamId eq '<The SQL oncall team>' and ModifiedDate ge datetime'2019-04-11T15:24:41'";
 
-            url = @"https://icm.ad.msft.net/api/cert/incidents(116550556)";
+            long? a = null;
+            url = $@"https://icm.ad.msft.net/api/cert/incidents({a})";
 
             //url = string.Format("https://{0}/api/cert/incidents({1})", "icm.ad.msft.net", id);
 
@@ -685,6 +686,8 @@ namespace CSharpDemo.IcMTest
                     }
                 }
                 Console.WriteLine(json);
+                Console.WriteLine(json);
+                Console.WriteLine(json);
                 //Console.WriteLine(json);
                 // deserialize it into an incident object
                 //Incident incident = serializer.Deserialize<Incident>(json);
@@ -715,6 +718,7 @@ namespace CSharpDemo.IcMTest
             }
             catch (Exception e)
             {
+                Console.WriteLine(e.Message);
                 Console.WriteLine(e.Message);
                 return null;
             }
