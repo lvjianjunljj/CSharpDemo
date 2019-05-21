@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Kusto.Data.Exceptions;
+using System;
 
 namespace AzureKustoDemo
 {
