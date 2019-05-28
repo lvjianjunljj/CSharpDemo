@@ -8,7 +8,36 @@ namespace CSharpDemo
 {
     class ExceptionDemo
     {
-        static void MainMethod()
+        public static void MainMethod()
+        {
+            InnerExceptionDemo();
+            ThrowKeyWordDemo();
+        }
+
+        static void ThrowKeyWordDemo()
+        {
+            try
+            {
+                int i = 0;
+                try
+                {
+                    int b = 2 / i;
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine($"Before throw in try block, error message: {e.Message}");
+                    // Key word throw just can be used in catch block, and throw the same exception.
+                    // In catch block, before this key word, we usually log the error message.
+                    throw;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+        }
+
+        static void InnerExceptionDemo()
         {
             try
             {
@@ -25,8 +54,6 @@ namespace CSharpDemo
                 }
                 Console.WriteLine($"fianl exception message: {e.Message}");
             }
-
-            Console.ReadKey();
         }
         async Task TestMethod()
         {

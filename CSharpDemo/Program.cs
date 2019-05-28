@@ -20,7 +20,7 @@ namespace CSharpDemo
         {
             //IcMKustoDemo.MainMethod();
             //AzureCosmosDB.MainMethod();
-            //QueryIncidents.MainMethod();
+            QueryIncidents.MainMethod();
 
             Console.ReadKey();
         }

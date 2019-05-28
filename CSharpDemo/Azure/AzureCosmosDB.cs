@@ -17,27 +17,30 @@ namespace CSharpDemo.Azure
     class AzureCosmosDB
     {
         // "datacopdev", "datacopprod" or "csharpmvcwebapikeyvault"(csharpmvcwebapicosmosdb)
-        public static string KeyVaultName = "datacopdev";
+        public static string KeyVaultName = "datacopprod";
         public static void MainMethod()
         {
-            //UpdateNoneAlertTypeDemo();
             //UpdateAllAlertSettingsDemo();
             //QueryAlertSettingDemo();
             //QueryAlertDemo();
-            //QueryTestDemo();
             //UpsertAlertDemoToDev();
+
+
             //UpsertTestDemoToCosmosDB();
+            //QueryTestDemo();
+            GetLastTestDemo();
+
+
             //UpsertDatasetDemoToDev();
             //UpsertDatcopScoreDemoToDev();
-            UpsertActiveAlertTrendToDev();
+            //UpsertActiveAlertTrendToDev();
         }
 
         public static void UpdateNoneAlertTypeDemo()
         {
             AzureCosmosDB azureCosmosDB = new AzureCosmosDB("DataCop", "Alert");
             // Collation: asc and desc is ascending and descending
-            IList<JObject> list = azureCosmosDB.GetAllDocumentsInQueryAsync<JObject>(azureCosmosDB.collectionLink,
-                new SqlQuerySpec(@"SELECT * FROM c where c.testCategory = 'None' ORDER BY c.issuedOnDate ASC")).Result;
+            IList<JObject> list = azureCosmosDB.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c where c.testCategory = 'None' ORDER BY c.issuedOnDate ASC")).Result;
             foreach (JObject alert in list)
             {
                 try
@@ -64,8 +67,7 @@ namespace CSharpDemo.Azure
         {
             AzureCosmosDB azureCosmosDB = new AzureCosmosDB("DataCop", "TestRun");
             // Collation: asc and desc is ascending and descending
-            IList<JObject> list = azureCosmosDB.GetAllDocumentsInQueryAsync<JObject>(azureCosmosDB.collectionLink,
-                new SqlQuerySpec($@"SELECT * FROM c where c.id = '{testRunId}'")).Result;
+            IList<JObject> list = azureCosmosDB.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec($@"SELECT * FROM c where c.id = '{testRunId}'")).Result;
             return list.Count > 0 ? list[0] : null;
         }
 
@@ -73,7 +75,7 @@ namespace CSharpDemo.Azure
         {
             AzureCosmosDB azureCosmosDB = new AzureCosmosDB("DataCop", "AlertSettings");
             // Collation: asc and desc is ascending and descending
-            IList<TestRunAlertSettings> list = azureCosmosDB.GetAllDocumentsInQueryAsync<TestRunAlertSettings>(azureCosmosDB.collectionLink, new SqlQuerySpec(@"SELECT * FROM c")).Result;
+            IList<TestRunAlertSettings> list = azureCosmosDB.GetAllDocumentsInQueryAsync<TestRunAlertSettings>(new SqlQuerySpec(@"SELECT * FROM c")).Result;
             foreach (TestRunAlertSettings alert in list)
             {
                 Console.WriteLine(alert.Id);
@@ -81,8 +83,7 @@ namespace CSharpDemo.Azure
                                                             "AlertType",
                                                             "DisplayInSurface",
                                                             "BusinessOwner",
-                                                            "ImpactedDates",
-                                                            "SuppressedAlertTestRunIds"};
+                                                            "TitleOverride"};
                 ResourceResponse<Document> resource = azureCosmosDB.UpsertDocumentAsync(alert).Result;
             }
         }
@@ -91,7 +92,7 @@ namespace CSharpDemo.Azure
         {
             AzureCosmosDB azureCosmosDB = new AzureCosmosDB("DataCop", "AlertSettings");
             // Collation: asc and desc is ascending and descending
-            IList<JObject> list = azureCosmosDB.GetAllDocumentsInQueryAsync<JObject>(azureCosmosDB.collectionLink, new SqlQuerySpec(@"SELECT distinct c.owningTeamId FROM c")).Result;
+            IList<JObject> list = azureCosmosDB.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT distinct c.owningTeamId FROM c")).Result;
             foreach (JObject jObject in list)
             {
                 if (jObject["owningTeamId"] != null)
@@ -103,8 +104,7 @@ namespace CSharpDemo.Azure
         {
             AzureCosmosDB azureCosmosDB = new AzureCosmosDB("DataCop", "Alert");
             // Collation: asc and desc is ascending and descending
-            IList<JObject> list = azureCosmosDB.GetAllDocumentsInQueryAsync<JObject>(azureCosmosDB.collectionLink,
-                new SqlQuerySpec(@"SELECT c.issuedOnDate AS aaaa, c.impactedDate AS bbbb, time(c.issuedOnDate), time(c.impactedDate) AS cccc FROM c")).Result;
+            IList<JObject> list = azureCosmosDB.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT c.issuedOnDate AS aaaa, c.impactedDate AS bbbb, time(c.issuedOnDate), time(c.impactedDate) AS cccc FROM c")).Result;
             foreach (JObject jObject in list)
             {
                 Console.WriteLine(jObject);
@@ -114,23 +114,33 @@ namespace CSharpDemo.Azure
         {
             AzureCosmosDB azureCosmosDB = new AzureCosmosDB("CosmosDBTest", "TestCollectionId");
             // Collation: asc and desc is ascending and descending
-            IList<AzureCosmosDBTestClass> list = azureCosmosDB.GetAllDocumentsInQueryAsync<AzureCosmosDBTestClass>(azureCosmosDB.collectionLink, new SqlQuerySpec(@"SELECT * FROM c order by c.timestampTicks asc")).Result;
+            IList<AzureCosmosDBTestClass> list = azureCosmosDB.GetAllDocumentsInQueryAsync<AzureCosmosDBTestClass>(new SqlQuerySpec(@"SELECT * FROM c order by c.timestampTicks asc")).Result;
             foreach (AzureCosmosDBTestClass t in list)
             {
                 Console.WriteLine(t.Id);
+                Console.WriteLine(JsonConvert.SerializeObject(t));
             }
         }
-
-        // This function is useless and we abandon it.
-        public static void UpdateTestDemo()
+        // Through this code, I cant reproduce the error: 
+        // Microsoft.Azure.Documents.DocumentClientException: Entity with the specified id does not exist in the system.
+        public static void GetLastTestDemo()
         {
-            AzureCosmosDBTestClass t = new AzureCosmosDBTestClass();
-            t.TestA = "AAAA";
-            t.Id = "1111";
-            AzureCosmosDB azureCosmosDB = new AzureCosmosDB("CosmosDBTest", "TestCollectionId");
+            AzureCosmosDB azureCosmosDB = new AzureCosmosDB("DataCop", "Alert");
+            // Collation: asc and desc is ascending and descending
+            for (int i = 0; i < 100; i++)
+            {
 
-            string updateResult = azureCosmosDB.UpdateTestDemo(t.Id, t).Result;
-            Console.WriteLine(updateResult);
+                TestRunAlert t = azureCosmosDB.FindFirstOrDefaultItemAsync<TestRunAlert>(new SqlQuerySpec(@"SELECT * FROM c WHERE c.incidentId=111351134 order by c.timestampTicks desc")).Result;
+                if (t == null)
+                {
+                    Console.WriteLine("null");
+                }
+                else
+                {
+                    Console.WriteLine(t.Id);
+                    Console.WriteLine(JsonConvert.SerializeObject(t));
+                }
+            }
         }
 
         public static void UpsertTestDemoToCosmosDB()
@@ -142,8 +152,11 @@ namespace CSharpDemo.Azure
             t.TestB = "b";
             t.TestC = "cc";
             t.Id = "1111";
+            t.TestHashSet = new HashSet<string>();
+            t.TestHashSet.Add("1234");
 
             ResourceResponse<Document> resource = azureCosmosDB.UpsertDocumentAsync(t).Result;
+            Console.WriteLine(resource);
         }
 
         public static void UpsertAlertDemoToDev()
@@ -265,51 +278,8 @@ namespace CSharpDemo.Azure
 
         }
 
-        // It is useless.
-        public async Task<string> UpdateTestDemo(string testId, AzureCosmosDBTestClass t)
-        {
-            SqlQuerySpec sqlQuerySpec = new SqlQuerySpec($@"UPDATE c.Testa = '{t.TestA}' WHERE c.id='{testId}'");
-
-            return await this.FindFirstOrDefaultItemAsync<string>(sqlQuerySpec);
-        }
-
-        public async Task<string> GetLatestAlertAsync(string datasetTestId)
-        {
-            SqlQuerySpec sqlQuerySpec = new SqlQuerySpec($@"SELECT * FROM c WHERE c.datasetTestId='{datasetTestId}' 
-                                                            order by c.timestampTicks desc");
-
-            return await this.FindFirstOrDefaultItemAsync<string>(sqlQuerySpec);
-        }
-
         public string Endpoint { get; set; }
         public string Key { get; set; }
-
-        private readonly CosmosDBDocumentClient client;
-
-        /// <summary>
-        /// The document collection
-        /// </summary>
-        private readonly DocumentCollection documentCollection;
-
-        /// <summary>
-        /// The collection identifier
-        /// </summary>
-        private readonly string collectionId;
-
-        /// <summary>
-        /// The database identifier
-        /// </summary>
-        private readonly string databaseId;
-
-        /// <summary>
-        /// The collection link
-        /// </summary>
-        private readonly string collectionLink;
-
-        /// <summary>
-        /// The database link
-        /// </summary>
-        private readonly string databaseLink;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CosmosDBDocumentCollection"/> class.
@@ -318,51 +288,42 @@ namespace CSharpDemo.Azure
         /// <param name="collectionId">The collection identifier.</param>
         public AzureCosmosDB(string databaseId, string collectionId)
         {
-            this.client = CosmosDBDocumentClient.Instance;
+            this.Client = CosmosDBDocumentClient.Instance;
 
-            this.client.CreateDatabaseIfNotExistsAsync(new Database() { Id = databaseId }).Wait();
-            this.databaseId = databaseId;
-            this.collectionId = collectionId;
-            this.databaseLink = this.client.GetDatabaseLink(databaseId);
-            this.collectionLink = this.client.GetCollectionLink(databaseId, collectionId);
+            this.Client.CreateDatabaseIfNotExistsAsync(new Database() { Id = databaseId }).Wait();
+            this.DatabaseLink = this.Client.GetDatabaseLink(databaseId);
+            this.CollectionLink = this.Client.GetCollectionLink(databaseId, collectionId);
 
-            this.documentCollection = this.client.CreateDocumentCollectionIfNotExistsAsync(this.databaseLink, new DocumentCollection() { Id = collectionId }, null).Result;
+            this.DocumentCollection = this.Client.CreateDocumentCollectionIfNotExistsAsync(this.DatabaseLink, new DocumentCollection() { Id = collectionId }, null).Result;
         }
 
         /// <summary>
         /// Gets the client.
         /// </summary>
         /// <value>The client.</value>
-        public CosmosDBDocumentClient Client => this.client;
+        public CosmosDBDocumentClient Client;
 
         /// <summary>
         /// Gets the collection link.
         /// </summary>
         /// <value>The collection link.</value>
-        public string CollectionLink => this.collectionLink;
+        public string CollectionLink;
 
         /// <summary>
         /// Gets the database link.
         /// </summary>
         /// <value>The database link.</value>
-        public string DatabaseLink => this.DatabaseLink;
+        public string DatabaseLink;
 
         /// <summary>
         /// Gets the document collection.
         /// </summary>
         /// <value>The document collection.</value>
-        public DocumentCollection DocumentCollection => this.documentCollection;
+        public DocumentCollection DocumentCollection;
 
-        /// <summary>
-        /// read document as an asynchronous operation.
-        /// </summary>
-        /// <typeparam name="T">The type parameter</typeparam>
-        /// <param name="documentLink">The document link.</param>
-        /// <param name="options">The options.</param>
-        /// <returns>Task&lt;DocumentResponse&lt;T&gt;&gt;.</returns>
         public async Task<DocumentResponse<T>> ReadDocumentAsync<T>(string documentLink, RequestOptions options = null)
         {
-            return await this.client.ReadDocumentAsync<T>(documentLink, options);
+            return await this.Client.ReadDocumentAsync<T>(documentLink, options);
         }
 
         /// <summary>
@@ -374,7 +335,7 @@ namespace CSharpDemo.Azure
         /// <returns>A <see cref="Task" /> representing the asynchronous operation with the document being the task result.</returns>
         public async Task<ResourceResponse<Document>> DeleteDocumentAsync(string documentLink, RequestOptions requestOptions = null)
         {
-            return await this.client.DeleteDocumentAsync(documentLink, requestOptions);
+            return await this.Client.DeleteDocumentAsync(this.CollectionLink, requestOptions);
         }
 
         /// <summary>
@@ -386,16 +347,8 @@ namespace CSharpDemo.Azure
         /// <returns>IQueryable&lt;T&gt;.</returns>
         public IQueryable<T> CreateDocumentQuery<T>(string sqlExpression, FeedOptions feedOptions = null)
         {
-            return this.client.CreateDocumentQuery<T>(this.CollectionLink, sqlExpression, feedOptions);
+            return this.Client.CreateDocumentQuery<T>(this.CollectionLink, sqlExpression, feedOptions);
         }
-
-        /// <summary>
-        /// Gets the document link.
-        /// </summary>
-        /// <param name="documentId">The document identifier.</param>
-        /// <returns>System.String.</returns>
-        public string GetDocumentLink(string documentId)
-            => this.Client.GetDocumentLink(this.databaseId, this.collectionId, documentId);
 
         /// <summary>
         /// get all documents in query as an asynchronous operation.
@@ -404,9 +357,9 @@ namespace CSharpDemo.Azure
         /// <param name="collectionLink">The collection link.</param>
         /// <param name="sqlQuerySpec">The SQL query spec.</param>
         /// <returns>Task&lt;IList&lt;T&gt;&gt;.</returns>
-        protected async Task<IList<T>> GetAllDocumentsInQueryAsync<T>(string collectionLink, SqlQuerySpec sqlQuerySpec)
+        protected async Task<IList<T>> GetAllDocumentsInQueryAsync<T>(SqlQuerySpec sqlQuerySpec)
         {
-            return await this.client.GetAllDocumentsInQueryAsync<T>(collectionLink, sqlQuerySpec);
+            return await this.Client.GetAllDocumentsInQueryAsync<T>(this.CollectionLink, sqlQuerySpec);
         }
 
         /// <summary>
@@ -418,7 +371,7 @@ namespace CSharpDemo.Azure
         /// <returns>Task&lt;ResourceResponse&lt;Document&gt;&gt;.</returns>
         protected async Task<ResourceResponse<Document>> CreateDocumentIfNotExistsAsync(object document, RequestOptions options, bool disableAutomaticIdGeneration)
         {
-            return await this.client.CreateDocumentIfNotExistsAsync(this.CollectionLink, document, options, disableAutomaticIdGeneration);
+            return await this.Client.CreateDocumentIfNotExistsAsync(this.CollectionLink, document, options, disableAutomaticIdGeneration);
         }
 
         /// <summary>
@@ -429,7 +382,7 @@ namespace CSharpDemo.Azure
         /// <returns>Task&lt;T&gt;.</returns>
         protected async Task<T> FindFirstOrDefaultItemAsync<T>(SqlQuerySpec sqlQuerySpec)
         {
-            return await this.client.FindFirstOrDefaultItemAsync<T>(this.collectionLink, sqlQuerySpec);
+            return await this.Client.FindFirstOrDefaultItemAsync<T>(this.CollectionLink, sqlQuerySpec);
         }
 
         /// <summary>
@@ -439,7 +392,7 @@ namespace CSharpDemo.Azure
         /// <returns>A <see cref="Task" /> representing the asynchronous operation with the document being the task result.</returns>
         public async Task<ResourceResponse<Document>> UpsertDocumentAsync(object document)
         {
-            return await this.client.UpsertDocumentAsync(this.CollectionLink, document);
+            return await this.Client.UpsertDocumentAsync(this.CollectionLink, document);
         }
     }
 
@@ -558,7 +511,12 @@ namespace CSharpDemo.Azure
         /// <returns>Task&lt;T&gt;.</returns>
         public async Task<T> FindFirstOrDefaultItemAsync<T>(string collectionLink, SqlQuerySpec sqlQuerySpec)
         {
-            IDocumentQuery<T> query = this.client.CreateDocumentQuery<T>(collectionLink, sqlQuerySpec, new FeedOptions { MaxItemCount = 1 }).AsDocumentQuery<T>();
+            IDocumentQuery<T> query = this.client.CreateDocumentQuery<T>(collectionLink, sqlQuerySpec, new FeedOptions
+            {
+                MaxItemCount = 1,
+                // This is a necessary settting, but we don't set it in DataCop, it also can run successfully, but cant here. I don't know why.
+                EnableCrossPartitionQuery = true
+            }).AsDocumentQuery<T>();
 
             return (await query.ExecuteNextAsync<T>()).FirstOrDefault();
         }

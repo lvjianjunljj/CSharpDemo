@@ -37,7 +37,9 @@ namespace CSharpDemo.IcMTest
 
             //EditIncidentCustomFieldsSimple();
 
-            //AddDescriptionEntry();
+            AddDescriptionEntry();
+
+
             //string descriptionEntriesJsonString = GetDescriptionEntries();
             //SaveFile.FirstMethod(@"D:\data\company_work\IDEAs\IcMWork\test\description_entries_test.txt", descriptionEntriesJsonString);
 
@@ -57,7 +59,7 @@ namespace CSharpDemo.IcMTest
             //EditIncidentCustomFieldsSimple();
 
             //GetIncidentTeamCustomField(116142489);
-            GetIncident();
+            //GetIncident();
         }
         static void OneThread()
         {
@@ -75,6 +77,15 @@ namespace CSharpDemo.IcMTest
             Console.WriteLine(totalTimeCost / 10);
         }
 
+        /* For this function, we cant call it very frequently.
+        * For example, if we call it in a for loop:
+            for (int i = 0; i < 10; i++)
+            {
+                AddDescriptionEntry();
+            }
+        * sometimes we just can call it successfully for two times, and in the third call, We will never be able to get a response and always stuck there
+        * */
+
         public static void AddDescriptionEntry()
         {
             string EditIncidentDescriptionEntryContent = @"
@@ -82,7 +93,7 @@ namespace CSharpDemo.IcMTest
                   'NewDescriptionEntry' : {
                     'ChangedBy' : 'DataCopAlert',
                     'SubmittedBy' : 'DataCopAlert',
-                    'Text' : 'Suppress the alert:<br/>status: Waiting<br/>testDate: 2/8/2019 12:00:00 AM', 
+                    'Text' : 'Suppress the alert:<br/>impactedDate: 2/8/2019 12:00:00 AM', 
                     'RenderType' : 'Html',
                     'Cause' : 'Transferred'
                   }
@@ -635,10 +646,11 @@ namespace CSharpDemo.IcMTest
             string url;
 
             // build the URL we'll hit
-            string LastSyncTimeString = DateTime.UtcNow.AddHours(-20).ToString("s");
-            //url = $@"https://icm.ad.msft.net/api/cert/incidents?$filter=OwningTeamId eq 'IDEAS\IDEAsDataCopTest' and Id eq 112584043 and ModifiedDate ge datetime'{LastSyncTimeString}'";
+            string LastSyncTimeString = DateTime.UtcNow.AddHours(-10000).ToString("s");
+            url = $@"https://icm.ad.msft.net/api/cert/incidents?$filter=OwningTeamId eq 'IDEAS\IDEAsDataCopTest' and Id eq 118638846 and ModifiedDate ge datetime'{LastSyncTimeString}'";
+            // and CreatedBy eq 'DataCopMonitor'
 
-            url = $@"https://icm.ad.msft.net/api/cert/incidents?$filter=IncidentLocation/ServiceInstanceId eq 'DataCopAlertMicroService' and Status eq 'Active' and IncidentLocation/Environment eq 'prod'";
+            //url = $@"https://icm.ad.msft.net/api/cert/incidents?$filter=IncidentLocation/ServiceInstanceId eq 'DataCopAlertMicroService' and Status eq 'Active' and IncidentLocation/Environment eq 'prod'";
 
             // "icm.ad.msft.net" is the OdataServiceBaseUri
             //url = string.Format("https://{0}/api/cert/incidents({1})", "icm.ad.msoppe.msft.net", id);
@@ -649,7 +661,7 @@ namespace CSharpDemo.IcMTest
             //url = @"https://icm.ad.msft.net/api/cert/incidents?&$filter=OwningTeamId eq '<The SQL oncall team>' and ModifiedDate ge datetime'2019-04-11T15:24:41'";
 
             long? a = null;
-            url = $@"https://icm.ad.msft.net/api/cert/incidents({a})";
+            //url = $@"https://icm.ad.msft.net/api/cert/incidents({a})";
 
             //url = string.Format("https://{0}/api/cert/incidents({1})", "icm.ad.msft.net", id);
 
@@ -685,10 +697,9 @@ namespace CSharpDemo.IcMTest
                         json = tr.ReadToEnd();
                     }
                 }
+
                 Console.WriteLine(json);
-                Console.WriteLine(json);
-                Console.WriteLine(json);
-                //Console.WriteLine(json);
+
                 // deserialize it into an incident object
                 //Incident incident = serializer.Deserialize<Incident>(json);
 
@@ -708,9 +719,17 @@ namespace CSharpDemo.IcMTest
 
                 //Console.WriteLine(json);
                 JObject jsonObject = JObject.Parse(json);
-                List<Incident> i = JsonConvert.DeserializeObject<List<Incident>>(jsonObject["value"].ToString());
-                Console.WriteLine(i.Count);
-                foreach (Incident item in i)
+                List<Incident> incidents = JsonConvert.DeserializeObject<List<Incident>>(jsonObject["value"].ToString());
+                Console.WriteLine(incidents.Count);
+
+                List<object> l = new List<object>();
+                foreach (var incident in incidents)
+                {
+                    if (incident.Source.CreatedBy.Equals("DataCopMonitor"))
+                        l.Add(incident);
+                }
+
+                foreach (Incident item in l)
                 {
                     Console.WriteLine(item.Id);
                 }
@@ -723,6 +742,7 @@ namespace CSharpDemo.IcMTest
                 return null;
             }
         }
+
 
         public IEnumerable<T> GetIncidentList<T>(string owningTeamId, DateTime cutOffTime)
         {

@@ -21,6 +21,9 @@ namespace CSharpDemo.CosmosDBModel
         }
         [JsonProperty("Testd")]
         private string TestD { get; set; } = "private testd";
+
+        [JsonProperty("TestHashSet")]
+        public HashSet<string> TestHashSet { get; set; }
         [JsonProperty("id")]
         public string Id { get; set; }
         [JsonProperty("timestampTicks")]
@@ -28,6 +31,7 @@ namespace CSharpDemo.CosmosDBModel
         {
             get { return DateTime.UtcNow.Ticks; }
         }
+
     }
     public class TestParentClass
     {
