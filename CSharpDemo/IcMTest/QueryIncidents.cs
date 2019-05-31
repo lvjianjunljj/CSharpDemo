@@ -7,6 +7,7 @@ using System.Net.Http.Headers;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Web.Script.Serialization; //lib name in Assemblies: System.Web.Extensions.
 using CSharpDemo.FileOperation;
 using Microsoft.AzureAd.Icm.Types;
@@ -98,29 +99,13 @@ namespace CSharpDemo.IcMTest
                     'Cause' : 'Transferred'
                   }
                 }";
-            NewDescriptionEntry newDescriptionEntry = new NewDescriptionEntry
-            {
-                Text = "add new descriptionEntry",
-                RenderType = DescriptionTextRenderType.Html,
-                Cause = DescriptionEntryCause.Edited
-            };
-            Incident editIncident = new Incident
-            {
-                NewDescriptionEntry = newDescriptionEntry,
-                //Status = IncidentStatus.Active
-                HitCount = 3
-            };
 
-            //Dictionary<string, NewDescriptionEntry> descriptionEntryDict = new Dictionary<string, NewDescriptionEntry>();
-            //descriptionEntryDict.Add("NewDescriptionEntry", newDescriptionEntry);
-            //JsonSerializerSettings jsonSerializerSettings = new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore };
-            //string EditIncidentDescriptionEntryContent = JsonConvert.SerializeObject(descriptionEntryDict, jsonSerializerSettings).ToString();
-
-            Console.WriteLine(EditIncidentDescriptionEntryContent);
             // Must set the certificate in current machine.
             X509Certificate2 certificate = GetCert("87a1331eac328ec321578c10ebc8cc4c356b005f");
 
+            //string url = "http://localhost:8771/api/productss/all/patch/1234";
             string url = "https://icm.ad.msft.net/api/cert/incidents(116786922)";
+
             HttpWebRequest req = WebRequest.CreateHttp(url);
             req.ClientCertificates.Add(certificate);
             req.Method = "PATCH";
@@ -130,12 +115,31 @@ namespace CSharpDemo.IcMTest
 
             req.ContentType = "application/json";
             req.ContentLength = buffer.Length;
-            Stream reqStream = req.GetRequestStream();
-            reqStream.Write(buffer, 0, buffer.Length);
-            reqStream.Close();
+            using (Stream reqStream = req.GetRequestStream())
+            {
+                reqStream.Write(buffer, 0, buffer.Length);
+            }
 
-            req.GetResponse();
+            // The Timeout setting is useless, so the below retry policy is useless
+            req.Timeout = 3000;
+            req.AllowWriteStreamBuffering = false;
+            int sleepMillisecondsTimeout = 1000;
+            for (int i = 0; i < 10; i++)
+            {
+                try
+                {
+                    req.GetResponse();
+                    return;
+                }
+                catch (WebException e)
+                {
+                    Console.WriteLine(e.Message);
+                    Thread.Sleep(sleepMillisecondsTimeout);
+                    sleepMillisecondsTimeout *= 2;
+                }
+            }
         }
+
 
         public static void EditIncidentCustomFieldsSimple()
         {
@@ -660,7 +664,6 @@ namespace CSharpDemo.IcMTest
 
             //url = @"https://icm.ad.msft.net/api/cert/incidents?&$filter=OwningTeamId eq '<The SQL oncall team>' and ModifiedDate ge datetime'2019-04-11T15:24:41'";
 
-            long? a = null;
             //url = $@"https://icm.ad.msft.net/api/cert/incidents({a})";
 
             //url = string.Format("https://{0}/api/cert/incidents({1})", "icm.ad.msft.net", id);
@@ -818,7 +821,7 @@ namespace CSharpDemo.IcMTest
         /// <summary>Gets the cert</summary>
         /// <param name="certId">cert identifier</param>
         /// <returns>resulting value</returns>
-        private static X509Certificate2 GetCert(string certId)
+        public static X509Certificate2 GetCert(string certId)
         {
 
             if (string.IsNullOrEmpty(certId))

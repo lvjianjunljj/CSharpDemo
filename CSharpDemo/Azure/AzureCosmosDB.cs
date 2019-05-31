@@ -17,7 +17,7 @@ namespace CSharpDemo.Azure
     class AzureCosmosDB
     {
         // "datacopdev", "datacopprod" or "csharpmvcwebapikeyvault"(csharpmvcwebapicosmosdb)
-        public static string KeyVaultName = "datacopprod";
+        public static string KeyVaultName = "csharpmvcwebapikeyvault";
         public static void MainMethod()
         {
             //UpdateAllAlertSettingsDemo();
@@ -125,21 +125,17 @@ namespace CSharpDemo.Azure
         // Microsoft.Azure.Documents.DocumentClientException: Entity with the specified id does not exist in the system.
         public static void GetLastTestDemo()
         {
-            AzureCosmosDB azureCosmosDB = new AzureCosmosDB("DataCop", "Alert");
+            AzureCosmosDB azureCosmosDB = new AzureCosmosDB("CosmosDBTest", "TestCollectionId");
             // Collation: asc and desc is ascending and descending
-            for (int i = 0; i < 100; i++)
+            TestRunAlert t = azureCosmosDB.FindFirstOrDefaultItemAsync<TestRunAlert>(new SqlQuerySpec(@"SELECT * FROM c WHERE c.id=1111 order by c.timestampTicks desc")).Result;
+            if (t == null)
             {
-
-                TestRunAlert t = azureCosmosDB.FindFirstOrDefaultItemAsync<TestRunAlert>(new SqlQuerySpec(@"SELECT * FROM c WHERE c.incidentId=111351134 order by c.timestampTicks desc")).Result;
-                if (t == null)
-                {
-                    Console.WriteLine("null");
-                }
-                else
-                {
-                    Console.WriteLine(t.Id);
-                    Console.WriteLine(JsonConvert.SerializeObject(t));
-                }
+                Console.WriteLine("null");
+            }
+            else
+            {
+                Console.WriteLine(t.Id);
+                Console.WriteLine(JsonConvert.SerializeObject(t));
             }
         }
 

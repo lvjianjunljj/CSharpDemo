@@ -1,6 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
+using System.Net;
+using System.Security.Cryptography.X509Certificates;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using CSharpDemo.Application;
 using CSharpDemo.Azure;
 using CSharpDemo.FileOperation;
@@ -20,7 +26,8 @@ namespace CSharpDemo
         {
             //IcMKustoDemo.MainMethod();
             //AzureCosmosDB.MainMethod();
-            QueryIncidents.MainMethod();
+            //QueryIncidents.MainMethod();
+
 
             Console.ReadKey();
         }
