@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Net;
+using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
@@ -15,8 +16,10 @@ using CSharpDemoAux;
 using Microsoft.Azure.KeyVault;
 using Microsoft.Azure.KeyVault.Models;
 using Microsoft.Azure.Services.AppAuthentication;
+using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+
 
 namespace CSharpDemo
 {
@@ -29,9 +32,10 @@ namespace CSharpDemo
             //QueryIncidents.MainMethod();
 
 
+
+
             Console.ReadKey();
         }
     }
-
 }
 

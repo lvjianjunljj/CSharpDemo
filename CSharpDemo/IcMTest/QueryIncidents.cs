@@ -24,7 +24,6 @@ namespace CSharpDemo.IcMTest
         {
             // ignore all cert errors in this sample
             //ServicePointManager.ServerCertificateValidationCallback = (a, b, c, d) => true;
-            //string jsonString = GetIncident();
             //SaveFile.FirstMethod(@"D:\data\company_work\IDEAs\IcMWork\test\incident2_test.txt", jsonString);
 
 
@@ -36,9 +35,8 @@ namespace CSharpDemo.IcMTest
 
             //SaveFile.FirstMethod(@"D:\data\company_work\IDEAs\IcMWork\tenants_list.html", GetTenants());
 
-            //EditIncidentCustomFieldsSimple();
 
-            AddDescriptionEntry();
+            //AddDescriptionEntry();
 
 
             //string descriptionEntriesJsonString = GetDescriptionEntries();
@@ -56,11 +54,10 @@ namespace CSharpDemo.IcMTest
             //}
 
             //EditIncidentCustomFields();
-            //EditIncidentCustomFields();
             //EditIncidentCustomFieldsSimple();
 
             //GetIncidentTeamCustomField(116142489);
-            //GetIncident();
+            GetIncident();
         }
         static void OneThread()
         {
@@ -641,7 +638,7 @@ namespace CSharpDemo.IcMTest
             }
         }
 
-        public static string GetIncident()
+        public static void GetIncident()
         {
             //JavaScriptSerializer serializer = new JavaScriptSerializer();
             HttpWebResponse result;
@@ -661,12 +658,12 @@ namespace CSharpDemo.IcMTest
 
             //url = @"https://icm.ad.msft.net/api/cert/incidents?$filter=OwningTeamId eq 'IDEAS\IDEAsDataCopTest' and Id eq 108097160";
 
-
+            // an error query
             //url = @"https://icm.ad.msft.net/api/cert/incidents?&$filter=OwningTeamId eq '<The SQL oncall team>' and ModifiedDate ge datetime'2019-04-11T15:24:41'";
 
-            //url = $@"https://icm.ad.msft.net/api/cert/incidents({a})";
+            url = $@"https://icm.ad.msft.net/api/cert/incidents(123500905)";
 
-            //url = string.Format("https://{0}/api/cert/incidents({1})", "icm.ad.msft.net", id);
+            //url = string.Format("https://{0}/api/cert/incidents({1})", "icm.ad.msft.net", 123500905);
 
             //url = @"https://icm.ad.msft.net/api/cert/incidents?$filter=OwningTeamId eq 'IDEAS\IDEAsDataCopTest' and 
             //    CustomFieldGroups/any(cfg:cfg/CustomFields/any
@@ -685,7 +682,6 @@ namespace CSharpDemo.IcMTest
                 if (cert == null)
                 {
                     Console.WriteLine("cert is null");
-                    return "cert is null";
                 }
                 req.ClientCertificates.Add(cert);
                 // submit the request
@@ -736,13 +732,11 @@ namespace CSharpDemo.IcMTest
                 {
                     Console.WriteLine(item.Id);
                 }
-                return json;
             }
             catch (Exception e)
             {
                 Console.WriteLine(e.Message);
                 Console.WriteLine(e.Message);
-                return null;
             }
         }
 
