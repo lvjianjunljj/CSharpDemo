@@ -181,6 +181,7 @@
     <Compile Include="Application\ISecretProvider.cs" />
     <Compile Include="Application\KeyVaultSecretProvider.cs" />
     <Compile Include="AttributesDemo.cs" />
+    <Compile Include="Azure\AzureActiveDirectoryToken.cs" />
     <Compile Include="Azure\AzureCosmosDB.cs" />
     <Compile Include="Azure\AzureKeyVault.cs" />
     <Compile Include="Azure\AzureMonitorLog.cs" />
@@ -230,7 +231,7 @@
     <Compile Include="Json\JsonProperty.cs" />
     <Compile Include="Json\JTokenTestDemo.cs" />
     <Compile Include="FileOperation\LogFileOperation.cs" />
-    <Compile Include="Logger.cs" />
+    <Compile Include="Application\Logger.cs" />
     <Compile Include="Parallel\TaskDemo.cs" />
     <Compile Include="Parallel\TaskVsThread.cs" />
     <Compile Include="PrivateConstructionMethod.cs" />
@@ -248,6 +249,7 @@
     <Compile Include="Parallel\ThreadDemo.cs" />
     <Compile Include="StringDemo.cs" />
     <Compile Include="TimerDemo.cs" />
+    <Compile Include="URLCodeDemo.cs" />
     <Compile Include="WebUIHtmlControlsDemo.cs" />
     <Compile Include="FileOperation\WriteFile.cs" />
     <Compile Include="FileOperation\TaskFriend.cs" />

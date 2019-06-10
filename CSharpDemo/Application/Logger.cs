@@ -7,8 +7,11 @@ using Microsoft.WindowsAzure.Storage; // Namespace for Storage Client Library
 using Microsoft.WindowsAzure.Storage.Blob; // Namespace for Azure Blobs
 using Microsoft.WindowsAzure.Storage.File; // Namespace for Azure Files
 
-namespace CSharpDemo
+namespace CSharpDemo.Application
 {
+    // This is my first version log based on Azure CloudFile(Just write the log into Azure CloudFile). 
+    // It is not a good way to save the log content in Azure CloudFile, so I abandon this Logger class. 
+
     public enum LogType
     {
         Error,

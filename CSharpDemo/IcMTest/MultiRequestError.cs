@@ -9,6 +9,7 @@
     using System.Security.Cryptography.X509Certificates;
     using System.Text;
     using System.Threading.Tasks;
+    using CSharpDemo.Application;
     using Microsoft.IdentityModel.Clients.ActiveDirectory;
 
     class MultiRequestError
@@ -45,7 +46,7 @@
                 handler.ClientCertificates.Add(certificate);
                 HttpClient client = new HttpClient(handler);
 
-                byte[] buffer = System.Text.Encoding.UTF8.GetBytes(EditIncidentDescriptionEntryContent);
+                byte[] buffer = Encoding.UTF8.GetBytes(EditIncidentDescriptionEntryContent);
                 ByteArrayContent content = new ByteArrayContent(buffer);
                 content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
@@ -94,31 +95,7 @@
             }
         }
 
-        private async Task<Dictionary<string, string>> GetDataCopRequestHeaders()
-        {
-            //var authenticationContext = new AuthenticationContext(this.defaultAadInstance, TokenCache.DefaultShared);
-            string microsoftTenantId = "72f988bf-86f1-41af-91ab-2d7cd011db47";
-            string clientId = "83ac8948-e5e1-4bbd-97ea-798a13dc8bc6";
-            string clientSecret = "IKLBuG0PqH?ZrpNmQu1ta.3Q==3:*I+A";
-            var authenticationContext = new AuthenticationContext($"https://login.microsoftonline.com/{microsoftTenantId}/authorize/", TokenCache.DefaultShared);
-            //var authenticationResult = await authenticationContext.AcquireTokenAsync(
-            //    this.dataCopAadClientId,
-            //    this.dataCopAadClientId,
-            //    new Uri("https://ideasdatacop.azure.activedirectory.com"),
-            //    new PlatformParameters(PromptBehavior.RefreshSession));
-
-
-            ClientCredential clientCred = new ClientCredential(clientId, clientSecret);
-            var authenticationResult = await authenticationContext.AcquireTokenAsync(clientId, clientCred);
-            Console.WriteLine(authenticationResult.AccessToken);
-
-            return new Dictionary<string, string>
-            {
-                { "Authorization", $"Bearer {authenticationResult.AccessToken}" },
-            };
-        }
-
-        public static X509Certificate2 GetCert(string certId)
+        private static X509Certificate2 GetCert(string certId)
         {
 
             if (string.IsNullOrEmpty(certId))
