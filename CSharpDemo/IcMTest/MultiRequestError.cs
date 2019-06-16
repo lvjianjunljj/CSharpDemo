@@ -29,6 +29,7 @@
 
         public static void MainMethod()
         {
+            //HttpClientDemo();
             HttpWebRequestDemo();
         }
 
@@ -88,7 +89,27 @@
                 req.AllowWriteStreamBuffering = false;
 
                 // Will hang in here and finally throw timeout exception in GetRequestStream() after running this program several times if we dont run the dispose method.
-                WebResponse response = req.GetResponse();
+                HttpWebResponse result = (HttpWebResponse)req.GetResponse();
+
+                // read out the response stream as text
+                Stream data = result.GetResponseStream();
+                if (data != null)
+                {
+                    TextReader tr = new StreamReader(data);
+                    string resultString = tr.ReadToEnd();
+                    Console.WriteLine(resultString);
+                }
+
+                /* All the below three lines can solve this problem.
+                 * Or we can use this two line to solve this problem, the principle is the same
+                 * using (HttpWebResponse result = (HttpWebResponse)req.GetResponse())
+                 * using (Stream data = result.GetResponseStream())
+                 * Do some test and get the call hierarchy: data.Close() => data.Disponse() => response.Dispose()
+                 * We can see it in the doc: https://docs.microsoft.com/en-us/dotnet/api/system.io.stream.close?view=netframework-4.8
+                 * Stream.Close Method: This method calls Dispose
+                 */
+                //data.Close();
+                //data.Dispose();
                 //response.Dispose();
 
                 Console.WriteLine($"Finish round: {i + 1}");
