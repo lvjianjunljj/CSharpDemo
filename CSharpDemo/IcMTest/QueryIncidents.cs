@@ -35,45 +35,29 @@ namespace CSharpDemo.IcMTest
 
             //SaveFile.FirstMethod(@"D:\data\company_work\IDEAs\IcMWork\tenants_list.html", GetTenants());
 
-
             //AddDescriptionEntry();
 
 
             //string descriptionEntriesJsonString = GetDescriptionEntries();
             //SaveFile.FirstMethod(@"D:\data\company_work\IDEAs\IcMWork\test\description_entries_test.txt", descriptionEntriesJsonString);
 
-            //Thread[] threads = new Thread[10];
-            //for (int i = 0; i < 10; i++)
-            //{
-            //    threads[i] = new Thread(OneThread);
-            //    threads[i].Start();
-            //}
-            //for (int i = 0; i < 10; i++)
-            //{
-            //    threads[i].Join();
-            //}
 
             //EditIncidentCustomFields();
             //EditIncidentCustomFieldsSimple();
 
             //GetIncidentTeamCustomField(116142489);
-            GetIncident();
+
+            // Reslove all the active alert for test in DEV
+            //List<long> activeIncidentIdList = GetIncidentIdList(@"IDEAS\IDEAsDataCopTest", "ACTIVE");
+            //foreach (long incidnetId in activeIncidentIdList)
+            //{
+            //    MitigateIncident(incidnetId);
+            //    ResolveIncident(incidnetId);
+            //}
+
+            //GetIncident();
         }
-        static void OneThread()
-        {
-            double totalTimeCost = 0;
-            for (int i = 0; i < 10; i++)
-            {
-                DateTime beforDT = System.DateTime.Now;
-                List<long> activeIncidentIdList = GetIncidentIdList(@"IDEAS\IDEAsDataCopTest");
-                DateTime afterDT = System.DateTime.Now;
-                TimeSpan ts = afterDT.Subtract(beforDT);
-                //Console.WriteLine(activeIncidentIdList.Count);
-                //Console.WriteLine("get incident list time cost: {0}ms.", ts.TotalMilliseconds);
-                totalTimeCost += ts.TotalMilliseconds;
-            }
-            Console.WriteLine(totalTimeCost / 10);
-        }
+
 
         /* For this function, we cant call it very frequently.
         * For example, if we call it in a for loop:
@@ -464,7 +448,7 @@ namespace CSharpDemo.IcMTest
                   'MitigateParameters' : { 
                     'IsCustomerImpacting' : 'True', 
                     'IsNoise' : 'False',
-                    'Mitigation' : 'just mitigate the incident this is purely for demo sake',
+                    'Mitigation' : 'just mitigate the incident for test in DEV',
                     'HowFixed' : 'Fixed with Hotfix',
                     'MitigateContactAlias' : 'jianjlv'
                   }
@@ -507,7 +491,7 @@ namespace CSharpDemo.IcMTest
                     'IsCustomerImpacting' : 'False', 
                     'IsNoise' : 'True',
                     'Description' : {
-                        'Text' : 'just resolve the incident....check it out',
+                        'Text' : 'just resolve the incident for test in DEV',
                         'RenderType' : 'Plaintext'
                     },
                     'ResolveContactAlias' : 'jianjlv'
@@ -648,7 +632,7 @@ namespace CSharpDemo.IcMTest
 
             // build the URL we'll hit
             string LastSyncTimeString = DateTime.UtcNow.AddHours(-10000).ToString("s");
-            url = $@"https://icm.ad.msft.net/api/cert/incidents?$filter=OwningTeamId eq 'IDEAS\IDEAsDataCopTest' and Id eq 118638846 and ModifiedDate ge datetime'{LastSyncTimeString}'";
+            url = $@"https://icm.ad.msft.net/api/cert/incidents?$filter=OwningTeamId eq 'IDEAS\IDEAsDataCopTest' and Id eq 126785415 and ModifiedDate ge datetime'{LastSyncTimeString}'";
             // and CreatedBy eq 'DataCopMonitor'
 
             //url = $@"https://icm.ad.msft.net/api/cert/incidents?$filter=IncidentLocation/ServiceInstanceId eq 'DataCopAlertMicroService' and Status eq 'Active' and IncidentLocation/Environment eq 'prod'";
@@ -661,7 +645,7 @@ namespace CSharpDemo.IcMTest
             // an error query
             //url = @"https://icm.ad.msft.net/api/cert/incidents?&$filter=OwningTeamId eq '<The SQL oncall team>' and ModifiedDate ge datetime'2019-04-11T15:24:41'";
 
-            url = $@"https://icm.ad.msft.net/api/cert/incidents(123500905)";
+            //url = $@"https://icm.ad.msft.net/api/cert/incidents(108097160)";
 
             //url = string.Format("https://{0}/api/cert/incidents({1})", "icm.ad.msft.net", 123500905);
 
@@ -736,10 +720,8 @@ namespace CSharpDemo.IcMTest
             catch (Exception e)
             {
                 Console.WriteLine(e.Message);
-                Console.WriteLine(e.Message);
             }
         }
-
 
         public IEnumerable<T> GetIncidentList<T>(string owningTeamId, DateTime cutOffTime)
         {

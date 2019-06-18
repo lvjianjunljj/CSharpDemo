@@ -28,12 +28,40 @@ namespace CSharpDemo.Azure
 
             //UpsertTestDemoToCosmosDB();
             //QueryTestDemo();
-            GetLastTestDemo();
+            //GetLastTestDemo();
 
 
             //UpsertDatasetDemoToDev();
             //UpsertDatcopScoreDemoToDev();
             //UpsertActiveAlertTrendToDev();
+
+            //MigrateData("DatasetTest");
+        }
+
+        public static void MigrateData(string collectionId)
+        {
+            KeyVaultName = "datacopprod";
+            AzureCosmosDB azureCosmosDB = new AzureCosmosDB("DataCop", collectionId);
+            IList<JObject> list = azureCosmosDB.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c")).Result;
+
+            // This is a funny thing. azureCosmosDB has not been changed.
+            KeyVaultName = "datacopdev";
+            azureCosmosDB = new AzureCosmosDB("DataCop", collectionId, CosmosDBDocumentClientMode.NoSingle);
+            int count = 0;
+            foreach (JObject json in list)
+            {
+                count++;
+                try
+                {
+                    Console.WriteLine(json["id"]);
+                    azureCosmosDB.UpsertDocumentAsync(json).Wait();
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine($"ErrorMessage: {e.Message}");
+                }
+            }
+            Console.WriteLine(count);
         }
 
         public static void UpdateNoneAlertTypeDemo()
@@ -56,7 +84,7 @@ namespace CSharpDemo.Azure
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine("Error");
+                    Console.WriteLine($"ErrorMessage: {e.Message}");
                     Console.WriteLine(alert);
                 }
             }
@@ -282,9 +310,16 @@ namespace CSharpDemo.Azure
         /// </summary>
         /// <param name="databaseId">The database identifier.</param>
         /// <param name="collectionId">The collection identifier.</param>
-        public AzureCosmosDB(string databaseId, string collectionId)
+        public AzureCosmosDB(string databaseId, string collectionId, CosmosDBDocumentClientMode mode = CosmosDBDocumentClientMode.Single)
         {
-            this.Client = CosmosDBDocumentClient.Instance;
+            if (mode == CosmosDBDocumentClientMode.Single)
+            {
+                this.Client = CosmosDBDocumentClient.Instance;
+            }
+            else
+            {
+                this.Client = CosmosDBDocumentClient.NewInstance();
+            }
 
             this.Client.CreateDatabaseIfNotExistsAsync(new Database() { Id = databaseId }).Wait();
             this.DatabaseLink = this.Client.GetDatabaseLink(databaseId);
@@ -392,6 +427,12 @@ namespace CSharpDemo.Azure
         }
     }
 
+    enum CosmosDBDocumentClientMode
+    {
+        Single = 0,
+        NoSingle = 1
+    }
+
     class CosmosDBDocumentClient
     {
         // http://csharpindepth.com/Articles/General/Singleton.aspx explains the thread safe singleton pattern that is followed here.
@@ -449,11 +490,43 @@ namespace CSharpDemo.Azure
             this.client.OpenAsync().Wait();
         }
 
+        private CosmosDBDocumentClient(string endpoint, string key)
+        {
+            // https://docs.microsoft.com/en-us/azure/cosmos-db/performance-tips has more details.
+            ConnectionPolicy connectionPolicy = new ConnectionPolicy()
+            {
+                ConnectionMode = ConnectionMode.Direct,
+                ConnectionProtocol = Protocol.Tcp
+            };
+
+            // https://docs.microsoft.com/en-us/dotnet/api/microsoft.azure.documents.client.feedoptions.jsonserializersettings?view=azure-dotnet for more details.
+            JsonSerializerSettings jsonSerializerSettings = new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore };
+
+            this.client = new DocumentClient(
+                new Uri(endpoint),
+                key,
+                jsonSerializerSettings,
+                connectionPolicy);
+
+            this.client.OpenAsync().Wait();
+        }
+
         /// <summary>
         /// Gets the instance.
         /// </summary>
         /// <value>The instance.</value>
         public static CosmosDBDocumentClient Instance => documentClient.Value;
+
+        // Sometimes I need non-single mode
+        public static CosmosDBDocumentClient NewInstance()
+        {
+            return new CosmosDBDocumentClient();
+        }
+
+        public static CosmosDBDocumentClient NewInstance(string endpoint, string key)
+        {
+            return new CosmosDBDocumentClient(endpoint, key);
+        }
 
         /// <summary>
         /// Gets the document client.
