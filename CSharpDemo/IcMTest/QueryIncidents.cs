@@ -47,13 +47,15 @@ namespace CSharpDemo.IcMTest
 
             //GetIncidentTeamCustomField(116142489);
 
-            // Reslove all the active alert for test in DEV
-            //List<long> activeIncidentIdList = GetIncidentIdList(@"IDEAS\IDEAsDataCopTest", "ACTIVE");
-            //foreach (long incidnetId in activeIncidentIdList)
-            //{
-            //    MitigateIncident(incidnetId);
-            //    ResolveIncident(incidnetId);
-            //}
+            //Reslove all the active alert for test in DEV
+            List<long> activeIncidentIdList = GetIncidentIdList(@"IDEAS\IDEAsDataCopTest", "ACTIVE", "DEV");
+            foreach (long incidnetId in activeIncidentIdList)
+            {
+                Console.WriteLine(incidnetId);
+                MitigateIncident(incidnetId);
+                ResolveIncident(incidnetId);
+            }
+            Console.WriteLine(activeIncidentIdList.Count);
 
             //GetIncident();
         }
@@ -344,7 +346,7 @@ namespace CSharpDemo.IcMTest
             }
         }
 
-        public static List<long> GetIncidentIdList(string owningTeamId, string incidentStatus = null)
+        public static List<long> GetIncidentIdList(string owningTeamId, string incidentStatus = null, string environment = null)
         {
             HttpWebResponse result;
             HttpWebRequest req;
@@ -360,6 +362,11 @@ namespace CSharpDemo.IcMTest
                 {
                     url += $@" and Status eq '{incidentStatus}'";
                 }
+                if (environment != null)
+                {
+                    url += $@" and IncidentLocation/Environment eq '{environment}'";
+                }
+
                 req = WebRequest.CreateHttp(url);
                 url = null;
                 try

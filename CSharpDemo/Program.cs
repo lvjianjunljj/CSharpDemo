@@ -31,7 +31,6 @@ namespace CSharpDemo
             //AzureCosmosDB.MainMethod();
             //QueryIncidents.MainMethod();
 
-
             Console.ReadKey();
         }
     }
