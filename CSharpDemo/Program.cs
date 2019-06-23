@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using CSharpDemo.Application;
 using CSharpDemo.Azure;
+using CSharpDemo.CSharpInDepth.Part1;
 using CSharpDemo.FileOperation;
 using CSharpDemo.IcMTest;
 using CSharpDemoAux;
@@ -31,6 +32,7 @@ namespace CSharpDemo
             //AzureCosmosDB.MainMethod();
             //QueryIncidents.MainMethod();
 
+            LINQDemo.MainMethod();
             Console.ReadKey();
         }
     }
