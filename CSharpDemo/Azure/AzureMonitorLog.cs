@@ -16,6 +16,7 @@ namespace CSharpDemo.Azure
     {
         // The doc link: https://docs.microsoft.com/en-us/azure/azure-monitor/platform/data-collector-api
         // https://docs.microsoft.com/en-us/azure/azure-monitor/log-query/log-query-overview
+        // Query doc: https://docs.microsoft.com/en-us/azure/azure-monitor/log-query/get-started-portal
         // Query url: https://ms.portal.azure.com/#@microsoft.onmicrosoft.com/resource/subscriptions/6f7fbe56-fb42-4e46-b14d-dfc86acf0e0f/resourceGroups/CSharpMVCWebAPIApplicationResourceGroup/providers/Microsoft.OperationalInsights/workspaces/CSharpMVCWebAPIApplication/logs
         // It will cost a long time to create a table when you send a log request to a new table first.
         public static void MainMethod()
