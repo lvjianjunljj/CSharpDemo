@@ -47,17 +47,18 @@ namespace CSharpDemo.IcMTest
 
             //GetIncidentTeamCustomField(116142489);
 
-            //Reslove all the active alert for test in DEV
-            List<long> activeIncidentIdList = GetIncidentIdList(@"IDEAS\IDEAsDataCopTest", "ACTIVE", "DEV");
-            foreach (long incidnetId in activeIncidentIdList)
-            {
-                Console.WriteLine(incidnetId);
-                MitigateIncident(incidnetId);
-                ResolveIncident(incidnetId);
-            }
-            Console.WriteLine(activeIncidentIdList.Count);
 
-            //GetIncident();
+            //Reslove all the active alert for test in DEV
+            //List<long> activeIncidentIdList = GetIncidentIdList(@"IDEAS\IDEAsDataCopTest", "ACTIVE", "DEV");
+            //foreach (long incidnetId in activeIncidentIdList)
+            //{
+            //    Console.WriteLine(incidnetId);
+            //    MitigateIncident(incidnetId);
+            //    ResolveIncident(incidnetId);
+            //}
+            //Console.WriteLine(activeIncidentIdList.Count);
+
+            GetIncident();
         }
 
 
@@ -652,7 +653,7 @@ namespace CSharpDemo.IcMTest
             // an error query
             //url = @"https://icm.ad.msft.net/api/cert/incidents?&$filter=OwningTeamId eq '<The SQL oncall team>' and ModifiedDate ge datetime'2019-04-11T15:24:41'";
 
-            //url = $@"https://icm.ad.msft.net/api/cert/incidents(108097160)";
+            url = $@"https://icm.ad.msft.net/api/cert/incidents(108097160)";
 
             //url = string.Format("https://{0}/api/cert/incidents({1})", "icm.ad.msft.net", 123500905);
 

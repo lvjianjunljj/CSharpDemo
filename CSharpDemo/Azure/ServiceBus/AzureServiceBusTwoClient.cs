@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using CSharpDemo.Application;
 using Microsoft.Azure.ServiceBus;
 
-namespace CSharpDemo.Azure
+namespace CSharpDemo.Azure.ServiceBus
 {
     class AzureServiceBusTwoClient
     {
@@ -14,12 +14,13 @@ namespace CSharpDemo.Azure
         // AzureServiceBusTwoClient.ReceiveMainAsync().GetAwaiter().GetResult();
 
         public static int NumberOfMessages { set; get; }
+        const string KeyVaultName = "csharpmvcwebapikeyvault";
         const string QueueName = "queue_test_multi_client";
         static IQueueClient queueClient;
         public static async Task SendMainAsync()
         {
             ISecretProvider secretProvider = KeyVaultSecretProvider.Instance;
-            string serviceBusConnectionString = secretProvider.GetSecretAsync(AzureCosmosDB.KeyVaultName, "ServiceBusConnectionString").Result;
+            string serviceBusConnectionString = secretProvider.GetSecretAsync(KeyVaultName, "ServiceBusConnectionString").Result;
             queueClient = new QueueClient(serviceBusConnectionString, QueueName);
 
             Console.WriteLine("======================================================");
@@ -61,7 +62,7 @@ namespace CSharpDemo.Azure
         public static async Task ReceiveMainAsync()
         {
             ISecretProvider secretProvider = KeyVaultSecretProvider.Instance;
-            string serviceBusConnectionString = secretProvider.GetSecretAsync(AzureCosmosDB.KeyVaultName, "ServiceBusConnectionString").Result;
+            string serviceBusConnectionString = secretProvider.GetSecretAsync(KeyVaultName, "ServiceBusConnectionString").Result;
             queueClient = new QueueClient(serviceBusConnectionString, QueueName);
 
             Console.WriteLine("======================================================");

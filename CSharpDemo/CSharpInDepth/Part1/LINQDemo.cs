@@ -9,7 +9,7 @@ namespace CSharpDemo.CSharpInDepth.Part1
     /*
      * Doc link: https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/linq/index
      * 
-     * have never heard of LINQ before reading this book.
+     * I have never heard of LINQ before reading this book.
      * I feel that this kind of expansion is both amazing and nondescript.
      * 
      */

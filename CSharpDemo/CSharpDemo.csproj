@@ -185,10 +185,11 @@
     <Compile Include="Azure\AzureCosmosDB.cs" />
     <Compile Include="Azure\AzureKeyVault.cs" />
     <Compile Include="Azure\AzureMonitorLog.cs" />
-    <Compile Include="Azure\AzureServiceBusMultiClient.cs" />
-    <Compile Include="Azure\AzureServiceBusMultiThreadcs.cs" />
-    <Compile Include="Azure\AzureServiceBusTwoClient.cs" />
-    <Compile Include="Azure\AzureServiceBusSingleClient.cs" />
+    <Compile Include="Azure\AzureServiceBus.cs" />
+    <Compile Include="Azure\ServiceBus\AzureServiceBusMultiClient.cs" />
+    <Compile Include="Azure\ServiceBus\AzureServiceBusMultiThreadcs.cs" />
+    <Compile Include="Azure\ServiceBus\AzureServiceBusTwoClient.cs" />
+    <Compile Include="Azure\ServiceBus\AzureServiceBusSingleClient.cs" />
     <Compile Include="Azure\AzureSQLDatabase.cs" />
     <Compile Include="CmdHelper.cs" />
     <Compile Include="Constant.cs" />
@@ -236,6 +237,7 @@
     <Compile Include="Application\Logger.cs" />
     <Compile Include="Parallel\TaskDemo.cs" />
     <Compile Include="Parallel\TaskVsThread.cs" />
+    <Compile Include="ParentChildDemo.cs" />
     <Compile Include="PrivateConstructionMethod.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

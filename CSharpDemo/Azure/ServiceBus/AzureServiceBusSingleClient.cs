@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace CSharpDemo.Azure
+namespace CSharpDemo.Azure.ServiceBus
 {
     //AzureServiceBusSingleClient azureServiceBusSingleClient = new AzureServiceBusSingleClient();
     //azureServiceBusSingleClient.NumberOfMessages = 10;
@@ -13,13 +13,13 @@ namespace CSharpDemo.Azure
     //azureServiceBusSingleClient.ReceiveMainAsync().GetAwaiter().GetResult();
     class AzureServiceBusSingleClient
     {
-
+        const string KeyVaultName = "csharpmvcwebapikeyvault";
         const string QueueName = "queue_test_single_client";
         private IQueueClient queueClient;
         public AzureServiceBusSingleClient()
         {
             ISecretProvider secretProvider = KeyVaultSecretProvider.Instance;
-            string serviceBusConnectionString = secretProvider.GetSecretAsync(AzureCosmosDB.KeyVaultName, "ServiceBusConnectionString").Result;
+            string serviceBusConnectionString = secretProvider.GetSecretAsync(KeyVaultName, "ServiceBusConnectionString").Result;
             queueClient = new QueueClient(serviceBusConnectionString, QueueName);
         }
 

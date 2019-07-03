@@ -5,19 +5,20 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace CSharpDemo.Azure
+namespace CSharpDemo.Azure.ServiceBus
 {
     //AzureServiceBusMultiThread azureServiceBusMultiThread = new AzureServiceBusMultiThread();
     //azureServiceBusMultiThread.SendMainAsync().GetAwaiter().GetResult();
     //azureServiceBusMultiThread.ReceiveMainAsync().GetAwaiter().GetResult();
     class AzureServiceBusMultiThread
     {
+        const string KeyVaultName = "csharpmvcwebapikeyvault";
         const string QueueName = "queue_test_single_client";
         private IQueueClient queueClient;
         public AzureServiceBusMultiThread()
         {
             ISecretProvider secretProvider = KeyVaultSecretProvider.Instance;
-            string serviceBusConnectionString = secretProvider.GetSecretAsync(AzureCosmosDB.KeyVaultName, "ServiceBusConnectionString").Result;
+            string serviceBusConnectionString = secretProvider.GetSecretAsync(KeyVaultName, "ServiceBusConnectionString").Result;
             queueClient = new QueueClient(serviceBusConnectionString, QueueName);
         }
         public async Task SendMainAsync()
@@ -48,10 +49,10 @@ namespace CSharpDemo.Azure
                     //Console.WriteLine($"Sending message: {messageBody}, id: {i}");
 
                     // Send the message to the queue.
-                    taskList[i] =  queueClient.SendAsync(message).ContinueWith((t) =>
-                    {
-                        Console.WriteLine($"Sending message: {messageBody}, id: {i}");
-                    }); ;
+                    taskList[i] = queueClient.SendAsync(message).ContinueWith((t) =>
+                   {
+                       Console.WriteLine($"Sending message: {messageBody}, id: {i}");
+                   }); ;
                 }
                 Task.WaitAll(taskList);
             }

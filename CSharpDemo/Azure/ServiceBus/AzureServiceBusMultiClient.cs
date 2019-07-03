@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace CSharpDemo.Azure
+namespace CSharpDemo.Azure.ServiceBus
 {
     class AzureServiceBusMultiClient
     {
@@ -15,6 +15,7 @@ namespace CSharpDemo.Azure
         //AzureServiceBusMultiClient.SendMainAsync().GetAwaiter().GetResult();
         //AzureServiceBusMultiClient.ReceiveMainAsync().GetAwaiter().GetResult();
 
+        const string KeyVaultName = "csharpmvcwebapikeyvault";
         const string QueueName = "queue_test_multi_client";
 
         public static int NumberOfMessages { get; set; }
@@ -32,7 +33,7 @@ namespace CSharpDemo.Azure
         static async Task SendMessagesAsync()
         {
             ISecretProvider secretProvider = KeyVaultSecretProvider.Instance;
-            string serviceBusConnectionString = secretProvider.GetSecretAsync(AzureCosmosDB.KeyVaultName, "ServiceBusConnectionString").Result;
+            string serviceBusConnectionString = secretProvider.GetSecretAsync(KeyVaultName, "ServiceBusConnectionString").Result;
             try
             {
                 for (var i = 0; i < NumberOfMessages; i++)
@@ -84,7 +85,7 @@ namespace CSharpDemo.Azure
         static async Task RegisterOnMessageHandlerAndReceiveMessages()
         {
             ISecretProvider secretProvider = KeyVaultSecretProvider.Instance;
-            string serviceBusConnectionString = secretProvider.GetSecretAsync(AzureCosmosDB.KeyVaultName, "ServiceBusConnectionString").Result;
+            string serviceBusConnectionString = secretProvider.GetSecretAsync(KeyVaultName, "ServiceBusConnectionString").Result;
             // Configure the MessageHandler Options in terms of exception handling, number of concurrent messages to deliver etc.
             var messageHandlerOptions = new MessageHandlerOptions(ExceptionReceivedHandler)
             {
