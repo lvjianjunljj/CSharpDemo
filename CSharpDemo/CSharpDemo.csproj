@@ -202,6 +202,8 @@
     <Compile Include="CosmosDBModel\TestRunAlert.cs" />
     <Compile Include="CosmosDBModel\TestRunAlertSettings.cs" />
     <Compile Include="CSharpInDepth\Part1\LINQDemo.cs" />
+    <Compile Include="CSharpInDepth\Part2\CSharp2\GenericsDemo.cs" />
+    <Compile Include="CSharpInDepth\Part2\CSharp2\NullableDemo.cs" />
     <Compile Include="DestructorDemo.cs" />
     <Compile Include="DIStudy\DISampleDemo\Assembler.cs" />
     <Compile Include="DIStudy\DISampleDemo\InjectionTest.cs" />
