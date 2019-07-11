@@ -249,6 +249,7 @@
     <Compile Include="ReflectionDemo\ReflectionGetValue.cs" />
     <Compile Include="ReflectionDemo\ReflectionSetValue.cs" />
     <Compile Include="ReflectionDemo\ToStringGetPropertiesDemo.cs" />
+    <Compile Include="SerializableAttributeDemo.cs" />
     <Compile Include="SingletonDemo\Singleton.cs" />
     <Compile Include="SingletonDemo\StaticVariableDemo.cs" />
     <Compile Include="SqlSugarDemo.cs" />

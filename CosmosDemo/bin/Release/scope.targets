@@ -1,0 +1,129 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <!-- UseStandardMsBuildTool by default -->
+    <UseStandardMsBuildTool Condition=" '$(UseStandardMsBuildTool)' == ''">true</UseStandardMsBuildTool>
+  </PropertyGroup>
+  
+  <!--Import the standards targets-->
+  <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" Condition=" '$(UseStandardMsBuildTool)' == 'true'" />
+  
+  <PropertyGroup>
+    <CompilerTaskAssemblyFile Condition=" '$(CompilerTaskAssemblyFile)' == ''">Microsoft.Cosmos.ScopeStudio.VsExtension.CompilerTask</CompilerTaskAssemblyFile>
+    <ScopeCmdLineMsBuild Condition=" '$(ScopeCmdLineMsBuild)' == ''">false</ScopeCmdLineMsBuild>
+    <DefaultLanguageSourceExtension>.script</DefaultLanguageSourceExtension>
+    <Language>Scope</Language>
+  </PropertyGroup>
+
+  <!--Reference the assembly where our tasks are defined-->
+  <!-- AssemblyName for IDE build -->
+  <UsingTask TaskName="Microsoft.Cosmos.ScopeStudio.VsExtension.CompilerTask.ScopeCompilerTask" Condition=" '$(ScopeCmdLineMsBuild)' != 'true'"
+    AssemblyName="$(CompilerTaskAssemblyFile)" />
+
+  <!-- AssemblyFile for commandline build -->
+  <UsingTask TaskName="Microsoft.Cosmos.ScopeStudio.VsExtension.CompilerTask.ScopeCompilerTask" Condition=" '$(ScopeCmdLineMsBuild)' == 'true'"
+    AssemblyFile="$(CompilerTaskAssemblyFile)" />
+	
+  <!--Compile target (this is the target that calls the compiler task)-->
+  <Target Name="ScopeCompilerTarget"
+      Inputs="$(ActiveFile);@(Script);@(ScriptCode);@(ReferencePath);@(Content);$(MSBuildAllProjects)"
+      Outputs="@(IntermediateAssembly)">
+    <ItemGroup>
+      <FileToBuild Condition=" '$(JustOneFile)' == '' and  '$(Build_all_files_in_this_project)' != 'true'" Include="$(ActiveFile)" />
+      <FileToBuild Condition=" '$(JustOneFile)' != '' " Include="$(JustOneFile)" />
+      <FileToBuild Condition=" '$(Build_all_files_in_this_project)' == 'true' " Include="Build_all_files_in_this_project" />
+    </ItemGroup>
+
+    <Message Importance="High" Text="Using Virtual Cluster: $(CurrentWorkingVC)" />
+    <Message Importance="High" Text="Building Script: %(FileToBuild.Identity)" />
+    <Message Importance="High" Condition=" '$(JustOneFile)' == '' and '$(Build_all_files_in_this_project)' != 'true' and '%(Script.Identity)' == '$(ActiveFile)' and %(Script.ScopeOldParameters) != ''"
+             Text="%(Script.Identity) using parameters: -params %(Script.ScopeOldParameters)" />
+    <Message Importance="High" Condition=" '$(JustOneFile)' != '' and '%(Script.Identity)' == '$(JustOneFile)' and %(Script.ScopeOldParameters) != '' and '$(BuildClusterPlan)' != 'true'"
+             Text="%(Script.Identity) using parameters: -params %(Script.ScopeOldParameters)" />
+    <Message Importance="High" Condition=" '$(JustOneFile)' != '' and '%(Script.Identity)' == '$(JustOneFile)' and %(Script.ScopeClusterParameters) != '' and '$(BuildClusterPlan)' == 'true'"
+             Text="%(Script.Identity) using parameters: -params %(Script.ScopeClusterParameters)" />
+    <Message Importance="High" Condition=" '$(Build_all_files_in_this_project)' == 'true' and %(Script.ScopeOldParameters) != '' "
+             Text="%(Script.Identity) using parameters: -params %(Script.ScopeOldParameters)" />
+    <ScopeCompilerTask
+      SourceFiles="@(Script)"
+      OutputAssembly="@(IntermediateAssembly)"
+      ReferencedAssemblies="@(ReferencePath)"
+      CurrentBuildFile="%(FileToBuild.Identity)"
+      StartFile="$(ActiveFile)"
+      CurrentWorkingVC="$(CurrentWorkingVC)"
+      CosmosRuntimeVersion="$(CosmosRuntimeVersion)"
+      ScopePath="$(ScopePath)"
+      InputStreamSearchPath="$(InputStreamSearchPath)"
+      OutputStreamPath="$(OutputStreamPath)"
+      TargetKind="$(OutputType)"
+      DebugSymbols="$(DebugSymbols)"
+      ProjectPath="$(MSBuildProjectDirectory)"
+      ProjectFile="$(MSBuildProjectFile)"
+      ScopeCmdLineMsBuild="$(ScopeCmdLineMsBuild)"
+      DoStaticCodeAnalysis="$(DoStaticCodeAnalysis)"
+      BuildClusterPlan="$(BuildClusterPlan)"
+      VertexDebugSolution="$(VertexDebugSolution)"
+      OutputPath="$(OutputPath)"
+      EnableLegacyRuntime="$(EnableLegacyRuntime)"
+      CompileMode="$(CompileMode)"
+      ParallelCompile="$(ParallelCompile)"
+      Proxy="$(Proxy)"
+      EnablePromoteWarnings="$(EnablePromoteWarnings)"
+      BuildInCommandLine="$(BuildInCommandLine)"
+      />
+  </Target>
+
+  <!-- This is important:
+  Override the "CoreCompile" target defined in Microsoft.Common.targets so that scope compile gets called -->
+  <Target
+    Name="CoreCompile"
+    Inputs="$(ActiveFile);@(Script);@(ScriptCode);@(ReferencePath);$(MSBuildAllProjects)"
+    Outputs="@(IntermediateAssembly)"
+    DependsOnTargets="ScopeCompilerTarget"/>
+
+
+  <!-- 
+    Override the GetFrameworkPaths action to do nothing, this is to stop the "build" action to complain about
+    "Could not locate the .NET Framework SDK.  The task is looking for the path to the .NET Framework SDK at 
+    the location specified in the SDKInstallRootv2.0 value of the registry key 
+    HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\.NETFramework."
+  -->
+  <Target Name="GetFrameworkPaths" />
+
+
+  <!-- This CreateManifestResourceNames target does nothing, 
+  it is here to stop msbuild from complaining. -->
+  <PropertyGroup>
+    <CreateManifestResourceNamesDependsOn></CreateManifestResourceNamesDependsOn>
+  </PropertyGroup>
+
+  <Target
+    Name="CreateManifestResourceNames"
+    Condition="'@(ResxWithNoCulture)@(ResxWithCulture)@(NonResxWithNoCulture)@(NonResxWithCulture)'!=''"
+    DependsOnTargets="$(CreateManifestResourceNamesDependsOn)">
+  </Target>
+
+  <UsingTask TaskName="Microsoft.Cosmos.ScopeStudio.VsExtension.CompilerTask.ScopeCleanTask"
+  AssemblyName="$(CompilerTaskAssemblyFile)" />
+
+  <Target Name="CleanScopeGenFolder">
+    <Message Importance="High" Text="Clean Scope Application Temporary Folder." />
+    <ScopeCleanTask
+        ProjectPath="$(MSBuildProjectDirectory)"
+        OutputPath="$(OutputPath)"
+        />
+  </Target>
+
+  <PropertyGroup>
+    <CleanDependsOn>
+      BeforeClean;
+      UnmanagedUnregistration;
+      CoreClean;
+      CleanScopeGenFolder;
+      CleanReferencedProjects;
+      CleanPublishFolder;
+      AfterClean
+    </CleanDependsOn>
+  </PropertyGroup>
+  
+</Project>

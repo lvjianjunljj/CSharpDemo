@@ -29,19 +29,15 @@ namespace CSharpDemo
     {
         static void Main(string[] args)
         {
-            //IcMKustoDemo.MainMethod();
             //AzureCosmosDB.MainMethod();
             //QueryIncidents.MainMethod();
 
-            //AzureServiceBus.MainMethod();
+            AzureServiceBus.MainMethod();
 
-            GenericsDemo.MainMethod();
 
             Console.ReadKey();
         }
 
     }
-
-
 }
 
