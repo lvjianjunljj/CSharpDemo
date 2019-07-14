@@ -8,8 +8,7 @@ using Microsoft.IdentityModel.Clients.ActiveDirectory;
 
 namespace CSharpDemo.Azure
 {
-    // The doc link: https://docs.microsoft.com/en-us/azure/key-vault/key-vault-whatis#basic-concepts
-    // https://docs.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/overview
+    // OneNote link: https://microsoftapc-my.sharepoint.com/personal/jianjlv_microsoft_com/_layouts/OneNote.aspx?id=%2Fpersonal%2Fjianjlv_microsoft_com%2FDocuments%2FJianjun%20%40%20Microsoft&wd=target%28Azure.one%7C82D4B6EF-4D8B-4376-9D6B-EE7003D7D902%2FKey-vault%7C7FFD6EA2-D081-4426-849C-60C3DB2A6B1C%2F%29
     class AzureKeyVault
     {
 

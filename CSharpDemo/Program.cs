@@ -32,8 +32,15 @@ namespace CSharpDemo
             //AzureCosmosDB.MainMethod();
             //QueryIncidents.MainMethod();
 
-            AzureServiceBus.MainMethod();
+            //AzureServiceBus.MainMethod();
 
+
+            DateTime date = DateTime.Parse("2019-01-10T00:00:00.0000000Z");
+            while (date < DateTime.Now)
+            {
+                Console.WriteLine(date);
+                date = date.AddDays(1);
+            }
 
             Console.ReadKey();
         }

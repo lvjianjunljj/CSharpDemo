@@ -8,19 +8,47 @@
     {
         static void Main(string[] args)
         {
-            // You can get the sample stram path and thumbprint from the doc: https://microsoftapc-my.sharepoint.com/personal/jianjlv_microsoft_com/_layouts/OneNote.aspx?id=%2Fpersonal%2Fjianjlv_microsoft_com%2FDocuments%2FJianjun%20%40%20Microsoft&wd=target%28Work.one%7C08C13A75-D69C-49FE-8D53-8DBF6710CCF0%2FSample%20Code%7CF29C765D-F05A-4516-8F35-08DCE5847D4C%2F%29
+            // You can get the sample stram path from the doc: https://microsoftapc-my.sharepoint.com/personal/jianjlv_microsoft_com/_layouts/OneNote.aspx?id=%2Fpersonal%2Fjianjlv_microsoft_com%2FDocuments%2FJianjun%20%40%20Microsoft&wd=target%28Work.one%7C08C13A75-D69C-49FE-8D53-8DBF6710CCF0%2FSample%20Code%7CF29C765D-F05A-4516-8F35-08DCE5847D4C%2F%29
 
             string stream = "";
 
-            var settings = new Microsoft.Cosmos.ExportClient.ScopeExportSettings();
-            settings.Path = stream;
-            settings.ClientCertificate = GetCertificateByThumbprint("");
+            //stream = "https://cosmos14.osdinfra.net/cosmos/IDEAs.Prod/local/Scheduled/Datasets/Public/Profiles/Tenants/TenantsHistory.ss";
 
-            var exportClient = new Microsoft.Cosmos.ExportClient.ExportClient(settings);
 
-            long rowCount = exportClient.GetRowCount(null).Result;
+            DateTime date = DateTime.Parse("2019-04-10T00:00:00.0000000Z");
+            var certificate = GetCertificateByThumbprint("7C3B9FAC23D24DB1313E7F985BB820FEF862A284");
+            while (date < DateTime.Now)
+            {
+                Console.WriteLine(date);
+                date = date.AddDays(1);
 
-            Console.WriteLine(rowCount);
+                var year = date.Year.ToString();
+                var month = date.Month.ToString("00");
+                var day = date.Day.ToString("00");
+
+                stream = $"https://cosmos14.osdinfra.net/cosmos/IDEAs.Prod/local/Scheduled/Datasets/Public/Profiles/Users/{year}/{month}/{day}/UserSkusHistory_{year}_{month}_{day}.ss";
+
+                //"local/Scheduled/Datasets/Public/Profiles/Tenants/%Y/%m/%d/TenantsHistory_%Y_%m_%d.ss";
+
+                var settings = new Microsoft.Cosmos.ExportClient.ScopeExportSettings();
+                settings.Path = stream;
+                settings.ClientCertificate = certificate;
+
+                var exportClient = new Microsoft.Cosmos.ExportClient.ExportClient(settings);
+
+                try
+                {
+                    long rowCount = exportClient.GetRowCount(null).Result;
+                    Console.WriteLine(rowCount);
+
+                }
+                catch (Microsoft.Cosmos.CosmosUriException e)
+                {
+                    Console.WriteLine($"Message: {e.Message}; Type: {e.GetType()}");
+                }
+
+
+            }
 
             Console.ReadKey();
         }
