@@ -11,8 +11,10 @@
         public static void MainMethod()
         {
             string keyVaultName = "datacopdev";
+            //string keyVaultName = "ideasdatacopppe";
             //string queueName = "onboardingrequest";
-            string queueName = "cosmostest";
+            //string queueName = "cosmostest";
+            string queueName = "alert";
             ISecretProvider secretProvider = KeyVaultSecretProvider.Instance;
             string serviceBusConnectionString = secretProvider.GetSecretAsync(keyVaultName, "ServiceBusConnectionString").Result;
             IQueueClient queueClient = new QueueClient(serviceBusConnectionString, queueName);
@@ -20,20 +22,20 @@
 
             //Send message to the queue.
             //Create a new message to send to the queue.
-            string messageBody = "{\"requestId\":\"7e295d1b-9887-412e-bc37-c6404f6a2998\",\"requestType\":\"Create\",\"dataset\":{\"id\":\"d42a4841-85ab-40c9-95c3-48cc3ce6eb20\",\"name\":\"Sharepoint Active Usage\",\"createTime\":\"0001-01-01T00:00:00\",\"lastModifiedTime\":\"0001-01-01T00:00:00\",\"connectionInfo\":{\"dataLakeStore\":\"ideas-prod-c14.azuredatalakestore.net\",\"dataLakePath\":\"local/Partner/PreRelease/dev/activeusage/sharepointcommercial/%Y/%m/SharepointActiveUsage_%Y_%m_%d.ss\"},\"dataFabric\":\"ADLS\",\"category\":\"None\",\"startDate\":\"2017-07-01T00:00:00Z\",\"grain\":\"Daily\",\"sla\":\"6.0:0:0\",\"isEnabled\":false,\"ttl\":-1}}";
+            //string messageBody = "{\"requestId\":\"7e295d1b-9887-412e-bc37-c6404f6a2998\",\"requestType\":\"Create\",\"dataset\":{\"id\":\"d42a4841-85ab-40c9-95c3-48cc3ce6eb20\",\"name\":\"Sharepoint Active Usage\",\"createTime\":\"0001-01-01T00:00:00\",\"lastModifiedTime\":\"0001-01-01T00:00:00\",\"connectionInfo\":{\"dataLakeStore\":\"ideas-prod-c14.azuredatalakestore.net\",\"dataLakePath\":\"local/Partner/PreRelease/dev/activeusage/sharepointcommercial/%Y/%m/SharepointActiveUsage_%Y_%m_%d.ss\"},\"dataFabric\":\"ADLS\",\"category\":\"None\",\"startDate\":\"2017-07-01T00:00:00Z\",\"grain\":\"Daily\",\"sla\":\"6.0:0:0\",\"isEnabled\":false,\"ttl\":-1}}";
 
 
-            Message message = new Message(Encoding.UTF8.GetBytes(messageBody));
-            message.MessageId = "7e295d1b-9887-412e-bc37-c6404f6a2998";
+            //Message message = new Message(Encoding.UTF8.GetBytes(messageBody));
+            //message.MessageId = "7e295d1b-9887-412e-bc37-c6404f6a2998";
 
 
-            queueClient.SendAsync(message);
-            Console.WriteLine("End...");
+            //queueClient.SendAsync(message);
+            //Console.WriteLine("End...");
 
 
             // Recieve message from the queue
-            //AzureServiceBus serviceBus = new AzureServiceBus();
-            //serviceBus.RegisterOnMessageHandlerAndReceiveMessages(queueClient);
+            AzureServiceBus serviceBus = new AzureServiceBus();
+            serviceBus.RegisterOnMessageHandlerAndReceiveMessages(queueClient);
         }
 
 
@@ -49,7 +51,7 @@
                 // Indicates whether MessagePump should automatically complete the messages after returning from User Callback.
                 // False below indicates the Complete will be handled by the User Callback as in `ProcessMessagesAsync` below.
                 // For my most scenarios, I think setting it true is better.
-                AutoComplete = true
+                AutoComplete = false
             };
 
             // Register the function that will process messages

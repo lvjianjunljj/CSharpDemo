@@ -15,7 +15,7 @@
             //stream = "https://cosmos14.osdinfra.net/cosmos/IDEAs.Prod/local/Scheduled/Datasets/Public/Profiles/Tenants/TenantsHistory.ss";
 
 
-            DateTime date = DateTime.Parse("2019-04-10T00:00:00.0000000Z");
+            DateTime date = DateTime.Parse("2019-06-10T00:00:00.0000000Z");
             var certificate = GetCertificateByThumbprint("7C3B9FAC23D24DB1313E7F985BB820FEF862A284");
             while (date < DateTime.Now)
             {
@@ -26,7 +26,11 @@
                 var month = date.Month.ToString("00");
                 var day = date.Day.ToString("00");
 
-                stream = $"https://cosmos14.osdinfra.net/cosmos/IDEAs.Prod/local/Scheduled/Datasets/Public/Profiles/Users/{year}/{month}/{day}/UserSkusHistory_{year}_{month}_{day}.ss";
+                //stream = $"https://cosmos14.osdinfra.net/cosmos/IDEAs.Prod/local/Scheduled/Datasets/Public/Profiles/Tenants/{year}/{month}/{day}/TenantsHistory_{year}_{month}_{day}.ss";
+
+
+                stream = "https://cosmos14.osdinfra.net/cosmos/IDEAs.Prod/local/Scheduled/Datasets/Public/Profiles/Tenants/2019/07/12/TenantsHistory_2019_07_12.ss";
+
 
                 //"local/Scheduled/Datasets/Public/Profiles/Tenants/%Y/%m/%d/TenantsHistory_%Y_%m_%d.ss";
 
@@ -42,7 +46,10 @@
                     Console.WriteLine(rowCount);
 
                 }
-                catch (Microsoft.Cosmos.CosmosUriException e)
+                // cannot catch the exception "CosmosFileNotFoundException", 
+                // and we either cannot use this exception "CosmosFileNotFoundException.
+                //catch (Microsoft.Cosmos.CosmosUriException e)
+                catch (Exception e)
                 {
                     Console.WriteLine($"Message: {e.Message}; Type: {e.GetType()}");
                 }

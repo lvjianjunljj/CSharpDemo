@@ -16,13 +16,14 @@ namespace CSharpDemo.Azure
 {
     class AzureCosmosDB
     {
-        // "datacopdev", "datacopprod" or "csharpmvcwebapikeyvault"(csharpmvcwebapicosmosdb)
+        // "datacopdev","ideasdatacopppe", "datacopprod" or "csharpmvcwebapikeyvault"(csharpmvcwebapicosmosdb)
         public static string KeyVaultName = "csharpmvcwebapikeyvault";
         public static void MainMethod()
         {
             //UpdateAllAlertSettingsDemo();
             //QueryAlertSettingDemo();
             //QueryAlertDemo();
+
             //UpsertAlertDemoToDev();
 
 
@@ -132,12 +133,24 @@ namespace CSharpDemo.Azure
         {
             AzureCosmosDB azureCosmosDB = new AzureCosmosDB("DataCop", "Alert");
             // Collation: asc and desc is ascending and descending
-            IList<JObject> list = azureCosmosDB.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT c.issuedOnDate AS aaaa, c.impactedDate AS bbbb, time(c.issuedOnDate), time(c.impactedDate) AS cccc FROM c")).Result;
+            IList<JObject> list = azureCosmosDB.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c where c.id = 'dd6c3669-8f99-432f-b263-499243ab58b2'")).Result;
             foreach (JObject jObject in list)
             {
                 Console.WriteLine(jObject);
             }
         }
+
+        public static void QueryDatasetTestDemo()
+        {
+            AzureCosmosDB azureCosmosDB = new AzureCosmosDB("DataCop", "DatasetTest");
+            // Collation: asc and desc is ascending and descending
+            IList<JObject> list = azureCosmosDB.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c where c.datasetId  = '116cafb5-283a-4445-a95d-74a82af32997' and c.status = Enabled")).Result;
+            foreach (JObject jObject in list)
+            {
+                Console.WriteLine(jObject);
+            }
+        }
+
         public static void QueryTestDemo()
         {
             AzureCosmosDB azureCosmosDB = new AzureCosmosDB("CosmosDBTest", "TestCollectionId");
@@ -172,12 +185,23 @@ namespace CSharpDemo.Azure
             AzureCosmosDB azureCosmosDB = new AzureCosmosDB("CosmosDBTest", "TestCollectionId");
 
             AzureCosmosDBTestClass t = new AzureCosmosDBTestClass();
+            t.Id = Guid.NewGuid().ToString();
             t.TestA = "a";
             t.TestB = "b";
             t.TestC = "cc";
-            t.Id = "1111";
             t.TestHashSet = new HashSet<string>();
-            t.TestHashSet.Add("1234");
+            t.TestHashSet.Add("1");
+            t.TestHashSet.Add("2");
+            t.TestHashSet.Add("3");
+            t.TestHashSet.Add("4");
+            // the value of long.MaxValue is 9223372036854775807
+            // But in the Azure CosmosDB, this two value will be shown as 9223372036854776000
+            // When you get it from Azure CosmosDB, you will get the value 9223372036854775807
+            // But if you update the number as 9223372036854775807 in Azure CosmosDB portal, it will be shown and updated as 9223372036854776000,
+            // When you get it from Azure CosmosDB, you will get the value 9223372036854776000, and there will be an exception thrown when convert it to a long property.
+            t.TestLongMaxValueViaLong = long.MaxValue;
+            t.TestLongMaxValueViaDouble = long.MaxValue;
+            t.CreateDate = DateTime.Now;
 
             ResourceResponse<Document> resource = azureCosmosDB.UpsertDocumentAsync(t).Result;
             Console.WriteLine(resource);
