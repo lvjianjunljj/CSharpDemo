@@ -17,11 +17,12 @@ namespace CSharpDemo.Azure
     class AzureCosmosDB
     {
         // "datacopdev","ideasdatacopppe", "datacopprod" or "csharpmvcwebapikeyvault"(csharpmvcwebapicosmosdb)
-        public static string KeyVaultName = "csharpmvcwebapikeyvault";
+        public static string KeyVaultName = "datacopprod";
         public static void MainMethod()
         {
             //UpdateAllAlertSettingsDemo();
             //QueryAlertSettingDemo();
+            //QueryDatasetTestDemo();
             //QueryAlertDemo();
 
             //UpsertAlertDemoToDev();
@@ -37,6 +38,99 @@ namespace CSharpDemo.Azure
             //UpsertActiveAlertTrendToDev();
 
             //MigrateData("DatasetTest");
+
+            AddCompletenessMonitors4ADLS();
+        }
+
+        public static void AddCompletenessMonitors4ADLS()
+        {
+            string dirPath = @"D:\data\company_work\M365\IDEAs\work_item_file\1161175\write\";
+            string duplicateDirPath = @"D:\data\company_work\M365\IDEAs\work_item_file\1161175\duplicate\";
+
+
+            AzureCosmosDB azureDatasetTestCosmosDB = new AzureCosmosDB("DataCop", "DatasetTest");
+            AzureCosmosDB azureDatasetCosmosDB = new AzureCosmosDB("DataCop", "Dataset");
+            // Collation: asc and desc is ascending and descending
+            IList<JObject> availabilityList = azureDatasetTestCosmosDB.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c where c.testContentType = 'AdlsAvailability' and c.status = 'Enabled'")).Result;
+
+            IList<JObject> completenessList = azureDatasetTestCosmosDB.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c where c.testContentType = 'AdlsCompleteness' and c.status = 'Enabled'")).Result;
+
+            Dictionary<string, int> completenessStreamPathDict = new Dictionary<string, int>();
+            foreach (JObject jObject in completenessList)
+            {
+                if (!completenessStreamPathDict.ContainsKey(jObject["testContent"]["streamPath"].ToString()))
+                {
+                    completenessStreamPathDict.Add(jObject["testContent"]["streamPath"].ToString(), 1);
+                }
+                else
+                {
+                    completenessStreamPathDict[jObject["testContent"]["streamPath"].ToString()]++;
+                }
+            }
+            foreach (JObject jObject in availabilityList)
+            {
+                if (completenessStreamPathDict.ContainsKey(jObject["testContent"]["streamPath"].ToString()))
+                {
+                    completenessStreamPathDict[jObject["testContent"]["streamPath"].ToString()]--;
+                    continue;
+                }
+                if (!CheckDatasetEnabled(azureDatasetCosmosDB, jObject["datasetId"].ToString()))
+                {
+                    Console.WriteLine($"dataset '{jObject["datasetId"]}' is not enabled");
+                    continue;
+                }
+
+                jObject["id"] = Guid.NewGuid();
+                jObject["name"] = jObject["name"].ToString().Replace("Availability", "Completeness");
+
+                jObject["description"] = jObject["description"].ToString().Replace("Availability", "Completeness");
+                jObject["testCategory"] = jObject["testCategory"].ToString().Replace("Availability", "Completeness");
+                jObject["testContentType"] = jObject["testContentType"].ToString().Replace("Availability", "Completeness");
+                jObject["createdBy"] = "jianjlv";
+                jObject["lastModifiedBy"] = "jianjlv";
+                jObject["testContent"]["fileSizeMaxLimit"] = long.MaxValue;
+                jObject["testContent"]["fileSizeMinLimit"] = 0;
+                jObject.Remove("_rid");
+                jObject.Remove("_self");
+                jObject.Remove("_etag");
+                jObject.Remove("_attachments");
+                jObject.Remove("_ts");
+
+                string path = dirPath + jObject["name"].ToString().Replace(" ", "_") + ".json";
+                if (FileOperation.ReadFile.CheckFileExist(path))
+                {
+                    path = duplicateDirPath + jObject["name"].ToString().Replace(" ", "_") + ".json";
+                }
+                while (FileOperation.ReadFile.CheckFileExist(path))
+                {
+                    path = path.Replace(".json", "_.json");
+                }
+                FileOperation.SaveFile.FirstMethod(path, jObject.ToString());
+            }
+
+            Console.WriteLine(completenessList.Count);
+            Console.WriteLine(availabilityList.Count);
+            foreach (var completenessStreamPath in completenessStreamPathDict)
+            {
+                if (completenessStreamPath.Value > 0)
+                {
+                    Console.WriteLine($"path: {completenessStreamPath.Key}   completenessBiggerCount: {completenessStreamPath.Value}");
+                }
+            }
+        }
+
+        private static bool CheckDatasetEnabled(AzureCosmosDB azureDatasetCosmosDB, string datasetId)
+        {
+            IList<JObject> availabilityList = azureDatasetCosmosDB.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec($@"SELECT * FROM c where c.id = '{datasetId}'")).Result;
+            if (availabilityList.Count != 1)
+            {
+                Console.WriteLine($"Cannot get the dataset with id '{datasetId}'");
+                return false;
+            }
+            else
+            {
+                return bool.Parse(availabilityList[0]["isEnabled"].ToString());
+            }
         }
 
         public static void MigrateData(string collectionId)
@@ -129,6 +223,17 @@ namespace CSharpDemo.Azure
             }
         }
 
+        public static void QueryDataSetDemo()
+        {
+            AzureCosmosDB azureCosmosDB = new AzureCosmosDB("DataCop", "Dataset");
+            // Collation: asc and desc is ascending and descending
+            IList<JObject> list = azureCosmosDB.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c where c.id = 'b3969342-a5ef-44a3-bb14-afbdefbf5aba'")).Result;
+            foreach (JObject jObject in list)
+            {
+                Console.WriteLine(jObject);
+            }
+        }
+
         public static void QueryAlertDemo()
         {
             AzureCosmosDB azureCosmosDB = new AzureCosmosDB("DataCop", "Alert");
@@ -144,7 +249,7 @@ namespace CSharpDemo.Azure
         {
             AzureCosmosDB azureCosmosDB = new AzureCosmosDB("DataCop", "DatasetTest");
             // Collation: asc and desc is ascending and descending
-            IList<JObject> list = azureCosmosDB.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c where c.datasetId  = '116cafb5-283a-4445-a95d-74a82af32997' and c.status = Enabled")).Result;
+            IList<JObject> list = azureCosmosDB.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c where c.id  = '3348c56b-ae38-413b-9927-812f3990af85'")).Result;
             foreach (JObject jObject in list)
             {
                 Console.WriteLine(jObject);

@@ -27,15 +27,21 @@ namespace CSharpDemo
 {
     class Program
     {
+        static byte[] byData = new byte[100];
+        static char[] charData = new char[1000];
+
         static void Main(string[] args)
         {
             //AzureCosmosDB.MainMethod();
             //QueryIncidents.MainMethod();
 
-            //AzureServiceBus.MainMethod();
+            AzureServiceBus.MainMethod();
+
+
 
             Console.ReadKey();
         }
+
 
     }
 }

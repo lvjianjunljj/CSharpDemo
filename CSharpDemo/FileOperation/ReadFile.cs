@@ -86,5 +86,10 @@ namespace CSharpDemo.FileOperation
             writer.Flush();
             writer.Close();
         }
+
+        public static bool CheckFileExist(string filePath)
+        {
+            return File.Exists(filePath);
+        }
     }
 }

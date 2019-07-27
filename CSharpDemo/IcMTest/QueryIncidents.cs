@@ -653,7 +653,9 @@ namespace CSharpDemo.IcMTest
             // an error query
             //url = @"https://icm.ad.msft.net/api/cert/incidents?&$filter=OwningTeamId eq '<The SQL oncall team>' and ModifiedDate ge datetime'2019-04-11T15:24:41'";
 
-            url = $@"https://icm.ad.msft.net/api/cert/incidents(108097160)";
+            //url = $@"https://icm.ad.msft.net/api/cert/incidents(108097160)";
+
+            url = @"https://icm.ad.msft.net/api/cert/incidents?$filter=OwningContactAlias eq 'jianjlv'";
 
             //url = string.Format("https://{0}/api/cert/incidents({1})", "icm.ad.msft.net", 123500905);
 
@@ -708,22 +710,34 @@ namespace CSharpDemo.IcMTest
                 //    Console.WriteLine(inci.IncidentLocation.ServiceInstanceId);
                 //}
 
-                //Console.WriteLine(json);
-                JObject jsonObject = JObject.Parse(json);
-                List<Incident> incidents = JsonConvert.DeserializeObject<List<Incident>>(jsonObject["value"].ToString());
-                Console.WriteLine(incidents.Count);
 
-                List<object> l = new List<object>();
+                JObject jsonObject = JObject.Parse(json);
+
+                //List<Incident> incidents = JsonConvert.DeserializeObject<List<Incident>>(jsonObject["value"].ToString());
+                //Console.WriteLine(incidents.Count);
+
+                //List<object> l = new List<object>();
+                //foreach (var incident in incidents)
+                //{
+                //    if (incident.Source.CreatedBy.Equals("DataCopMonitor"))
+                //        l.Add(incident);
+                //}
+
+                //foreach (Incident item in l)
+                //{
+                //    Console.WriteLine(item.Id);
+                //}
+
+
+                // Not reference Microsoft.AzureAd.Icm
+                JArray incidents = JsonConvert.DeserializeObject<JArray>(jsonObject["value"].ToString());
                 foreach (var incident in incidents)
                 {
-                    if (incident.Source.CreatedBy.Equals("DataCopMonitor"))
-                        l.Add(incident);
+                    Console.WriteLine(incident["Id"]);
+                    Console.WriteLine(incident["Title"]);
+                    Console.WriteLine(incident["Status"]);
                 }
 
-                foreach (Incident item in l)
-                {
-                    Console.WriteLine(item.Id);
-                }
             }
             catch (Exception e)
             {

@@ -7,7 +7,7 @@ using Microsoft.Azure.Services.AppAuthentication;
 
 namespace CSharpDemo.Application
 {
-    class KeyVaultSecretProvider : ISecretProvider
+    public class KeyVaultSecretProvider : ISecretProvider
     {
         private static Lazy<KeyVaultSecretProvider> secretProvider = new Lazy<KeyVaultSecretProvider>(() => new KeyVaultSecretProvider());
 

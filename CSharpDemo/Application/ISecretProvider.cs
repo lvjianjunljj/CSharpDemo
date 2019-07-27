@@ -2,7 +2,7 @@
 
 namespace CSharpDemo.Application
 {
-    interface ISecretProvider
+    public interface ISecretProvider
     {
         Task<string> GetSecretAsync(string keyVaultName, string secretName);
     }
