@@ -1,17 +1,16 @@
-﻿using System;
-using System.Net.Http;
-using System.Threading.Tasks;
-using Microsoft.Azure.KeyVault;
-using Microsoft.Azure.KeyVault.Models;
-using Microsoft.Azure.Services.AppAuthentication;
-using Microsoft.IdentityModel.Clients.ActiveDirectory;
-
-namespace CSharpDemo.Azure
+﻿// OneNote link: https://microsoftapc-my.sharepoint.com/personal/jianjlv_microsoft_com/_layouts/OneNote.aspx?id=%2Fpersonal%2Fjianjlv_microsoft_com%2FDocuments%2FJianjun%20%40%20Microsoft&wd=target%28Azure.one%7C82D4B6EF-4D8B-4376-9D6B-EE7003D7D902%2FKey-vault%7C7FFD6EA2-D081-4426-849C-60C3DB2A6B1C%2F%29
+namespace AzureLib.KeyVault
 {
-    // OneNote link: https://microsoftapc-my.sharepoint.com/personal/jianjlv_microsoft_com/_layouts/OneNote.aspx?id=%2Fpersonal%2Fjianjlv_microsoft_com%2FDocuments%2FJianjun%20%40%20Microsoft&wd=target%28Azure.one%7C82D4B6EF-4D8B-4376-9D6B-EE7003D7D902%2FKey-vault%7C7FFD6EA2-D081-4426-849C-60C3DB2A6B1C%2F%29
-    class AzureKeyVault
-    {
+    using System;
+    using System.Net.Http;
+    using System.Threading.Tasks;
+    using Microsoft.Azure.KeyVault;
+    using Microsoft.Azure.KeyVault.Models;
+    using Microsoft.Azure.Services.AppAuthentication;
+    using Microsoft.IdentityModel.Clients.ActiveDirectory;
 
+    public class AzureKeyVaultDemo
+    {
         // string connectionString = AzureKeyVault.GetSecret("datacopdev", "ServiceBusConnectionString");
         // string connectionString = AzureKeyVault.GetSecret("csharpmvcwebapikeyvault", "AppSecret");
 
@@ -145,7 +144,7 @@ namespace CSharpDemo.Azure
 
         public static void MainMethod()
         {
-            AzureKeyVault AzureKeyVaultClass = new AzureKeyVault();
+            AzureKeyVaultDemo AzureKeyVaultClass = new AzureKeyVaultDemo();
             Task<string> azureKeyVaultTask = AzureKeyVaultClass.GetSecretAsync("AppSecret");
             Console.WriteLine(azureKeyVaultTask.Result);
             string appSecretValue = GetSecret("AppSecret");

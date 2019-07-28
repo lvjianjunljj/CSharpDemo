@@ -1,12 +1,12 @@
-﻿using System;
-using System.Threading.Tasks;
-
-using Microsoft.Azure.KeyVault;
-using Microsoft.Azure.KeyVault.Models;
-using Microsoft.Azure.Services.AppAuthentication;
-
-namespace CSharpDemo.Application
+﻿namespace AzureLib.KeyVault
 {
+    using System;
+    using System.Threading.Tasks;
+
+    using Microsoft.Azure.KeyVault;
+    using Microsoft.Azure.KeyVault.Models;
+    using Microsoft.Azure.Services.AppAuthentication;
+
     public class KeyVaultSecretProvider : ISecretProvider
     {
         private static Lazy<KeyVaultSecretProvider> secretProvider = new Lazy<KeyVaultSecretProvider>(() => new KeyVaultSecretProvider());

@@ -1,8 +1,8 @@
-﻿using System;
+﻿using AzureLib.KeyVault;
+using System;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using CSharpDemo.Application;
 using Microsoft.Azure.ServiceBus;
 
 namespace CSharpDemo.Azure.ServiceBus

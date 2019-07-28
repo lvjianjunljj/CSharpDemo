@@ -8,9 +8,6 @@
     using System.Net.Http.Headers;
     using System.Security.Cryptography.X509Certificates;
     using System.Text;
-    using System.Threading.Tasks;
-    using CSharpDemo.Application;
-    using Microsoft.IdentityModel.Clients.ActiveDirectory;
 
     class MultiRequestError
     {

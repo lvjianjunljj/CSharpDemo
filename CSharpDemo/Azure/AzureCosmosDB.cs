@@ -1,10 +1,10 @@
-﻿using System;
+﻿using AzureLib.KeyVault;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using CSharpDemo.Application;
 using CSharpDemo.CosmosDBModel;
 using Microsoft.Azure.Documents;
 using Microsoft.Azure.Documents.Client;
@@ -105,7 +105,8 @@ namespace CSharpDemo.Azure
                 {
                     path = path.Replace(".json", "_.json");
                 }
-                FileOperation.SaveFile.FirstMethod(path, jObject.ToString());
+                //FileOperation.SaveFile.FirstMethod(path, jObject.ToString());
+                Console.WriteLine(path);
             }
 
             Console.WriteLine(completenessList.Count);
