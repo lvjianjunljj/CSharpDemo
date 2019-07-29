@@ -10,6 +10,10 @@ namespace AdlsDemo
     {
         static void Main(string[] args)
         {
+            ISecretProvider secretProvider = KeyVaultSecretProvider.Instance;
+
+            string endpoint = secretProvider.GetSecretAsync(AzureCosmosDB.KeyVaultName, "CosmosDBEndPoint").Result;
+            string key = secretProvider.GetSecretAsync(AzureCosmosDB.KeyVaultName, "CosmosDBAuthKey").Result;
         }
     }
 }

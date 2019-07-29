@@ -105,8 +105,7 @@ namespace CSharpDemo.Azure
                 {
                     path = path.Replace(".json", "_.json");
                 }
-                //FileOperation.SaveFile.FirstMethod(path, jObject.ToString());
-                Console.WriteLine(path);
+                FileOperation.SaveFile.FirstMethod(path, jObject.ToString());
             }
 
             Console.WriteLine(completenessList.Count);

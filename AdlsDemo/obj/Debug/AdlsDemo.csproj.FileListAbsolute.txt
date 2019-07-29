@@ -1,6 +1,0 @@
-C:\Users\jianjlv\source\repos\CSharpDemo\AdlsDemo\bin\Debug\AdlsDemo.exe.config
-C:\Users\jianjlv\source\repos\CSharpDemo\AdlsDemo\bin\Debug\AdlsDemo.exe
-C:\Users\jianjlv\source\repos\CSharpDemo\AdlsDemo\bin\Debug\AdlsDemo.pdb
-C:\Users\jianjlv\source\repos\CSharpDemo\AdlsDemo\obj\Debug\AdlsDemo.csproj.CoreCompileInputs.cache
-C:\Users\jianjlv\source\repos\CSharpDemo\AdlsDemo\obj\Debug\AdlsDemo.exe
-C:\Users\jianjlv\source\repos\CSharpDemo\AdlsDemo\obj\Debug\AdlsDemo.pdb
