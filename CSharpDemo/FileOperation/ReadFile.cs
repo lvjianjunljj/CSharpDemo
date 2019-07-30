@@ -67,9 +67,9 @@ namespace CSharpDemo.FileOperation
             return data;
         }
 
-        public static void SummaryDirToOneFile(string folderFullName, string outputFileFullName)
+        public static void SummaryDirToOneFile(string folderAbsolutePath, string outputFileFullName)
         {
-            DirectoryInfo TheFolder = new DirectoryInfo(folderFullName);
+            DirectoryInfo TheFolder = new DirectoryInfo(folderAbsolutePath);
             // Traversing folders
             //foreach (DirectoryInfo NextFolder in TheFolder.GetDirectories())
             //    Console.WriteLine(NextFolder.Name);
@@ -91,5 +91,47 @@ namespace CSharpDemo.FileOperation
         {
             return File.Exists(filePath);
         }
+
+        public static List<string> GetAllFileAbsolutePaths(string folderAbsolutePath, ReadType readType, PathType pathType)
+        {
+            List<string> fileAbsolutePaths = new List<string>();
+            DirectoryInfo TheFolder = new DirectoryInfo(folderAbsolutePath);
+            FileSystemInfo Next;
+            // Traversing folders
+            //foreach (DirectoryInfo NextFolder in TheFolder.GetDirectories())
+            //    Console.WriteLine(NextFolder.Name);
+            // Traversing files
+            foreach (FileSystemInfo NextFile in TheFolder.GetFiles())
+            {
+                fileAbsolutePaths.Add(NextFile.FullName);
+            }
+            return fileAbsolutePaths;
+        }
+        public static List<string> GetAllFileRelativePaths(string folderAbsolutePath)
+        {
+            List<string> fileAbsolutePaths = new List<string>();
+            DirectoryInfo TheFolder = new DirectoryInfo(folderAbsolutePath);
+            // Traversing folders
+            //foreach (DirectoryInfo NextFolder in TheFolder.GetDirectories())
+            //    Console.WriteLine(NextFolder.Name);
+            // Traversing files
+            foreach (FileSystemInfo NextFile in TheFolder.GetFiles())
+            {
+                fileAbsolutePaths.Add(NextFile.Name);
+            }
+            return fileAbsolutePaths;
+        }
+    }
+
+    public enum ReadType
+    {
+        File = 1,
+        Directory = 2
+    }
+
+    public enum PathType
+    {
+        Absolute = 1,
+        Relative = 2
     }
 }

@@ -4,12 +4,14 @@
 
 /.vs
 
+/AdlsDemo/bin
 /AzureKustoDemo/bin
 /CosmosDemo/bin
 /CSharpDemo/bin
 /CSharpDemoAux/bin
 /CSharpDemoReferenceAux/bin
 
+/AdlsDemo/obj
 /AzureKustoDemo/obj
 /CosmosDemo/obj
 /CSharpDemo/obj

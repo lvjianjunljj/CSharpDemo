@@ -14,9 +14,10 @@
             // You can get the sample stram path from the doc: https://microsoftapc-my.sharepoint.com/personal/jianjlv_microsoft_com/_layouts/OneNote.aspx?id=%2Fpersonal%2Fjianjlv_microsoft_com%2FDocuments%2FJianjun%20%40%20Microsoft&wd=target%28Work.one%7C08C13A75-D69C-49FE-8D53-8DBF6710CCF0%2FSample%20Code%7CF29C765D-F05A-4516-8F35-08DCE5847D4C%2F%29
 
 
-            CheckExists1();
+            //CheckExists1();
 
-            GetRowCountIteratively("2019-06-10T00:00:00.0000000Z");
+            //GetRowCountIteratively("2019-07-10T00:00:00.0000000Z");
+            Console.WriteLine(GetRowCount("https://cosmos14.osdinfra.net/cosmos/IDEAs.Prod/local/Scheduled/Datasets/Public/Profiles/Users/2019/07/25/MsodsUsersHistory_2019_07_25.ss"));
 
             Console.ReadKey();
         }
@@ -67,8 +68,7 @@
 
         public static void GetRowCountIteratively(string startDateString)
         {
-            DateTime date = DateTime.Parse("2019-06-10T00:00:00.0000000Z");
-            var certificate = GetCertificateByThumbprint(Thumbprint);
+            DateTime date = DateTime.Parse(startDateString);
             while (date < DateTime.Now)
             {
                 Console.WriteLine(date);
@@ -82,26 +82,32 @@
 
                 string stream = $"https://cosmos14.osdinfra.net/cosmos/IDEAs.Prod/local/Scheduled/Datasets/Public/Profiles/Tenants/{year}/{month}/{day}/TenantsHistory_{year}_{month}_{day}.ss";
 
-
-                var settings = new Microsoft.Cosmos.ExportClient.ScopeExportSettings();
-                settings.Path = stream;
-                settings.ClientCertificate = certificate;
-
-                var exportClient = new Microsoft.Cosmos.ExportClient.ExportClient(settings);
-
-                try
-                {
-                    long rowCount = exportClient.GetRowCount(null).Result;
-                    Console.WriteLine(rowCount);
-                }
-                // cannot catch the exception "CosmosFileNotFoundException", 
-                // and we either cannot use this exception "CosmosFileNotFoundException.
-                //catch (Microsoft.Cosmos.CosmosUriException e)
-                catch (Exception e)
-                {
-                    Console.WriteLine($"Message: {e.Message}; Type: {e.GetType()}");
-                }
+                long? rowCount = GetRowCount(stream);
+                Console.WriteLine(rowCount);
                 date = date.AddDays(1);
+            }
+        }
+
+        public static long? GetRowCount(string stream)
+        {
+            var certificate = GetCertificateByThumbprint(Thumbprint);
+            var settings = new Microsoft.Cosmos.ExportClient.ScopeExportSettings();
+            settings.Path = stream;
+            settings.ClientCertificate = certificate;
+
+            var exportClient = new Microsoft.Cosmos.ExportClient.ExportClient(settings);
+
+            try
+            {
+                return exportClient.GetRowCount(null).Result;
+            }
+            // cannot catch the exception "CosmosFileNotFoundException", 
+            // and we either cannot use this exception "CosmosFileNotFoundException.
+            //catch (Microsoft.Cosmos.CosmosUriException e)
+            catch (Exception e)
+            {
+                Console.WriteLine($"Message: {e.Message}; Type: {e.GetType()}");
+                return null;
             }
         }
 

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AzureLib.KeyVault;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,12 +9,24 @@ namespace AdlsDemo
 {
     class Program
     {
+        // We need the package from nuget Microsoft.Rest.ClientRuntime.Azure.Authentication and Microsoft.Azure.DataLake.Store
+
         static void Main(string[] args)
         {
             ISecretProvider secretProvider = KeyVaultSecretProvider.Instance;
 
-            string endpoint = secretProvider.GetSecretAsync(AzureCosmosDB.KeyVaultName, "CosmosDBEndPoint").Result;
-            string key = secretProvider.GetSecretAsync(AzureCosmosDB.KeyVaultName, "CosmosDBAuthKey").Result;
+            string clientId = secretProvider.GetSecretAsync("datacopdev", "AdlsAadAuthAppId").Result;
+            string clientKey = secretProvider.GetSecretAsync("datacopdev", "AdlsAadAuthAppSecret").Result;
+
+
+            var dataLakeClient = new DataLakeClient(clientId, clientKey);
+            Console.WriteLine(dataLakeClient.CheckExists("ideas-prod-c14.azuredatalakestore.net",
+                "local/datacop/TenantsHistory.ss"));
+            Console.WriteLine(dataLakeClient.GetFileSize("ideas-prod-c14.azuredatalakestore.net",
+                "local/datacop/TenantsHistory.ss"));
+
+
+            Console.ReadKey();
         }
     }
 }
