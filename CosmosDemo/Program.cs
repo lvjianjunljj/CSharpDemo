@@ -14,10 +14,10 @@
             // You can get the sample stram path from the doc: https://microsoftapc-my.sharepoint.com/personal/jianjlv_microsoft_com/_layouts/OneNote.aspx?id=%2Fpersonal%2Fjianjlv_microsoft_com%2FDocuments%2FJianjun%20%40%20Microsoft&wd=target%28Work.one%7C08C13A75-D69C-49FE-8D53-8DBF6710CCF0%2FSample%20Code%7CF29C765D-F05A-4516-8F35-08DCE5847D4C%2F%29
 
 
-            //CheckExists1();
+            CheckExists1();
 
             //GetRowCountIteratively("2019-07-10T00:00:00.0000000Z");
-            Console.WriteLine(GetRowCount("https://cosmos14.osdinfra.net/cosmos/IDEAs.Prod/local/Scheduled/Datasets/Public/Profiles/Users/2019/07/25/MsodsUsersHistory_2019_07_25.ss"));
+            //Console.WriteLine(GetRowCount("https://cosmos14.osdinfra.net/cosmos/IDEAs.Prod/local/Scheduled/Datasets/Public/Profiles/Users/2019/07/25/MsodsUsersHistory_2019_07_25.ss"));
 
             Console.ReadKey();
         }
@@ -29,6 +29,9 @@
             //stream = "https://cosmos14.osdinfra.net/cosmos/IDEAs.Prod/local/Scheduled/Datasets/Public/Profiles/Tenants/TenantsHistory.ss";
             stream = "https://cosmos14.osdinfra.net/cosmos/IDEAs.Prod/local/Scheduled/Datasets/Public/Profiles/Tenants";
             stream = "https://cosmos14.osdinfra.net/cosmos/IDEAs.Ppe/local/ParquetConverter.py";
+
+            // This link is not able to be accessed
+            //stream = "https://cosmos14.osdinfra.net/cosmos/IDEAs.Ppe/shares/CFR.ppe/local/Cooked/StateUserDirectory/StateUserDirectory_2019_07_24.ss";
             var certificate = GetCertificateByThumbprint(Thumbprint);
             VC.Setup(null, certificate);
 

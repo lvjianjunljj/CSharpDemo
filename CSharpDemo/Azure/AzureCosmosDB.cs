@@ -17,7 +17,7 @@ namespace CSharpDemo.Azure
     class AzureCosmosDB
     {
         // "datacopdev","ideasdatacopppe", "datacopprod" or "csharpmvcwebapikeyvault"(csharpmvcwebapicosmosdb)
-        public static string KeyVaultName = "datacopprod";
+        public static string KeyVaultName = "csharpmvcwebapikeyvault";
         public static void MainMethod()
         {
             //UpdateAllAlertSettingsDemo();
@@ -31,6 +31,7 @@ namespace CSharpDemo.Azure
             //UpsertTestDemoToCosmosDB();
             //QueryTestDemo();
             //GetLastTestDemo();
+            //DeleteTestDemo();
 
 
             //UpsertDatasetDemoToDev();
@@ -44,6 +45,7 @@ namespace CSharpDemo.Azure
 
         public static void AddCompletenessMonitors4ADLS()
         {
+            KeyVaultName = "datacopprod";
             string dirPath = @"D:\data\company_work\M365\IDEAs\work_item_file\1161175\write\";
             string duplicateDirPath = @"D:\data\company_work\M365\IDEAs\work_item_file\1161175\duplicate\";
 
@@ -55,23 +57,25 @@ namespace CSharpDemo.Azure
 
             IList<JObject> completenessList = azureDatasetTestCosmosDB.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c where c.testContentType = 'AdlsCompleteness' and c.status = 'Enabled'")).Result;
 
-            Dictionary<string, int> completenessStreamPathDict = new Dictionary<string, int>();
+            Dictionary<string, int> completenessDatasetIdDict = new Dictionary<string, int>();
             foreach (JObject jObject in completenessList)
             {
-                if (!completenessStreamPathDict.ContainsKey(jObject["testContent"]["streamPath"].ToString()))
+                if (!completenessDatasetIdDict.ContainsKey(jObject["datasetId"].ToString()))
                 {
-                    completenessStreamPathDict.Add(jObject["testContent"]["streamPath"].ToString(), 1);
+                    completenessDatasetIdDict.Add(jObject["datasetId"].ToString(), 1);
                 }
                 else
                 {
-                    completenessStreamPathDict[jObject["testContent"]["streamPath"].ToString()]++;
+                    completenessDatasetIdDict[jObject["datasetId"].ToString()]++;
                 }
             }
             foreach (JObject jObject in availabilityList)
             {
-                if (completenessStreamPathDict.ContainsKey(jObject["testContent"]["streamPath"].ToString()))
+                string datasetId = jObject["datasetId"].ToString();
+
+                if (completenessDatasetIdDict.ContainsKey(datasetId))
                 {
-                    completenessStreamPathDict[jObject["testContent"]["streamPath"].ToString()]--;
+                    completenessDatasetIdDict[datasetId]--;
                     continue;
                 }
                 if (!CheckDatasetEnabled(azureDatasetCosmosDB, jObject["datasetId"].ToString()))
@@ -105,16 +109,18 @@ namespace CSharpDemo.Azure
                 {
                     path = path.Replace(".json", "_.json");
                 }
-                FileOperation.SaveFile.FirstMethod(path, jObject.ToString());
+                //FileOperation.SaveFile.FirstMethod(path, jObject.ToString());
+
+                azureDatasetTestCosmosDB.UpsertDocumentAsync(jObject).Wait();
             }
 
             Console.WriteLine(completenessList.Count);
             Console.WriteLine(availabilityList.Count);
-            foreach (var completenessStreamPath in completenessStreamPathDict)
+            foreach (var completenessDatasetId in completenessDatasetIdDict)
             {
-                if (completenessStreamPath.Value > 0)
+                if (completenessDatasetId.Value > 0)
                 {
-                    Console.WriteLine($"path: {completenessStreamPath.Key}   completenessBiggerCount: {completenessStreamPath.Value}");
+                    Console.WriteLine($"datasetId: {completenessDatasetId.Key}   completenessBiggerCount: {completenessDatasetId.Value}");
                 }
             }
         }
@@ -285,8 +291,24 @@ namespace CSharpDemo.Azure
             }
         }
 
+        /*
+        * For deleting operation, now I must set the PartitionKey, 
+        * so I just can delete the document with PartitionKey.
+        */
+        public static void DeleteTestDemo()
+        {
+            KeyVaultName = "csharpmvcwebapikeyvault";
+            AzureCosmosDB azureCosmosDB = new AzureCosmosDB("CosmosDBTest", "TestPartitionContains");
+
+            string documentLink = UriFactory.CreateDocumentUri("CosmosDBTest", "TestPartitionContains", "34a4a888-dd51-496b-b21c-9d2fc91be01d").ToString();
+            var reqOptions = new RequestOptions { PartitionKey = new PartitionKey("a") };
+            ResourceResponse<Document> resource = azureCosmosDB.DeleteDocumentAsync(documentLink, reqOptions).Result;
+            Console.WriteLine(resource);
+        }
+
         public static void UpsertTestDemoToCosmosDB()
         {
+            KeyVaultName = "csharpmvcwebapikeyvault";
             AzureCosmosDB azureCosmosDB = new AzureCosmosDB("CosmosDBTest", "TestCollectionId");
 
             AzureCosmosDBTestClass t = new AzureCosmosDBTestClass();
@@ -495,7 +517,7 @@ namespace CSharpDemo.Azure
         /// <returns>A <see cref="Task" /> representing the asynchronous operation with the document being the task result.</returns>
         public async Task<ResourceResponse<Document>> DeleteDocumentAsync(string documentLink, RequestOptions requestOptions = null)
         {
-            return await this.Client.DeleteDocumentAsync(this.CollectionLink, requestOptions);
+            return await this.Client.DeleteDocumentAsync(documentLink, requestOptions);
         }
 
         /// <summary>

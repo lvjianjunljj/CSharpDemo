@@ -20,12 +20,16 @@ namespace AdlsDemo
 
 
             var dataLakeClient = new DataLakeClient(clientId, clientKey);
-            Console.WriteLine(dataLakeClient.CheckExists("ideas-prod-c14.azuredatalakestore.net",
-                "local/datacop/TenantsHistory.ss"));
-            Console.WriteLine(dataLakeClient.GetFileSize("ideas-prod-c14.azuredatalakestore.net",
-                "local/datacop/TenantsHistory.ss"));
+            //Console.WriteLine(dataLakeClient.CheckExists("ideas-prod-c14.azuredatalakestore.net",
+            //    "local/datacop/TenantsHistory.ss"));
+            //Console.WriteLine(dataLakeClient.GetFileSize("ideas-prod-c14.azuredatalakestore.net",
+            //    "local/datacop/TenantsHistory.ss"));
 
 
+            Console.WriteLine(dataLakeClient.CheckExists("cfr-ppe-c14.azuredatalakestore.net",
+               "local/Cooked/StateUserDirectory/StateUserDirectory_2019_07_24.ss"));
+            Console.WriteLine(dataLakeClient.GetFileSize("cfr-ppe-c14.azuredatalakestore.net",
+               "local/Cooked/StateUserDirectory/StateUserDirectory_2019_07_24.ss"));
             Console.ReadKey();
         }
     }

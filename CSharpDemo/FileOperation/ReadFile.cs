@@ -90,34 +90,46 @@ namespace CSharpDemo.FileOperation
         public static bool CheckFileExist(string filePath)
         {
             return File.Exists(filePath);
+
         }
 
-        public static List<string> GetAllFileAbsolutePaths(string folderAbsolutePath, ReadType readType, PathType pathType)
+        public static bool CheckDirectoryExist(string directoryPath)
         {
-            List<string> fileAbsolutePaths = new List<string>();
-            DirectoryInfo TheFolder = new DirectoryInfo(folderAbsolutePath);
-            FileSystemInfo Next;
-            // Traversing folders
-            //foreach (DirectoryInfo NextFolder in TheFolder.GetDirectories())
-            //    Console.WriteLine(NextFolder.Name);
-            // Traversing files
-            foreach (FileSystemInfo NextFile in TheFolder.GetFiles())
-            {
-                fileAbsolutePaths.Add(NextFile.FullName);
-            }
-            return fileAbsolutePaths;
+            return Directory.Exists(directoryPath);
+
         }
-        public static List<string> GetAllFileRelativePaths(string folderAbsolutePath)
+
+        public static List<string> GetFolderSubPaths(string folderAbsolutePath, ReadType readType, PathType pathType)
         {
             List<string> fileAbsolutePaths = new List<string>();
-            DirectoryInfo TheFolder = new DirectoryInfo(folderAbsolutePath);
-            // Traversing folders
-            //foreach (DirectoryInfo NextFolder in TheFolder.GetDirectories())
-            //    Console.WriteLine(NextFolder.Name);
-            // Traversing files
-            foreach (FileSystemInfo NextFile in TheFolder.GetFiles())
+            DirectoryInfo folder = new DirectoryInfo(folderAbsolutePath);
+            FileSystemInfo[] nextFileSystemInfos;
+            switch (readType)
             {
-                fileAbsolutePaths.Add(NextFile.Name);
+                case ReadType.File:
+                    // Traversing files
+                    nextFileSystemInfos = folder.GetFiles();
+                    break;
+                case ReadType.Directory:
+                    // Traversing folders
+                    nextFileSystemInfos = folder.GetDirectories();
+                    break;
+                default:
+                    throw new Exception("Not support folder read type!");
+            }
+            foreach (FileSystemInfo nextFileSystemInfo in nextFileSystemInfos)
+            {
+                switch (pathType)
+                {
+                    case PathType.Absolute:
+                        fileAbsolutePaths.Add(nextFileSystemInfo.FullName);
+                        break;
+                    case PathType.Relative:
+                        fileAbsolutePaths.Add(nextFileSystemInfo.Name);
+                        break;
+                    default:
+                        throw new Exception("Not support folder path type!");
+                }
             }
             return fileAbsolutePaths;
         }

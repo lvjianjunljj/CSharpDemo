@@ -45,7 +45,7 @@ namespace CSharpDemo.IcMTest
             //EditIncidentCustomFields();
             //EditIncidentCustomFieldsSimple();
 
-            //GetIncidentTeamCustomField(116142489);
+            GetIncidentTeamCustomField(116142489);
 
 
             //Reslove all the active alert for test in DEV
@@ -58,7 +58,7 @@ namespace CSharpDemo.IcMTest
             //}
             //Console.WriteLine(activeIncidentIdList.Count);
 
-            GetIncident();
+            //GetIncident();
         }
 
 
