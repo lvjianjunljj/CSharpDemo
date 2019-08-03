@@ -45,7 +45,7 @@ namespace CSharpDemo.IcMTest
             //EditIncidentCustomFields();
             //EditIncidentCustomFieldsSimple();
 
-            GetIncidentTeamCustomField(116142489);
+            //GetIncidentTeamCustomField(116142489);
 
 
             //Reslove all the active alert for test in DEV
@@ -59,6 +59,7 @@ namespace CSharpDemo.IcMTest
             //Console.WriteLine(activeIncidentIdList.Count);
 
             //GetIncident();
+            GetCFRIncident();
         }
 
 
@@ -738,6 +739,58 @@ namespace CSharpDemo.IcMTest
                     Console.WriteLine(incident["Status"]);
                 }
 
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+        }
+
+        public static void GetCFRIncident()
+        {
+            //JavaScriptSerializer serializer = new JavaScriptSerializer();
+            HttpWebResponse result;
+            HttpWebRequest req;
+            string json = null;
+            string url;
+
+            url = @"https://icm.ad.msft.net/api/cert/incidents?$filter=OwningContactAlias eq 'limji' and OwningTeamId eq 'CUSTOMERINSIGHTANDANALYSIS\CIA'";
+
+            req = WebRequest.CreateHttp(url);
+            // "87a1331eac328ec321578c10ebc8cc4c356b005f" is the CertThumbprint
+            try
+            {
+                X509Certificate cert = GetCert("87a1331eac328ec321578c10ebc8cc4c356b005f");
+                if (cert == null)
+                {
+                    Console.WriteLine("cert is null");
+                }
+                req.ClientCertificates.Add(cert);
+                // submit the request
+                result = (HttpWebResponse)req.GetResponse();
+
+                // read out the response stream as text
+                using (Stream data = result.GetResponseStream())
+                {
+                    if (data != null)
+                    {
+                        TextReader tr = new StreamReader(data);
+                        json = tr.ReadToEnd();
+                    }
+                }
+
+                Console.WriteLine(json);
+
+                JObject jsonObject = JObject.Parse(json);
+
+                // Not reference Microsoft.AzureAd.Icm
+                JArray incidents = JsonConvert.DeserializeObject<JArray>(jsonObject["value"].ToString());
+                foreach (var incident in incidents)
+                {
+                    Console.WriteLine(incident["Id"]);
+                    Console.WriteLine(incident["Title"]);
+                    Console.WriteLine(incident["Status"]);
+                }
             }
             catch (Exception e)
             {

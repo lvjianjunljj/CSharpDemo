@@ -40,7 +40,48 @@ namespace CSharpDemo.Azure
 
             //MigrateData("DatasetTest");
 
-            AddCompletenessMonitors4ADLS();
+            //AddCompletenessMonitors4ADLS();
+            CheckDatasetTest();
+        }
+
+        public static void CheckDatasetTest()
+        {
+            KeyVaultName = "datacopprod";
+            AzureCosmosDB azureDatasetTestCosmosDB = new AzureCosmosDB("DataCop", "DatasetTest");
+            AzureCosmosDB azureDatasetCosmosDB = new AzureCosmosDB("DataCop", "Dataset");
+            IList<JObject> availabilityDatasetIdJObjectList = azureDatasetTestCosmosDB.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT c.datasetId FROM c where c.testCategory = 'Availability' and c.status = 'Enabled'")).Result;
+            IList<JObject> completenessDatasetIdJObjectList = azureDatasetTestCosmosDB.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT c.datasetId FROM c where c.testCategory = 'Completeness' and c.status = 'Enabled'")).Result;
+            IList<JObject> datasetIdJObjectList = azureDatasetCosmosDB.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT c.id FROM c where c.dataFabric != 'SQL' and c.isEnabled = true")).Result;
+
+
+            HashSet<string> availabilityDatasetIdStringSet = new HashSet<string>();
+            HashSet<string> completenessDatasetIdStringSet = new HashSet<string>();
+            HashSet<string> datasetIdStringSet = new HashSet<string>();
+            foreach (var availabilityDatasetIdJObject in availabilityDatasetIdJObjectList)
+            {
+                availabilityDatasetIdStringSet.Add(availabilityDatasetIdJObject["datasetId"].ToString());
+            }
+            foreach (var completenessDatasetIdJObject in completenessDatasetIdJObjectList)
+            {
+                completenessDatasetIdStringSet.Add(completenessDatasetIdJObject["datasetId"].ToString());
+            }
+            foreach (var datasetIdJObject in datasetIdJObjectList)
+            {
+                string datasetId = datasetIdJObject["id"].ToString();
+                bool existAvailability = availabilityDatasetIdStringSet.Contains(datasetId);
+                bool existCompleteness = completenessDatasetIdStringSet.Contains(datasetId);
+                if (existAvailability && existCompleteness)
+                {
+                    continue;
+                }
+                else
+                {
+                    Console.WriteLine(datasetId);
+                    if (!existAvailability) Console.WriteLine("lackAvailability");
+                    if (!existCompleteness) Console.WriteLine("lackCompleteness");
+                }
+            }
+
         }
 
         public static void AddCompletenessMonitors4ADLS()
