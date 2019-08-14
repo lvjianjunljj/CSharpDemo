@@ -6,6 +6,7 @@
 
 /AdlsDemo/bin
 /AzureKustoDemo/bin
+/AzureLib/bin
 /CosmosDemo/bin
 /CSharpDemo/bin
 /CSharpDemoAux/bin
@@ -13,6 +14,7 @@
 
 /AdlsDemo/obj
 /AzureKustoDemo/obj
+/AzureLib/obj
 /CosmosDemo/obj
 /CSharpDemo/obj
 /CSharpDemoAux/obj
