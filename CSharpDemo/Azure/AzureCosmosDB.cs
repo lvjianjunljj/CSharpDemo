@@ -41,10 +41,108 @@ namespace CSharpDemo.Azure
             //MigrateData("DatasetTest");
 
             //AddCompletenessMonitors4ADLS();
-            CheckDatasetTest();
+
+            //CheckDatasetTestIntegrity();
+            //CheckPPEAlertsetting();
+            CheckAdlsConnectionInfoMappingCorrectness();
+            CheckCosmosConnectionInfoMappingCorrectness();
         }
 
-        public static void CheckDatasetTest()
+        public static void CheckAdlsConnectionInfoMappingCorrectness()
+        {
+            KeyVaultName = "datacopprod";
+            AzureCosmosDB azureDatasetCosmosDB = new AzureCosmosDB("DataCop", "Dataset");
+            AzureCosmosDB azureDatasetTestCosmosDB = new AzureCosmosDB("DataCop", "DatasetTest");
+            IList<JObject> adlsDatasetTestJObjectList = azureDatasetTestCosmosDB.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c where (c.testContentType = 'AdlsCompleteness' or c.testContentType = 'AdlsAvailability') and c.status = 'Enabled'")).Result;
+            IList<JObject> datasetJObjectList = azureDatasetCosmosDB.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c where c.dataFabric = 'ADLS' and c.isEnabled = true")).Result;
+
+            foreach (var datasetJObject in datasetJObjectList)
+            {
+                JObject connectionInfo = JObject.Parse(datasetJObject["connectionInfo"].ToString());
+                string dataLakeStoreInDataset = connectionInfo["dataLakeStore"].ToString();
+                string dataLakePathInDataset = connectionInfo["dataLakePath"].ToString();
+                foreach (var datasetTestJObject in adlsDatasetTestJObjectList)
+                {
+                    if (!datasetTestJObject["datasetId"].ToString().Equals(datasetJObject["id"].ToString()))
+                        continue;
+                    string dataLakeStoreInDatasetTest = "", dataLakePathInDatasetTest = "";
+                    try
+                    {
+                        dataLakeStoreInDatasetTest = datasetTestJObject["testContent"]["dataLakeStore"].ToString();
+                        dataLakePathInDatasetTest = datasetTestJObject["testContent"]["streamPath"].ToString();
+                        if (dataLakeStoreInDataset.Equals(dataLakeStoreInDatasetTest) && dataLakePathInDataset.Equals(dataLakePathInDatasetTest))
+                            continue;
+                    }
+                    catch (Exception e)
+                    {
+
+                    }
+                    Console.WriteLine(datasetTestJObject["id"]);
+                    Console.WriteLine(dataLakeStoreInDataset);
+                    Console.WriteLine(dataLakeStoreInDatasetTest);
+                    Console.WriteLine(dataLakePathInDataset);
+                    Console.WriteLine(dataLakePathInDatasetTest);
+                }
+            }
+            Console.WriteLine("END!!!");
+        }
+
+        public static void CheckCosmosConnectionInfoMappingCorrectness()
+        {
+            KeyVaultName = "datacopprod";
+            AzureCosmosDB azureDatasetCosmosDB = new AzureCosmosDB("DataCop", "Dataset");
+            AzureCosmosDB azureDatasetTestCosmosDB = new AzureCosmosDB("DataCop", "DatasetTest");
+            IList<JObject> cosmosDatasetTestJObjectList = azureDatasetTestCosmosDB.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c where (c.testContentType = 'CosmosCompleteness' or c.testContentType = 'CosmosAvailability') and c.status = 'Enabled'")).Result;
+            IList<JObject> datasetJObjectList = azureDatasetCosmosDB.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c where c.dataFabric = 'Cosmos' and c.isEnabled = true")).Result;
+
+            foreach (var datasetJObject in datasetJObjectList)
+            {
+                JObject connectionInfo = JObject.Parse(datasetJObject["connectionInfo"].ToString());
+                string cosmosVC = connectionInfo["cosmosVC"].ToString();
+                string cosmosPath = connectionInfo["cosmosPath"].ToString();
+                string streamPathInDataset = $"https://{cosmosVC}/cosmos/{cosmosPath}";
+                foreach (var datasetTestJObject in cosmosDatasetTestJObjectList)
+                {
+                    if (!datasetTestJObject["datasetId"].ToString().Equals(datasetJObject["id"].ToString()))
+                        continue;
+                    string streamPathInDatasetTest = "";
+                    try
+                    {
+                        streamPathInDatasetTest = datasetTestJObject["testContent"]["streamPath"].ToString();
+                        if (streamPathInDatasetTest.Equals(streamPathInDataset)) continue;
+                    }
+                    catch (Exception e)
+                    {
+
+                    }
+                    Console.WriteLine(datasetTestJObject["id"]);
+                    Console.WriteLine(streamPathInDataset);
+                    Console.WriteLine(streamPathInDatasetTest);
+                }
+            }
+            Console.WriteLine("END!!!");
+        }
+
+        public static void CheckPPEAlertsettingOwningTeamAndRouting()
+        {
+            KeyVaultName = "ideasdatacopppe";
+            string cfrId = "da71491f-c49a-475e-9d54-d2fde4a6403f";
+            AzureCosmosDB azureCosmosDB = new AzureCosmosDB("DataCop", "AlertSettings");
+            IList<JObject> alertSettings = azureCosmosDB.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c")).Result;
+            foreach (var alertSetting in alertSettings)
+            {
+                if (alertSetting["id"].ToString().Equals(cfrId)) continue;
+                if ((alertSetting["routingId"].ToString().Equals("IDEAS://IDEAsDataCopTest") || alertSetting["routingId"].ToString().Equals("IDEAs://IDEAsDataCopTest")) && alertSetting["owningTeamId"].ToString().Equals("IDEAS\\IDEAsDataCopTest")) continue;
+                //Console.WriteLine(alertSetting["routingId"].ToString() + "\t" + alertSetting["owningTeamId"].ToString());
+                Console.WriteLine(alertSetting);
+
+                alertSetting["routingId"] = "IDEAS://IDEAsDataCopTest";
+                alertSetting["owningTeamId"] = "IDEAS\\IDEAsDataCopTest";
+                azureCosmosDB.UpsertDocumentAsync(alertSetting).Wait();
+            }
+        }
+
+        public static void CheckDatasetTestIntegrity()
         {
             KeyVaultName = "datacopprod";
             AzureCosmosDB azureDatasetTestCosmosDB = new AzureCosmosDB("DataCop", "DatasetTest");

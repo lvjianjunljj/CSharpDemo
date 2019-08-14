@@ -754,8 +754,12 @@ namespace CSharpDemo.IcMTest
             string json = null;
             string url;
 
-            url = @"https://icm.ad.msft.net/api/cert/incidents?$filter=OwningContactAlias eq 'limji' and OwningTeamId eq 'CUSTOMERINSIGHTANDANALYSIS\CIA'";
+            //url = @"https://icm.ad.msft.net/api/cert/incidents?$filter=OwningContactAlias eq 'limji' and OwningTeamId eq 'CUSTOMERINSIGHTANDANALYSIS\CIA'";
 
+            url = @"https://icm.ad.msft.net/api/cert/incidents?$filter=Id eq 126785415";
+            url = @"https://icm.ad.msft.net/api/cert/incidents?$filter=Id eq 137886726";
+            url = @"https://icm.ad.msft.net/api/cert/incidents(138422659)";
+            url = "https://icm.ad.msft.net/api/cert/incidents?&$filter=Id eq 138422659";
             req = WebRequest.CreateHttp(url);
             // "87a1331eac328ec321578c10ebc8cc4c356b005f" is the CertThumbprint
             try
