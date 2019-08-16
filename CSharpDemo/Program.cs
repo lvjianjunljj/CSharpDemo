@@ -4,6 +4,7 @@ using CSharpDemo.CSharpInDepth.Part1;
 using CSharpDemo.CSharpInDepth.Part2.CSharp2;
 using CSharpDemo.FileOperation;
 using CSharpDemo.IcMTest;
+using CSharpDemo.RetrierDir;
 using CSharpDemoAux;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -25,12 +26,13 @@ namespace CSharpDemo
     {
         static void Main(string[] args)
         {
-            AzureCosmosDB.MainMethod();
+            //AzureCosmosDB.MainMethod();
             //QueryIncidents.MainMethod();
 
             //AzureServiceBus.MainMethod();
             //FireIncident.MainMethod();
 
+            RetrierDemo.MainMethod();
 
 
             Console.ReadKey();

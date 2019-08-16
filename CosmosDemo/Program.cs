@@ -17,7 +17,7 @@
             //CheckExists1();
 
             //GetRowCountIteratively("2019-07-10T00:00:00.0000000Z");
-            Console.WriteLine(GetRowCount("https://cosmos14.osdinfra.net/cosmos/IDEAs.Prod/local/Scheduled/Datasets/Public/Profiles/Subscriptions/2019/08/05/SubscriptionsHistory_2019_08_05.ss"));
+            Console.WriteLine(GetRowCount("https://cosmos14.osdinfra.net/cosmos/IDEAs.Prod/local/Scheduled/Datasets/Public/Profiles/Subscriptions/2019/08/05/SubscriptionsHistory_2019_08.ss"));
             // 256601956
 
             Console.ReadKey();
@@ -108,9 +108,14 @@
             // cannot catch the exception "CosmosFileNotFoundException", 
             // and we either cannot use this exception "CosmosFileNotFoundException.
             //catch (Microsoft.Cosmos.CosmosUriException e)
+            catch (VcClientExceptions.FileExistsException ee)
+            {
+                Console.WriteLine(1234);
+                return null;
+            }
             catch (Exception e)
             {
-                Console.WriteLine($"Message: {e.Message}; Type: {e.GetType()}");
+                Console.WriteLine($"Message: {e}; Type: {e.GetType()}");
                 return null;
             }
         }

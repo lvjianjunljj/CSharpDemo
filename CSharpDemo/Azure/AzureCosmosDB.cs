@@ -44,8 +44,61 @@ namespace CSharpDemo.Azure
 
             //CheckDatasetTestIntegrity();
             //CheckPPEAlertsetting();
-            CheckAdlsConnectionInfoMappingCorrectness();
-            CheckCosmosConnectionInfoMappingCorrectness();
+
+            //CheckAdlsConnectionInfoMappingCorrectness();
+            //CheckCosmosConnectionInfoMappingCorrectness();
+            //CheckDuplicatedEnabledDatasetTest();
+        }
+
+        public static void CheckDuplicatedEnabledDatasetTest()
+        {
+            KeyVaultName = "datacopprod";
+
+            AzureCosmosDB azureDatasetTestCosmosDB = new AzureCosmosDB("DataCop", "DatasetTest");
+            AzureCosmosDB azureDatasetCosmosDB = new AzureCosmosDB("DataCop", "Dataset");
+
+            // Collation: asc and desc is ascending and descending
+            IList<JObject> datasetList = azureDatasetCosmosDB.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c where c.dataFabric = 'ADLS' and c.isEnabled = true")).Result;
+            IList<JObject> availabilityDatasetTestList = azureDatasetTestCosmosDB.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c where c.testContentType = 'AdlsCompleteness' and c.status = 'Enabled'")).Result;
+
+            HashSet<string> datasetIdSet = new HashSet<string>();
+            Dictionary<string, int> availabilityDatasetIdCountDict = new Dictionary<string, int>();
+            Dictionary<string, string> availabilityDatasetIdNameDict = new Dictionary<string, string>();
+
+            foreach (JObject jObject in datasetList)
+            {
+                string id = jObject["id"].ToString();
+                datasetIdSet.Add(id);
+            }
+
+            foreach (JObject jObject in availabilityDatasetTestList)
+            {
+                string datasetId = jObject["datasetId"].ToString();
+                string datasetTestName = jObject["name"].ToString();
+
+                if (datasetIdSet.Contains(datasetId))
+                {
+                    //Console.WriteLine(datasetId);
+                    if (!availabilityDatasetIdNameDict.ContainsKey(datasetId))
+                    {
+                        availabilityDatasetIdNameDict.Add(datasetId, "");
+                    }
+                    availabilityDatasetIdNameDict[datasetId] += "\t" + datasetTestName;
+
+                    if (!availabilityDatasetIdCountDict.ContainsKey(datasetId))
+                    {
+                        availabilityDatasetIdCountDict.Add(datasetId, 0);
+                    }
+                    availabilityDatasetIdCountDict[datasetId]++;
+                }
+
+            }
+
+            foreach (var availabilityDatasetIdCount in availabilityDatasetIdCountDict)
+            {
+                Console.WriteLine($"datasetId: {availabilityDatasetIdCount.Key}   availabilityDatasetIdCount: {availabilityDatasetIdCount.Value}");
+                Console.WriteLine($"datasetTestName: {availabilityDatasetIdNameDict[availabilityDatasetIdCount.Key]}");
+            }
         }
 
         public static void CheckAdlsConnectionInfoMappingCorrectness()
