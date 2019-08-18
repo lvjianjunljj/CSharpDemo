@@ -7,12 +7,12 @@ namespace CSharpDemo.Json
     {
         class Tex
         {
-            public string a { get; set; }
+            public string TestStr { get; set; }
         }
         static void Run()
         {
-            Tex a = JsonConvert.DeserializeObject<Tex>("{'a':'b'}");
-            Console.WriteLine(a.a);
+            Tex a = JsonConvert.DeserializeObject<Tex>("{'testStr':'testStr'}");
+            Console.WriteLine(a.TestStr);
             Console.WriteLine(JsonConvert.SerializeObject(a));
 
 

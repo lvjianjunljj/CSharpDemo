@@ -1,5 +1,6 @@
 ﻿namespace CosmosDemo
 {
+    using Microsoft.Cosmos.FrontEnd.Contract;
     using System;
     using System.Collections.Generic;
     using System.Security.Cryptography;
@@ -17,7 +18,7 @@
             //CheckExists1();
 
             //GetRowCountIteratively("2019-07-10T00:00:00.0000000Z");
-            Console.WriteLine(GetRowCount("https://cosmos14.osdinfra.net/cosmos/IDEAs.Prod/local/Scheduled/Datasets/Public/Profiles/Subscriptions/2019/08/05/SubscriptionsHistory_2019_08.ss"));
+            Console.WriteLine(GetRowCount("https://cosmos14.osdinfra.net/cosmos/IDEAs.Prod/local/Scheduled/Datasets/Public/Profiles/Subscriptions/2019/08/05/SubscriptionsHistory_2019_08_05.ss"));
             // 256601956
 
             Console.ReadKey();
@@ -105,12 +106,20 @@
             {
                 return exportClient.GetRowCount(null).Result;
             }
-            // cannot catch the exception "CosmosFileNotFoundException", 
-            // and we either cannot use this exception "CosmosFileNotFoundException.
+            // we cannot catch the exception "CosmosFileNotFoundException" by using CosmosUriException, 
             //catch (Microsoft.Cosmos.CosmosUriException e)
-            catch (VcClientExceptions.FileExistsException ee)
+            
+            // and we either cannot use this exception "CosmosFileNotFoundException".
+            // For the 
+            catch (CosmosFileNotFoundException e)
             {
-                Console.WriteLine(1234);
+
+                return null;
+            }
+            catch (AggregateException e)
+            {
+                Console.WriteLine($"Message: {e}; Type: {e.GetType()}");
+                Console.WriteLine(e.InnerException);
                 return null;
             }
             catch (Exception e)
