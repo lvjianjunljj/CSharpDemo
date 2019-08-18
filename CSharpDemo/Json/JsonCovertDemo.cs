@@ -8,12 +8,14 @@ namespace CSharpDemo.Json
         class Tex
         {
             public string TestStr { get; set; }
+            public string NullStr { get; set; }
         }
-        static void Run()
+        public static void MainMethod()
         {
-            Tex a = JsonConvert.DeserializeObject<Tex>("{'testStr':'testStr'}");
-            Console.WriteLine(a.TestStr);
-            Console.WriteLine(JsonConvert.SerializeObject(a));
+            Tex tex = JsonConvert.DeserializeObject<Tex>("{'testStr':'testStr'}");
+            Console.WriteLine(tex.TestStr);
+            Console.WriteLine(tex.NullStr ?? tex.TestStr);
+            Console.WriteLine(JsonConvert.SerializeObject(tex));
 
 
             string dateString = "0001-01-01T00:00:00";

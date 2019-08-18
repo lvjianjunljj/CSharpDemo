@@ -26,16 +26,16 @@
             //Create a new message to send to the queue.
             string requestId = Guid.NewGuid().ToString();
             string datasetId = Guid.NewGuid().ToString();
-            string messageBody = "{\"requestId\":\"" + requestId + "\",\"requestType\":\"Create\",\"dataset\":{\"id\":\"" + datasetId + "\",\"name\":\"Sharepoint Active Usage\",\"createTime\":\"0001-01-01T00:00:00\",\"lastModifiedTime\":\"0001-01-01T00:00:00\",\"connectionInfo\":{\"dataLakeStore\":\"ideas-prod-c14.azuredatalakestore.net\",\"cosmosVC\":\"cosmos14.osdinfra.net/cosmos/IDEAs.Prod/\",\"path\":\"local/Partner/PreRelease/dev/activeusage/sharepointcommercial/%Y/%m/SharepointActiveUsage_%Y_%m_%d.ss\"},\"dataFabric\":\"DataLake\",\"category\":\"None\",\"startDate\":\"2019-08-01T00:00:00Z\",\"grain\":\"Daily\",\"sla\":\"6.0:0:0\",\"isEnabled\":false,\"ttl\":-1}}";
+            string messageBody = "{\"requestId\":\"" + requestId + "\",\"requestType\":\"Create\",\"dataset\":{\"id\":\"" + datasetId + "\",\"name\":\"Sharepoint Active Usage\",\"createTime\":\"0001-01-01T00:00:00\",\"lastModifiedTime\":\"0001-01-01T00:00:00\",\"connectionInfo\":{\"dataLakeStore\":\"ideas-prod-c14.azuredatalakestore.net\",\"cosmosVC\":\"cosmos14.osdinfra.net/cosmos/IDEAs.Prod/\",\"path\":\"local/Partner/PreRelease/dev/activeusage/sharepointcommercial/%Y/%m/SharepointActiveUsage_%Y_%m_%d.ss\"},\"dataFabric\":\"ADLS\",\"category\":\"None\",\"startDate\":\"2019-08-01T00:00:00Z\",\"grain\":\"Daily\",\"sla\":\"6.0:0:0\",\"isEnabled\":false,\"ttl\":-1}}";
 
 
-            messageBody = "{\"requestId\":\"" + requestId + "\",\"requestType\":\"Create\",\"dataset\":{\"id\":\"" + datasetId + "\",\"name\":\"Sharepoint Active Usage\",\"createTime\":\"0001-01-01T00:00:00\",\"lastModifiedTime\":\"0001-01-01T00:00:00\",\"connectionInfo\":{\"dataLakeStore\":\"ideas-prod-c14.azuredatalakestore.net\",\"dataLakePath\":\"local/Partner/PreRelease/dev/activeusage/sharepointcommercial/%Y/%m/SharepointActiveUsage_%Y_%m_%d.ss\"},\"dataFabric\":\"ADLS\",\"category\":\"None\",\"startDate\":\"2019-08-01T00:00:00Z\",\"grain\":\"Daily\",\"sla\":\"6.0:0:0\",\"isEnabled\":false,\"ttl\":-1}}";
+            //messageBody = "{\"requestId\":\"" + requestId + "\",\"requestType\":\"Create\",\"dataset\":{\"id\":\"" + datasetId + "\",\"name\":\"Sharepoint Active Usage\",\"createTime\":\"0001-01-01T00:00:00\",\"lastModifiedTime\":\"0001-01-01T00:00:00\",\"connectionInfo\":{\"dataLakeStore\":\"ideas-prod-c14.azuredatalakestore.net\",\"dataLakePath\":\"local/Partner/PreRelease/dev/activeusage/sharepointcommercial/%Y/%m/SharepointActiveUsage_%Y_%m_%d.ss\"},\"dataFabric\":\"ADLS\",\"category\":\"None\",\"startDate\":\"2019-08-01T00:00:00Z\",\"grain\":\"Daily\",\"sla\":\"6.0:0:0\",\"isEnabled\":false,\"ttl\":-1}}";
 
             Message message = new Message(Encoding.UTF8.GetBytes(messageBody));
             message.MessageId = Guid.NewGuid().ToString();
 
 
-            queueClient.SendAsync(message);
+            queueClient.SendAsync(message).Wait();
             Console.WriteLine(datasetId);
             Console.WriteLine("End...");
 

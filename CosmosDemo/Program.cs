@@ -18,7 +18,7 @@
             //CheckExists1();
 
             //GetRowCountIteratively("2019-07-10T00:00:00.0000000Z");
-            Console.WriteLine(GetRowCount("https://cosmos14.osdinfra.net/cosmos/IDEAs.Prod/local/Scheduled/Datasets/Public/Profiles/Subscriptions/2019/08/05/SubscriptionsHistory_2019_08_05.ss"));
+            Console.WriteLine(GetRowCount("https://cosmos14.osdinfra.net/cosmos/IDEAs.Prod/local/Scheduled/Datasets/Public/Profiles/Subscriptions/2019/08/05/SubscriptionsHistory_2019_08_.ss"));
             // 256601956
 
             Console.ReadKey();
@@ -108,20 +108,26 @@
             }
             // we cannot catch the exception "CosmosFileNotFoundException" by using CosmosUriException, 
             //catch (Microsoft.Cosmos.CosmosUriException e)
-            
+
             // and we either cannot use this exception "CosmosFileNotFoundException".
-            // For the 
+            // For the asynchronous function GetRowCount(We can see its return is a subclass of Task), its exception will be packaged as AggregateException, we cannot directly catch it.
             catch (CosmosFileNotFoundException e)
             {
 
                 return null;
             }
+            // We just can catch AggregateException and judge it in AggregateException.InnerException
             catch (AggregateException e)
             {
-                Console.WriteLine($"Message: {e}; Type: {e.GetType()}");
-                Console.WriteLine(e.InnerException);
-                return null;
+                // Here we just want to catch the Exception "CosmosFileNotFoundException", if it is not the reason, we will throw the exception.
+                if (e.InnerException.GetType() == typeof(CosmosFileNotFoundException))
+                {
+                    Console.WriteLine("Cannot find the file...");
+                    return null;
+                }
+                throw;
             }
+            // This can catch any exception..
             catch (Exception e)
             {
                 Console.WriteLine($"Message: {e}; Type: {e.GetType()}");
