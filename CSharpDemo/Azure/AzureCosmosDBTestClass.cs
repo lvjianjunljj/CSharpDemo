@@ -1,12 +1,9 @@
-﻿using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace CSharpDemo.CosmosDBModel
+﻿namespace CSharpDemo.Azure
 {
+    using Newtonsoft.Json;
+    using System;
+    using System.Collections.Generic;
+
     public class AzureCosmosDBTestClass : TestParentClass
     {
         [JsonProperty("Testa")]

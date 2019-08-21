@@ -18,8 +18,7 @@
             //CheckExists1();
 
             //GetRowCountIteratively("2019-07-10T00:00:00.0000000Z");
-            Console.WriteLine(GetRowCount("https://cosmos14.osdinfra.net/cosmos/IDEAs.Prod/local/Scheduled/Datasets/Public/Profiles/Subscriptions/2019/08/05/SubscriptionsHistory_2019_08_.ss"));
-            // 256601956
+            Console.WriteLine(GetRowCount("https://cosmos14.osdinfra.net/cosmos/IDEAs.Prod//local/Partner/PreRelease/dev/activeusage/sharepointcommercial/2019/08/SharepointActiveUsage_2019_08_11.ss"));
 
             Console.ReadKey();
         }
@@ -117,6 +116,8 @@
                 return null;
             }
             // We just can catch AggregateException and judge it in AggregateException.InnerException
+            // AggregateException: Represents one or more errors that occur during application execution.
+            // Doc link: https://docs.microsoft.com/en-us/dotnet/api/system.aggregateexception?view=netframework-4.8
             catch (AggregateException e)
             {
                 // Here we just want to catch the Exception "CosmosFileNotFoundException", if it is not the reason, we will throw the exception.

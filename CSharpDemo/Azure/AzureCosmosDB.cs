@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using CSharpDemo.CosmosDBModel;
 using Microsoft.Azure.Documents;
 using Microsoft.Azure.Documents.Client;
 using Microsoft.Azure.Documents.Linq;
@@ -21,22 +20,16 @@ namespace CSharpDemo.Azure
         public static void MainMethod()
         {
             //UpdateAllAlertSettingsDemo();
+            //DisableAllDataset();
+            //EnableDataset();
+
             //QueryAlertSettingDemo();
-            //QueryDatasetTestDemo();
-            //QueryAlertDemo();
-
-            //UpsertAlertDemoToDev();
-
-
-            //UpsertTestDemoToCosmosDB();
             //QueryTestDemo();
             //GetLastTestDemo();
+
+            //UpsertTestDemoToCosmosDB();
             //DeleteTestDemo();
-
-
-            //UpsertDatasetDemoToDev();
-            //UpsertDatcopScoreDemoToDev();
-            //UpsertActiveAlertTrendToDev();
+            DeleteTestRun();
 
             //MigrateData("DatasetTest");
 
@@ -44,10 +37,12 @@ namespace CSharpDemo.Azure
 
             //CheckDatasetTestIntegrity();
             //CheckPPEAlertsetting();
-
             //CheckAdlsConnectionInfoMappingCorrectness();
             //CheckCosmosConnectionInfoMappingCorrectness();
             //CheckDuplicatedEnabledDatasetTest();
+
+
+
         }
 
         public static void CheckDuplicatedEnabledDatasetTest()
@@ -361,8 +356,8 @@ namespace CSharpDemo.Azure
         {
             AzureCosmosDB azureCosmosDB = new AzureCosmosDB("DataCop", "Alert");
             // Collation: asc and desc is ascending and descending
-            IList<JObject> list = azureCosmosDB.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c where c.testCategory = 'None' ORDER BY c.issuedOnDate ASC")).Result;
-            foreach (JObject alert in list)
+            IList<JObject> alerts = azureCosmosDB.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c where c.testCategory = 'None' ORDER BY c.issuedOnDate ASC")).Result;
+            foreach (JObject alert in alerts)
             {
                 try
                 {
@@ -394,18 +389,93 @@ namespace CSharpDemo.Azure
 
         public static void UpdateAllAlertSettingsDemo()
         {
-            AzureCosmosDB azureCosmosDB = new AzureCosmosDB("DataCop", "AlertSettings");
-            // Collation: asc and desc is ascending and descending
-            IList<TestRunAlertSettings> list = azureCosmosDB.GetAllDocumentsInQueryAsync<TestRunAlertSettings>(new SqlQuerySpec(@"SELECT * FROM c")).Result;
-            foreach (TestRunAlertSettings alert in list)
-            {
-                Console.WriteLine(alert.Id);
-                alert.ServiceCustomFieldNames = new string[] {"DatasetId",
+            KeyVaultName = "datacopdev";
+
+            var serviceCustomFieldNames = new string[] {"DatasetId",
                                                             "AlertType",
                                                             "DisplayInSurface",
                                                             "BusinessOwner",
                                                             "TitleOverride"};
-                ResourceResponse<Document> resource = azureCosmosDB.UpsertDocumentAsync(alert).Result;
+            /* 
+             * Use string, the json we upload will like this:
+             * Because the type of property serviceCustomFieldNames in this json is string
+             * 
+               {
+                    ......
+                    "serviceCustomFieldNames": "[\"DatasetId\",\"AlertType\",\"DisplayInSurface\",\"BusinessOwner\",\"TitleOverride\"]",
+                    ......
+                }
+             * 
+             * But use JArray, the json we upload will like this:
+             * 
+               {
+                    ......
+                    "serviceCustomFieldNames": [
+                        "DatasetId",
+                        "AlertType",
+                        "DisplayInSurface",
+                        "BusinessOwner",
+                        "TitleOverride"
+                    ],
+                    ......
+                }
+             * 
+             * 
+             */
+
+            //string serviceCustomFieldNamesString = JsonConvert.SerializeObject(serviceCustomFieldNames);
+            var serviceCustomFieldNamesJArray = JArray.FromObject(serviceCustomFieldNames);
+
+            AzureCosmosDB azureCosmosDB = new AzureCosmosDB("DataCop", "AlertSettings");
+            // Collation: asc and desc is ascending and descending
+            IList<JObject> alertSettings = azureCosmosDB.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c")).Result;
+            foreach (JObject alertSetting in alertSettings)
+            {
+                Console.WriteLine(alertSetting["id"].ToString());
+                alertSetting["serviceCustomFieldNames"] = serviceCustomFieldNamesJArray;
+                azureCosmosDB.UpsertDocumentAsync(alertSetting).Wait();
+            }
+        }
+
+        public static void DisableAllDataset()
+        {
+            KeyVaultName = "datacopdev";
+
+            AzureCosmosDB azureCosmosDB = new AzureCosmosDB("DataCop", "Dataset");
+            // Collation: asc and desc is ascending and descending
+            IList<JObject> datasets = azureCosmosDB.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c")).Result;
+            foreach (JObject dataset in datasets)
+            {
+                Console.WriteLine(dataset["id"].ToString());
+                dataset["isEnabled"] = false;
+                azureCosmosDB.UpsertDocumentAsync(dataset).Wait();
+            }
+        }
+
+        public static void EnableDataset()
+        {
+            KeyVaultName = "datacopdev";
+
+            var datasetIds = new string[]
+            {
+                "7299ec58-75d2-4e99-9165-7231268f92c8",
+                "918124d3-b87e-409f-ad1e-804475c04653",
+                "84142b9b-f6d2-4d86-8303-b42cd3145bc3"
+            };
+            HashSet<string> datasetIdSet = new HashSet<string>(datasetIds);
+
+            AzureCosmosDB azureCosmosDB = new AzureCosmosDB("DataCop", "Dataset");
+            // Collation: asc and desc is ascending and descending
+            IList<JObject> datasets = azureCosmosDB.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c")).Result;
+            foreach (JObject dataset in datasets)
+            {
+                string id = dataset["id"].ToString();
+                Console.WriteLine(id);
+                if (datasetIdSet.Contains(id))
+                {
+                    dataset["isEnabled"] = true;
+                    azureCosmosDB.UpsertDocumentAsync(dataset).Wait();
+                }
             }
         }
 
@@ -432,28 +502,6 @@ namespace CSharpDemo.Azure
             }
         }
 
-        public static void QueryAlertDemo()
-        {
-            AzureCosmosDB azureCosmosDB = new AzureCosmosDB("DataCop", "Alert");
-            // Collation: asc and desc is ascending and descending
-            IList<JObject> list = azureCosmosDB.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c where c.id = 'dd6c3669-8f99-432f-b263-499243ab58b2'")).Result;
-            foreach (JObject jObject in list)
-            {
-                Console.WriteLine(jObject);
-            }
-        }
-
-        public static void QueryDatasetTestDemo()
-        {
-            AzureCosmosDB azureCosmosDB = new AzureCosmosDB("DataCop", "DatasetTest");
-            // Collation: asc and desc is ascending and descending
-            IList<JObject> list = azureCosmosDB.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c where c.id  = '3348c56b-ae38-413b-9927-812f3990af85'")).Result;
-            foreach (JObject jObject in list)
-            {
-                Console.WriteLine(jObject);
-            }
-        }
-
         public static void QueryTestDemo()
         {
             AzureCosmosDB azureCosmosDB = new AzureCosmosDB("CosmosDBTest", "TestCollectionId");
@@ -465,20 +513,21 @@ namespace CSharpDemo.Azure
                 Console.WriteLine(JsonConvert.SerializeObject(t));
             }
         }
+
         // Through this code, I cant reproduce the error: 
         // Microsoft.Azure.Documents.DocumentClientException: Entity with the specified id does not exist in the system.
         public static void GetLastTestDemo()
         {
             AzureCosmosDB azureCosmosDB = new AzureCosmosDB("CosmosDBTest", "TestCollectionId");
             // Collation: asc and desc is ascending and descending
-            TestRunAlert t = azureCosmosDB.FindFirstOrDefaultItemAsync<TestRunAlert>(new SqlQuerySpec(@"SELECT * FROM c WHERE c.id=1111 order by c.timestampTicks desc")).Result;
+            JObject t = azureCosmosDB.FindFirstOrDefaultItemAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c WHERE c.id=1111 order by c.timestampTicks desc")).Result;
             if (t == null)
             {
                 Console.WriteLine("null");
             }
             else
             {
-                Console.WriteLine(t.Id);
+                Console.WriteLine(t["id"]);
                 Console.WriteLine(JsonConvert.SerializeObject(t));
             }
         }
@@ -496,6 +545,36 @@ namespace CSharpDemo.Azure
             var reqOptions = new RequestOptions { PartitionKey = new PartitionKey("a") };
             ResourceResponse<Document> resource = azureCosmosDB.DeleteDocumentAsync(documentLink, reqOptions).Result;
             Console.WriteLine(resource);
+        }
+
+        public static void DeleteTestRun()
+        {
+            KeyVaultName = "datacopdev";
+
+            var datasetIds = new string[]
+            {
+                "7299ec58-75d2-4e99-9165-7231268f92c8",
+                "918124d3-b87e-409f-ad1e-804475c04653",
+                "84142b9b-f6d2-4d86-8303-b42cd3145bc3"
+            };
+            HashSet<string> datasetIdSet = new HashSet<string>(datasetIds);
+
+            AzureCosmosDB azureCosmosDB = new AzureCosmosDB("DataCop", "PartitionedTestRun");
+            // Collation: asc and desc is ascending and descending
+            IList<JObject> datasets = azureCosmosDB.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c where c.datasetId = '7299ec58-75d2-4e99-9165-7231268f92c8'")).Result;
+            foreach (JObject dataset in datasets)
+            {
+                string id = dataset["id"].ToString();
+                string partitionKey = dataset["partitionKey"].ToString();
+                string datasetId = dataset["datasetId"].ToString();
+                if (datasetIdSet.Contains(datasetId))
+                {
+                    string documentLink = UriFactory.CreateDocumentUri("DataCop", "Dataset", id).ToString();
+                    var reqOptions = new RequestOptions { PartitionKey = new PartitionKey(partitionKey) };
+                    ResourceResponse<Document> resource = azureCosmosDB.DeleteDocumentAsync(documentLink, reqOptions).Result;
+                    Console.WriteLine(resource);
+                }
+            }
         }
 
         public static void UpsertTestDemoToCosmosDB()
@@ -524,125 +603,6 @@ namespace CSharpDemo.Azure
 
             ResourceResponse<Document> resource = azureCosmosDB.UpsertDocumentAsync(t).Result;
             Console.WriteLine(resource);
-        }
-
-        public static void UpsertAlertDemoToDev()
-        {
-            AzureCosmosDB azureCosmosDB = new AzureCosmosDB("DataCop", "Alert");
-
-            string alertDemoString =
-                @"{
-                    'id': '46ef2a20-297a-42ca-a994-2024965017f5',
-                    'status': 'Succeed',
-                    'alertSettingId': '3f49b378-40a8-4930-b39d-595381f3fb44',
-                    'severity': 4,
-                    'title': 'ExternalO365CommercialServicesMAU_AllUp_RL28_MonthOverMonth: Test ExternalO365CommercialServicesMAU_AllUp_RL28_MonthOverMonth fails on 2/2/2019 because percentage difference of 5.61947771497777 is above positive threshold of 5.',
-                    'description': 'The description',
-                    'timestamp': '2019-02-14T00:01:10.6699545Z',
-                    'timestampTicks': 636856992706699500,
-                    'incidentId': 109849040,
-                    'routingId': 'IDEAs://datacop',
-                    'owningTeamId': 'IDEAS\\IDEAsDataCop',
-                    'environment': 'Dev'
-                }";
-
-            TestRunAlert tr = JsonConvert.DeserializeObject<TestRunAlert>(alertDemoString);
-            tr.ImpactedDates = new HashSet<DateTime>();
-            tr.ImpactedDates.Add(DateTime.Parse("2019-04-12"));
-            tr.ImpactedDates.Add(DateTime.Parse("2019-04-09"));
-            tr.ImpactedDates.Add(DateTime.Parse("2019-04-19"));
-            tr.ImpactedDates.Add(DateTime.Parse("2019-04-09"));
-            Console.WriteLine(tr.ImpactedDates.Count);
-
-            Console.WriteLine(tr.Id);
-
-            ResourceResponse<Document> resource = azureCosmosDB.UpsertDocumentAsync(tr).Result;
-            Console.WriteLine(resource);
-        }
-
-        public static void UpsertDatasetDemoToDev()
-        {
-            AzureCosmosDB azureCosmosDB = new AzureCosmosDB("DataCopTest", "DataCopScore");
-
-            string datasetDemoString =
-                @"{
-                    'id': 'fa8f1f0e-4831-46b3-8332-e433f4884444',
-                    'name': 'Tenant Profile Extension - MS Sales Tenants Mapping ',
-                    'createTime': '2019-02-25T03:38:49.4165653Z',
-                    'lastModifiedTime': '0001-01-01T00:00:00',
-                    'connectionInfo': '',
-                    'dataFabric': 'ADLS',
-                    'type': 'Core',
-                    'category': 'Profile',
-                    'startDate': '2019-02-20T00:00:00.0000000Z',
-                    'rollingWindow': '5.00:00:00',
-                    'grain': 'Daily',
-                    'sla': '1.12:00:00',
-                    'isEnabled': true
-                }";
-
-            Dataset ds = JsonConvert.DeserializeObject<Dataset>(datasetDemoString);
-            List<string> children = new List<string>();
-            //children.Add("0fc8063f-3b03-4223-81a0-c591cd1c409a");
-            children.Add("fa8f1f0e-4831-46b3-8332-e433f48813b3");
-            children.Add("5dbcf13b-a7c8-4a9f-9226-55a6980e1f00");
-            children.Add("8d6e5188-3242-4065-89a9-51e48cefd7f8");
-            ds.Children = children;
-
-            ResourceResponse<Document> resource = azureCosmosDB.UpsertDocumentAsync(ds).Result;
-        }
-        public static void UpsertDatcopScoreDemoToDev()
-        {
-            AzureCosmosDB azureCosmosDB = new AzureCosmosDB("DataCopTest", "DataCopScore");
-
-            string datcopScoreDemoString =
-                @"{
-                    'id': 'InternalO365CommercialServicesMAU_PPE_20190307094515',
-                    'name': 'InternalO365CommercialServicesMAU_PPE',
-                    'datasetId': '8d6e5188-3242-4065-89a9-51e48cefd7f8',
-                    'datasetCategory': 'Metric',
-                    'scoreTime': '2019-02-19T09:45:13.4866178Z',
-                    'score': 50,
-                    'correctnessScore': 50,
-                    'testRunIds': [
-                        '250471d4-cfb0-40fd-8f0e-9cbd1869c39b',
-                        '3d8161a2-4df9-4455-8dcd-b0532e1cd142'
-                    ],
-                    '_rid': 'et18AIUSqCsbAAAAAAAAAA==',
-                    '_self': 'dbs/et18AA==/colls/et18AIUSqCs=/docs/et18AIUSqCsbAAAAAAAAAA==/',
-                    '_etag': '\'07002fc8-0000-0700-0000-5c6bd02c0000\'',
-                    '_attachments': 'attachments/',
-                    '_ts': 1550569516
-                }";
-            DataCopScore dc = JsonConvert.DeserializeObject<DataCopScore>(datcopScoreDemoString);
-
-            ResourceResponse<Document> resource2 = azureCosmosDB.UpsertDocumentAsync(dc).Result;
-        }
-
-        public static void UpsertActiveAlertTrendToDev()
-        {
-            AzureCosmosDB azureCosmosDB = new AzureCosmosDB("DataCop", "ActiveAlertTrend");
-            DateTime d = DateTime.Now.AddMonths(-0);
-            DateTime date = new DateTime(d.Year, d.Month + 1, 1).AddSeconds(-1);
-
-            string activeAlertTrendString =
-                "{" +
-                    $@"'id': 'ActiveAlertTrend_{date.ToString("yyyyMM")}',
-                    'timeStamp': '{date}',
-                    'activeAlertCount': 45" +
-                "}";
-            ActiveAlertTrend aat = JsonConvert.DeserializeObject<ActiveAlertTrend>(activeAlertTrendString);
-            aat = null;
-            if (aat != null)
-            {
-                ResourceResponse<Document> resource2 = azureCosmosDB.UpsertDocumentAsync(aat).Result;
-                Console.WriteLine(resource2);
-            }
-            else
-            {
-                Console.WriteLine("aat is null");
-            }
-
         }
 
         public string Endpoint { get; set; }

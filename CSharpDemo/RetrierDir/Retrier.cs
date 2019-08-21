@@ -20,7 +20,7 @@
         /// <param name="maxTries">The maximum tries.</param>
         public static void Retry(Action action, int maxTries = DefaultMaxTries)
         {
-            Func<int> func = () => { action(); return 0; };
+            int func() { action(); return 0; };
             Retrier.Retry<int, Exception>(func, maxTries);
         }
 

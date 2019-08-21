@@ -12,7 +12,6 @@
         {
             string keyVaultName = "datacopdev";
             //string keyVaultName = "ideasdatacopppe";
-            //string queueName = "onboardingrequest";
             //string queueName = "cosmostest";
             //string queueName = "alert";
             string queueName = "onboardingrequest";
@@ -26,10 +25,20 @@
             //Create a new message to send to the queue.
             string requestId = Guid.NewGuid().ToString();
             string datasetId = Guid.NewGuid().ToString();
-            string messageBody = "{\"requestId\":\"" + requestId + "\",\"requestType\":\"Create\",\"dataset\":{\"id\":\"" + datasetId + "\",\"name\":\"Sharepoint Active Usage\",\"createTime\":\"0001-01-01T00:00:00\",\"lastModifiedTime\":\"0001-01-01T00:00:00\",\"connectionInfo\":{\"dataLakeStore\":\"ideas-prod-c14.azuredatalakestore.net\",\"cosmosVC\":\"cosmos14.osdinfra.net/cosmos/IDEAs.Prod/\",\"path\":\"local/Partner/PreRelease/dev/activeusage/sharepointcommercial/%Y/%m/SharepointActiveUsage_%Y_%m_%d.ss\"},\"dataFabric\":\"ADLS\",\"category\":\"None\",\"startDate\":\"2019-08-01T00:00:00Z\",\"grain\":\"Daily\",\"sla\":\"6.0:0:0\",\"isEnabled\":false,\"ttl\":-1}}";
+            string messageBody = "{\"requestId\":\"" + requestId + "\",\"requestType\":\"Create\",\"dataset\":{\"id\":\"" + datasetId + "\",\"name\":\"Sharepoint Active Usage\",\"createTime\":\"0001-01-01T00:00:00\",\"lastModifiedTime\":\"0001-01-01T00:00:00\",\"connectionInfo\":{\"dataLakeStore\":\"ideas-prod-c14.azuredatalakestore.net\",\"cosmosVC\":\"cosmos14.osdinfra.net/cosmos/IDEAs.Prod/\",\"streamPath\":\"local/Partner/PreRelease/dev/activeusage/sharepointcommercial/%Y/%m/SharepointActiveUsage_%Y_%m_%d.ss\"},\"dataFabric\":\"ADLS\",\"category\":\"None\",\"startDate\":\"2019-08-01T00:00:00Z\",\"grain\":\"Daily\",\"sla\":\"6.0:0:0\",\"isEnabled\":false,\"ttl\":-1}}";
+
+            messageBody = "{\"requestId\":\"" + requestId + "\",\"requestType\":\"Create\",\"dataset\":{\"id\":\"" + datasetId + "\",\"name\":\"Sharepoint Active Usage\",\"createTime\":\"0001-01-01T00:00:00\",\"lastModifiedTime\":\"0001-01-01T00:00:00\",\"connectionInfo\":{\"cosmosVC\":\"cosmos14.osdinfra.net/cosmos/IDEAs.Prod/\",\"streamPath\":\"local/Partner/PreRelease/dev/activeusage/sharepointcommercial/%Y/%m/SharepointActiveUsage_%Y_%m_%d.ss\"},\"dataFabric\":\"Cosmos\",\"category\":\"None\",\"startDate\":\"2019-08-01T00:00:00Z\",\"grain\":\"Daily\",\"sla\":\"6.0:0:0\",\"isEnabled\":false,\"ttl\":-1}}";
 
 
-            //messageBody = "{\"requestId\":\"" + requestId + "\",\"requestType\":\"Create\",\"dataset\":{\"id\":\"" + datasetId + "\",\"name\":\"Sharepoint Active Usage\",\"createTime\":\"0001-01-01T00:00:00\",\"lastModifiedTime\":\"0001-01-01T00:00:00\",\"connectionInfo\":{\"dataLakeStore\":\"ideas-prod-c14.azuredatalakestore.net\",\"dataLakePath\":\"local/Partner/PreRelease/dev/activeusage/sharepointcommercial/%Y/%m/SharepointActiveUsage_%Y_%m_%d.ss\"},\"dataFabric\":\"ADLS\",\"category\":\"None\",\"startDate\":\"2019-08-01T00:00:00Z\",\"grain\":\"Daily\",\"sla\":\"6.0:0:0\",\"isEnabled\":false,\"ttl\":-1}}";
+            messageBody = "{\"requestId\":\"" + requestId + "\",\"requestType\":\"Create\",\"dataset\":{\"id\":\"" + datasetId + "\",\"name\":\"Sharepoint Active Usage\",\"createTime\":\"0001-01-01T00:00:00\",\"lastModifiedTime\":\"0001-01-01T00:00:00\",\"connectionInfo\":{\"dataLakeStore\":\"ideas-prod-c14.azuredatalakestore.net\",\"dataLakePath\":\"local/Partner/PreRelease/dev/activeusage/sharepointcommercial/%Y/%m/SharepointActiveUsage_%Y_%m_%d.ss\"},\"dataFabric\":\"ADLS\",\"category\":\"None\",\"startDate\":\"2019-08-01T00:00:00Z\",\"grain\":\"Daily\",\"sla\":\"6.0:0:0\",\"isEnabled\":false,\"ttl\":-1}}";
+
+
+
+            // Message for merging adls and cosmos onboarding test
+            messageBody = "{\"requestId\":\"" + requestId + "\",\"requestType\":\"Adhoc\",\"dataset\":{\"id\":\"ca7fd337-814a-4f1c-b3aa-c1e2823f034f\",\"name\":\"Tenant Profile Test jianjlv\",\"createTime\":\"0001-01-01T00:00:00\",\"lastModifiedTime\":\"0001-01-01T00:00:00\",\"connectionInfo\":{\"cosmosVC\":\"https://cosmos14.osdinfra.net/cosmos/Ideas.prod/\",\"dataLakeStore\":\"ideas-prod-c14.azuredatalakestore.net\",\"streamPath\":\"local/Scheduled/Datasets/Public/Profiles/Tenants/%Y/%m/%d/TenantsHistory.ss\"},\"dataFabric\":\"ADLS\",\"category\":\"None\",\"startDate\":\"2019-08-02T00:00:00Z\",\"endDate\":\"2019-08-03T00:00:00Z\",\"grain\":\"Daily\",\"sla\":\"3.0:0:0\",\"isEnabled\":false,\"ttl\":-1}​}";
+
+
+
 
             Message message = new Message(Encoding.UTF8.GetBytes(messageBody));
             message.MessageId = Guid.NewGuid().ToString();

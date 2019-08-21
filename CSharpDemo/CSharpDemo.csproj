@@ -180,13 +180,7 @@
     <Compile Include="CmdHelper.cs" />
     <Compile Include="Constant.cs" />
     <Compile Include="ConvertDemo.cs" />
-    <Compile Include="CosmosDBModel\ActiveAlertTrend.cs" />
-    <Compile Include="CosmosDBModel\AzureCosmosDBTestClass.cs" />
-    <Compile Include="CosmosDBModel\DataCopScore.cs" />
-    <Compile Include="CosmosDBModel\Dataset.cs" />
-    <Compile Include="CosmosDBModel\TestRun.cs" />
-    <Compile Include="CosmosDBModel\TestRunAlert.cs" />
-    <Compile Include="CosmosDBModel\TestRunAlertSettings.cs" />
+    <Compile Include="Azure\AzureCosmosDBTestClass.cs" />
     <Compile Include="CSharpInDepth\Part1\LINQDemo.cs" />
     <Compile Include="CSharpInDepth\Part2\CSharp2\GenericsDemo.cs" />
     <Compile Include="CSharpInDepth\Part2\CSharp2\NullableDemo.cs" />

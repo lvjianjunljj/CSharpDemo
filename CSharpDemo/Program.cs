@@ -7,7 +7,9 @@ using CSharpDemo.IcMTest;
 using CSharpDemo.Json;
 using CSharpDemo.RetrierDir;
 using CSharpDemoAux;
+using Microsoft.Azure.Documents;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -30,16 +32,13 @@ namespace CSharpDemo
             //AzureCosmosDB.MainMethod();
             //QueryIncidents.MainMethod();
 
-            AzureServiceBus.MainMethod();
+            //AzureServiceBus.MainMethod();
             //FireIncident.MainMethod();
-
-            //RetrierDemo.MainMethod();
 
             Console.ReadKey();
         }
 
     }
-
 
 }
 
