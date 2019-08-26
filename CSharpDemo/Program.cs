@@ -5,6 +5,7 @@ using CSharpDemo.CSharpInDepth.Part2.CSharp2;
 using CSharpDemo.FileOperation;
 using CSharpDemo.IcMTest;
 using CSharpDemo.Json;
+using CSharpDemo.Parallel;
 using CSharpDemo.RetrierDir;
 using CSharpDemoAux;
 using Microsoft.Azure.Documents;
