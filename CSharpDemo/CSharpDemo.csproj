@@ -218,6 +218,7 @@
     <Compile Include="Json\JTokenTestDemo.cs" />
     <Compile Include="FileOperation\LogFileOperation.cs" />
     <Compile Include="Application\Logger.cs" />
+    <Compile Include="NumberDemo.cs" />
     <Compile Include="Parallel\AutoResetEventDemo.cs" />
     <Compile Include="Parallel\TaskDemo.cs" />
     <Compile Include="Parallel\TaskVsThread.cs" />

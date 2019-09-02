@@ -31,13 +31,15 @@ namespace CSharpDemo
     {
         static void Main(string[] args)
         {
-            //AzureCosmosDB.MainMethod();
+            AzureCosmosDB.MainMethod();
             //QueryIncidents.MainMethod();
 
             //AzureServiceBus.MainMethod();
             //FireIncident.MainMethod();
 
+
             Console.ReadKey();
+
         }
     }
 }

@@ -20,6 +20,7 @@ namespace CSharpDemo.Azure
         public static void MainMethod()
         {
             //UpdateAllAlertSettingsDemo();
+            //UpdateAllDatasetTestCreatedBy();
             //DisableAllDataset();
             //EnableDataset();
 
@@ -28,8 +29,9 @@ namespace CSharpDemo.Azure
             //GetLastTestDemo();
 
             //UpsertTestDemoToCosmosDB();
+            ReadTestDemoFromCosmosDB();
             //DeleteTestDemo();
-            DeleteTestRun();
+            //DeleteTestRun();
 
             //MigrateData("DatasetTest");
 
@@ -41,8 +43,60 @@ namespace CSharpDemo.Azure
             //CheckCosmosConnectionInfoMappingCorrectness();
             //CheckDuplicatedEnabledDatasetTest();
 
+            //SetOutdatedForDuplicatedDatasetTest();
 
+        }
 
+        public static void SetOutdatedForDuplicatedDatasetTest()
+        {
+            KeyVaultName = "datacopprod";
+
+            AzureCosmosDB azureDatasetTestCosmosDB = new AzureCosmosDB("DataCop", "DatasetTest");
+            AzureCosmosDB azureDatasetCosmosDB = new AzureCosmosDB("DataCop", "Dataset");
+
+            // Collation: asc and desc is ascending and descending
+            IList<JObject> datasetList = azureDatasetCosmosDB.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c where c.dataFabric = 'ADLS' and c.isEnabled = true")).Result;
+            IList<JObject> completenessDatasetTestList = azureDatasetTestCosmosDB.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c where c.testContentType = 'AdlsCompleteness' and c.status = 'Enabled' and c.createdBy = 'DefaultTestGenerator' and c.lastModifiedBy = 'DefaultTestGenerator' order by c.lastModifiedTime")).Result;
+
+            HashSet<string> datasetIdSet = new HashSet<string>();
+            Dictionary<string, List<JObject>> completenessDatasetIdTestDict = new Dictionary<string, List<JObject>>();
+
+            foreach (JObject jObject in datasetList)
+            {
+                string id = jObject["id"].ToString();
+                datasetIdSet.Add(id);
+            }
+
+            foreach (JObject datasetTest in completenessDatasetTestList)
+            {
+                string datasetId = datasetTest["datasetId"].ToString();
+
+                if (datasetIdSet.Contains(datasetId))
+                {
+                    if (!completenessDatasetIdTestDict.ContainsKey(datasetId))
+                    {
+                        completenessDatasetIdTestDict.Add(datasetId, new List<JObject>());
+                    }
+                    completenessDatasetIdTestDict[datasetId].Add(datasetTest);
+                }
+
+            }
+
+            foreach (var completenessDatasetIdTest in completenessDatasetIdTestDict)
+            {
+                if (completenessDatasetIdTest.Value.Count > 1)
+                {
+                    //if (completenessDatasetIdTest.Key == "700663cc-cb12-4fb7-877b-262ab0160690")
+                    {
+                        Console.WriteLine($"datasetId: {completenessDatasetIdTest.Key}   completenessDatasetIdCount: {completenessDatasetIdTest.Value.Count}");
+                        for (int i = 0; i < completenessDatasetIdTest.Value.Count - 1; i++)
+                        {
+                            completenessDatasetIdTest.Value[i]["status"] = "Outdated";
+                            azureDatasetTestCosmosDB.UpsertDocumentAsync(completenessDatasetIdTest.Value[i]).Wait();
+                        }
+                    }
+                }
+            }
         }
 
         public static void CheckDuplicatedEnabledDatasetTest()
@@ -54,11 +108,12 @@ namespace CSharpDemo.Azure
 
             // Collation: asc and desc is ascending and descending
             IList<JObject> datasetList = azureDatasetCosmosDB.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c where c.dataFabric = 'ADLS' and c.isEnabled = true")).Result;
-            IList<JObject> availabilityDatasetTestList = azureDatasetTestCosmosDB.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c where c.testContentType = 'AdlsCompleteness' and c.status = 'Enabled'")).Result;
+            IList<JObject> completenessDatasetTestList = azureDatasetTestCosmosDB.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c where c.testContentType = 'AdlsCompleteness' and c.status = 'Enabled' order by c.lastModifiedTime")).Result;
 
             HashSet<string> datasetIdSet = new HashSet<string>();
-            Dictionary<string, int> availabilityDatasetIdCountDict = new Dictionary<string, int>();
-            Dictionary<string, string> availabilityDatasetIdNameDict = new Dictionary<string, string>();
+            Dictionary<string, List<string>> completenessDatasetIdCountDict = new Dictionary<string, List<string>>();
+            Dictionary<string, string> completenessDatasetIdNameDict = new Dictionary<string, string>();
+
 
             foreach (JObject jObject in datasetList)
             {
@@ -66,33 +121,37 @@ namespace CSharpDemo.Azure
                 datasetIdSet.Add(id);
             }
 
-            foreach (JObject jObject in availabilityDatasetTestList)
+            foreach (JObject jObject in completenessDatasetTestList)
             {
                 string datasetId = jObject["datasetId"].ToString();
-                string datasetTestName = jObject["name"].ToString();
+                string datasetTestId = jObject["id"].ToString();
+                string datasetTestName = jObject["lastModifiedBy"].ToString();
 
                 if (datasetIdSet.Contains(datasetId))
                 {
-                    //Console.WriteLine(datasetId);
-                    if (!availabilityDatasetIdNameDict.ContainsKey(datasetId))
+                    if (!completenessDatasetIdNameDict.ContainsKey(datasetId))
                     {
-                        availabilityDatasetIdNameDict.Add(datasetId, "");
+                        completenessDatasetIdNameDict.Add(datasetId, "");
                     }
-                    availabilityDatasetIdNameDict[datasetId] += "\t" + datasetTestName;
+                    completenessDatasetIdNameDict[datasetId] += datasetTestName + "\n";
 
-                    if (!availabilityDatasetIdCountDict.ContainsKey(datasetId))
+                    if (!completenessDatasetIdCountDict.ContainsKey(datasetId))
                     {
-                        availabilityDatasetIdCountDict.Add(datasetId, 0);
+                        completenessDatasetIdCountDict.Add(datasetId, new List<string>());
                     }
-                    availabilityDatasetIdCountDict[datasetId]++;
+                    completenessDatasetIdCountDict[datasetId].Add(datasetTestId);
                 }
 
             }
 
-            foreach (var availabilityDatasetIdCount in availabilityDatasetIdCountDict)
+            foreach (var completenessDatasetIdCount in completenessDatasetIdCountDict)
             {
-                Console.WriteLine($"datasetId: {availabilityDatasetIdCount.Key}   availabilityDatasetIdCount: {availabilityDatasetIdCount.Value}");
-                Console.WriteLine($"datasetTestName: {availabilityDatasetIdNameDict[availabilityDatasetIdCount.Key]}");
+                if (completenessDatasetIdCount.Value.Count > 1)
+                {
+                    Console.WriteLine($"datasetId: {completenessDatasetIdCount.Key}   completenessDatasetIdCount: {completenessDatasetIdCount.Value.Count}");
+                    Console.WriteLine(completenessDatasetIdNameDict[completenessDatasetIdCount.Key]);
+                }
+                //Console.WriteLine($"datasetTestName: {completenessDatasetIdNameDict[completenessDatasetIdCount.Key]}");
             }
         }
 
@@ -437,6 +496,24 @@ namespace CSharpDemo.Azure
             }
         }
 
+        public static void UpdateAllDatasetTestCreatedBy()
+        {
+            KeyVaultName = "datacopprod";
+
+
+            AzureCosmosDB azureCosmosDB = new AzureCosmosDB("DataCop", "DatasetTest");
+            // Collation: asc and desc is ascending and descending
+            IList<JObject> datasetTests = azureCosmosDB.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c where c.createdBy = 'jianjlv'")).Result;
+            foreach (JObject datasetTest in datasetTests)
+            {
+                Console.WriteLine(datasetTest["id"].ToString());
+                datasetTest["createdBy"] = "DefaultTestGenerator";
+                datasetTest["lastModifiedBy"] = "DefaultTestGenerator";
+
+                azureCosmosDB.UpsertDocumentAsync(datasetTest).Wait();
+            }
+        }
+
         public static void DisableAllDataset()
         {
             KeyVaultName = "datacopdev";
@@ -584,6 +661,7 @@ namespace CSharpDemo.Azure
 
             AzureCosmosDBTestClass t = new AzureCosmosDBTestClass();
             t.Id = Guid.NewGuid().ToString();
+            Console.WriteLine(t.Id);
             t.TestA = "a";
             t.TestB = "b";
             t.TestC = "cc";
@@ -603,6 +681,23 @@ namespace CSharpDemo.Azure
 
             ResourceResponse<Document> resource = azureCosmosDB.UpsertDocumentAsync(t).Result;
             Console.WriteLine(resource);
+        }
+
+        public static void ReadTestDemoFromCosmosDB()
+        {
+            KeyVaultName = "csharpmvcwebapikeyvault";
+            AzureCosmosDB azureCosmosDB = new AzureCosmosDB("CosmosDBTest", "TestCollectionId");
+            AzureCosmosDBTestClass azureCosmosDBTestClass = azureCosmosDB.FindFirstOrDefaultItemAsync<AzureCosmosDBTestClass>(new SqlQuerySpec(@"SELECT * FROM c WHERE c.id='47252742-6edb-4c7f-9ebd-d9cd2f23ceb5'")).Result;
+            if (azureCosmosDBTestClass == null)
+            {
+                Console.WriteLine("null");
+            }
+            else
+            {
+                Console.WriteLine(azureCosmosDBTestClass.TestLongMaxValueViaLong);
+                Console.WriteLine(azureCosmosDBTestClass.TestLongMaxValueViaDouble);
+                Console.WriteLine(azureCosmosDBTestClass.TestLongMaxValueViaLong == azureCosmosDBTestClass.TestLongMaxValueViaDouble);
+            }
         }
 
         public string Endpoint { get; set; }

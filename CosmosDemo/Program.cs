@@ -18,8 +18,12 @@
             //CheckExists1();
 
             //GetRowCountIteratively("2019-07-10T00:00:00.0000000Z");
-            Console.WriteLine(GetRowCount("https://cosmos14.osdinfra.net/cosmos/IDEAs.Prod//local/Partner/PreRelease/dev/activeusage/sharepointcommercial/2019/08/SharepointActiveUsage_2019_08_11.ss"));
+            //Console.WriteLine(GetRowCount("https://cosmos14.osdinfra.net/cosmos/IDEAs.Prod//local/Partner/PreRelease/dev/activeusage/sharepointcommercial/2019/08/SharepointActiveUsage_2019_08_11.ss"));
 
+
+            //Console.WriteLine(GetRowCount("https://cosmos14.osdinfra.net/cosmos/IDEAs.Prod/shares/AD_DataAnalytics/AD_DataAnalytics/Data/PublishedForKatana/IDEA/2019/08/24/IDEA.DNA.Public.UserActivity.Misc_MAU_Daily/dataForKatana.ss"));
+
+            Console.WriteLine(GetRowCount("https://cosmos14.osdinfra.net/cosmos/Ideas.prod//local/Partner/PreRelease/dev/usageprofile/commercial/userusageprofile/teams/2019/08/TeamsCommercialUserUsageProfile_2019_08_25.ss"));
             Console.ReadKey();
         }
 
