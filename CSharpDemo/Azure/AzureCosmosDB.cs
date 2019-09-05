@@ -21,6 +21,8 @@ namespace CSharpDemo.Azure
         {
             //UpdateAllAlertSettingsDemo();
             //UpdateAllDatasetTestCreatedBy();
+            UpdateAllDatasetForMerging();
+            //UpdateAllDatasetTestForMerging();
             //DisableAllDataset();
             //EnableDataset();
 
@@ -29,7 +31,7 @@ namespace CSharpDemo.Azure
             //GetLastTestDemo();
 
             //UpsertTestDemoToCosmosDB();
-            ReadTestDemoFromCosmosDB();
+            //ReadTestDemoFromCosmosDB();
             //DeleteTestDemo();
             //DeleteTestRun();
 
@@ -494,6 +496,189 @@ namespace CSharpDemo.Azure
                 alertSetting["serviceCustomFieldNames"] = serviceCustomFieldNamesJArray;
                 azureCosmosDB.UpsertDocumentAsync(alertSetting).Wait();
             }
+        }
+
+        public static void UpdateAllDatasetForMerging()
+        {
+            KeyVaultName = "datacopprod";
+            int count = 0;
+
+            AzureCosmosDB azureCosmosDB = new AzureCosmosDB("DataCop", "Dataset");
+            // Collation: asc and desc is ascending and descending
+            IList<JObject> datasets = azureCosmosDB.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c where c.dataFabric = 'ADLS' and c.isEnabled = true")).Result;
+            foreach (var dataset in datasets)
+            {
+                count++;
+                string id = dataset["id"].ToString();
+
+                //if (id != "3b73bfab-b99f-4e38-8a92-a49534a10856") continue;
+
+                var connectionInfo = dataset["connectionInfo"];
+                if (connectionInfo == null)
+                {
+                    Console.WriteLine("connectionInfo is null");
+                    Console.WriteLine(id);
+                    Console.WriteLine(connectionInfo);
+                    continue;
+                }
+
+
+                if (connectionInfo.GetType() == typeof(JObject) || connectionInfo.GetType() == typeof(JValue))
+                {
+                    if (connectionInfo.GetType() == typeof(JValue))
+                    {
+                        connectionInfo = JObject.Parse(connectionInfo.ToString());
+
+                    }
+                    if (connectionInfo["dataLakeStore"].ToString() == "ideas-prod-c14.azuredatalakestore.net")
+                    {
+                        connectionInfo["cosmosVC"] = "https://cosmos14.osdinfra.net/cosmos/Ideas.prod/";
+                        //connectionInfo["streamPath"] = connectionInfo["streamPath"] ?? connectionInfo["dataLakePath"] ?? connectionInfo["path"];
+                        connectionInfo["streamPath"] = connectionInfo["streamPath"] ?? connectionInfo["dataLakePath"];
+                        ((JObject)connectionInfo).Remove("dataLakePath");
+                        ((JObject)connectionInfo).Remove("auth");
+                        //((JObject)connectionInfo).Remove("path");
+                        dataset["connectionInfo"] = connectionInfo;
+                        dataset["lastModifiedTime"] = DateTime.UtcNow.ToString("o");
+                        //Console.WriteLine(dataset);
+                        //azureCosmosDB.UpsertDocumentAsync(dataset).Wait();
+                    }
+                    else if (connectionInfo["dataLakeStore"].ToString() == "cfr-prod-c14.azuredatalakestore.net")
+                    {
+                        connectionInfo["streamPath"] = connectionInfo["streamPath"] ?? connectionInfo["dataLakePath"];
+                        connectionInfo["streamPath"] = string.IsNullOrEmpty(connectionInfo["streamPath"].ToString()) ? connectionInfo["dataLakePath"] : connectionInfo["streamPath"];
+                        ((JObject)connectionInfo).Remove("dataLakePath");
+                        ((JObject)connectionInfo).Remove("cosmosPath");
+                        ((JObject)connectionInfo).Remove("cosmosVC");
+                        ((JObject)connectionInfo).Remove("auth");
+                        dataset["connectionInfo"] = connectionInfo;
+                        dataset["lastModifiedTime"] = DateTime.UtcNow.ToString("o");
+                        Console.WriteLine(dataset);
+                        azureCosmosDB.UpsertDocumentAsync(dataset).Wait();
+                    }
+                    else
+                    {
+                        Console.WriteLine("dataLakeStore is wrong");
+                        Console.WriteLine(id);
+                        Console.WriteLine(connectionInfo);
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("connectionInfo type wrong");
+                    Console.WriteLine(id);
+                    Console.WriteLine(connectionInfo);
+                }
+            }
+            Console.WriteLine($"count: {count}!!!");
+        }
+
+        public static void UpdateAllDatasetTestForMerging()
+        {
+            KeyVaultName = "datacopprod";
+
+            int count = 0;
+            AzureCosmosDB datasetAzureCosmosDB = new AzureCosmosDB("DataCop", "Dataset");
+            AzureCosmosDB datasetTestAzureCosmosDB = new AzureCosmosDB("DataCop", "DatasetTest");
+            // Collation: asc and desc is ascending and descending
+            IList<JToken> datasets = datasetAzureCosmosDB.GetAllDocumentsInQueryAsync<JToken>(new SqlQuerySpec(@"SELECT * FROM c where c.dataFabric = 'ADLS' and c.isEnabled = true")).Result;
+            IList<JObject> adlsCompletenessTests = datasetTestAzureCosmosDB.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c where c.testContentType = 'AdlsCompleteness' and c.status = 'Enabled'")).Result;
+            IList<JObject> cosmosCompletenessTests = datasetTestAzureCosmosDB.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c where c.testContentType = 'CosmosCompleteness' and c.status = 'Enabled'")).Result;
+
+            foreach (JObject dataset in datasets)
+            {
+                count++;
+                string id = dataset["id"].ToString();
+
+                //if (id != "3b73bfab-b99f-4e38-8a92-a49534a10856") continue;
+
+                if (dataset["connectionInfo"]["dataLakeStore"].ToString() != "ideas-prod-c14.azuredatalakestore.net")
+                {
+                    Console.WriteLine("dataLakeStore is wrong");
+                    Console.WriteLine(dataset["connectionInfo"]);
+                    continue;
+                }
+
+                bool existCosmosTest = false;
+                foreach (JObject cosmosCompletenessTestTemp in cosmosCompletenessTests)
+                {
+                    string datasetId = cosmosCompletenessTestTemp["datasetId"].ToString();
+                    if (datasetId == id)
+                    {
+                        if (existCosmosTest)
+                        {
+                            Console.WriteLine($"error!!! datasetId({datasetId}) has duplicated cosmos completeness test");
+                        }
+                        existCosmosTest = true;
+                    }
+                }
+                if (existCosmosTest)
+                {
+                    Console.WriteLine($"datasetId({id}) has cosmos completeness test");
+                    continue;
+                }
+
+
+                bool hasValue = false, continueLoop = false;
+
+                JObject cosmosCompletenessTest = null;
+                foreach (JObject adlsCompletenessTest in adlsCompletenessTests)
+                {
+                    string datasetId = adlsCompletenessTest["datasetId"].ToString();
+                    if (datasetId == id)
+                    {
+                        if (hasValue)
+                        {
+                            Console.WriteLine($"dataset({id}) has multi completeness test");
+                            continueLoop = true;
+                            break;
+                        }
+                        hasValue = true;
+                        cosmosCompletenessTest = adlsCompletenessTest;
+                    }
+                }
+
+                if (continueLoop)
+                {
+                    continue;
+                }
+
+                if (cosmosCompletenessTest != null)
+                {
+                    cosmosCompletenessTest["id"] = Guid.NewGuid();
+                    cosmosCompletenessTest["name"] = cosmosCompletenessTest["name"].ToString().Replace("ADLS", "Cosmos");
+
+                    cosmosCompletenessTest["description"] = cosmosCompletenessTest["description"].ToString().Replace("ADLS", "Cosmos");
+                    cosmosCompletenessTest["testContentType"] = "CosmosCompleteness";
+                    cosmosCompletenessTest["createTime"] = DateTime.UtcNow.ToString("o");
+                    cosmosCompletenessTest["lastModifiedTime"] = DateTime.UtcNow.ToString("o");
+                    cosmosCompletenessTest["createdBy"] = "DefaultTestGenerator";
+                    cosmosCompletenessTest["lastModifiedBy"] = "DefaultTestGenerator";
+                    cosmosCompletenessTest["dataFabric"] = "Cosmos";
+                    cosmosCompletenessTest["testContent"]["fileRowCountMaxLimit"] = long.MaxValue - 1000;
+                    cosmosCompletenessTest["testContent"]["fileRowCountMinLimit"] = 0;
+                    cosmosCompletenessTest["testContent"]["streamPath"] =
+                        "https://cosmos14.osdinfra.net/cosmos/IDEAs.Prod/" +
+                        cosmosCompletenessTest["testContent"]["streamPath"];
+                    ((JObject)cosmosCompletenessTest["testContent"]).Remove("dataLakeStore");
+                    ((JObject)cosmosCompletenessTest["testContent"]).Remove("fileSizeMaxLimit");
+                    ((JObject)cosmosCompletenessTest["testContent"]).Remove("fileSizeMinLimit");
+                    cosmosCompletenessTest.Remove("_rid");
+                    cosmosCompletenessTest.Remove("_self");
+                    cosmosCompletenessTest.Remove("_etag");
+                    cosmosCompletenessTest.Remove("_attachments");
+                    cosmosCompletenessTest.Remove("_ts");
+
+                    Console.WriteLine($"success: {id}");
+                    //Console.WriteLine(cosmosCompletenessTest);
+                    datasetTestAzureCosmosDB.UpsertDocumentAsync(cosmosCompletenessTest).Wait();
+                }
+                else
+                {
+                    Console.WriteLine($"dataset({id}) has no adlsCompletenessTest");
+                }
+            }
+            Console.WriteLine($"count: {count}!!!");
         }
 
         public static void UpdateAllDatasetTestCreatedBy()
