@@ -1,4 +1,4 @@
-﻿namespace CSharpDemo.Azure
+﻿namespace CSharpDemo.Azure.CosmosDB
 {
     using Newtonsoft.Json;
     using System;
@@ -6,6 +6,12 @@
 
     public class AzureCosmosDBTestClass : TestParentClass
     {
+        [JsonProperty("id")]
+        public string Id { get; set; }
+
+        [JsonProperty("partitionKey")]
+        public string PartitionKey { get; set; }
+
         [JsonProperty("Testa")]
         public string TestA { get; set; } = "1234";
 
@@ -25,9 +31,6 @@
 
         [JsonProperty("TestHashSet")]
         public HashSet<string> TestHashSet { get; set; }
-
-        [JsonProperty("id")]
-        public string Id { get; set; }
 
         [JsonProperty("timestampTicks")]
         public long TimestampTicks

@@ -1,9 +1,11 @@
 ﻿using AzureLib.KeyVault;
 using CSharpDemo.Azure;
+using CSharpDemo.Azure.CosmosDB;
 using CSharpDemo.CSharpInDepth.Part1;
 using CSharpDemo.CSharpInDepth.Part2.CSharp2;
 using CSharpDemo.FileOperation;
 using CSharpDemo.IcMTest;
+using CSharpDemo.IDEAs;
 using CSharpDemo.Json;
 using CSharpDemo.Parallel;
 using CSharpDemo.RetrierDir;
@@ -31,14 +33,14 @@ namespace CSharpDemo
     {
         static void Main(string[] args)
         {
-            //AzureCosmosDB.MainMethod();
-            //QueryIncidents.MainMethod();
-
+            //AzureCosmosDBClientOperation.MainMethod();
             //AzureServiceBus.MainMethod();
+
+            //QueryIncidents.MainMethod();
             //FireIncident.MainMethod();
 
+            DatasetJsonFileOperation.MainMethod();
 
-            string a = "1234";
 
             Console.ReadKey();
 

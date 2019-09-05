@@ -170,6 +170,7 @@
     <Compile Include="AttributesDemo.cs" />
     <Compile Include="Azure\AzureActiveDirectoryToken.cs" />
     <Compile Include="Azure\AzureCosmosDB.cs" />
+    <Compile Include="Azure\CosmosDB\AzureCosmosDBClient.cs" />
     <Compile Include="Azure\AzureMonitorLog.cs" />
     <Compile Include="Azure\AzureServiceBus.cs" />
     <Compile Include="Azure\ServiceBus\AzureServiceBusMultiClient.cs" />
@@ -180,7 +181,7 @@
     <Compile Include="CmdHelper.cs" />
     <Compile Include="Constant.cs" />
     <Compile Include="ConvertDemo.cs" />
-    <Compile Include="Azure\AzureCosmosDBTestClass.cs" />
+    <Compile Include="Azure\CosmosDB\AzureCosmosDBTestClass.cs" />
     <Compile Include="CSharpInDepth\Part1\LINQDemo.cs" />
     <Compile Include="CSharpInDepth\Part2\CSharp2\GenericsDemo.cs" />
     <Compile Include="CSharpInDepth\Part2\CSharp2\NullableDemo.cs" />
@@ -212,6 +213,8 @@
     <Compile Include="GetStrValue.cs" />
     <Compile Include="IcMTest\FireIncident.cs" />
     <Compile Include="IcMTest\MultiRequestError.cs" />
+    <Compile Include="IDEAs\AzureCosmosDBOperation.cs" />
+    <Compile Include="IDEAs\DatasetJsonFileOperation.cs" />
     <Compile Include="IDisposableImplementDemo.cs" />
     <Compile Include="Json\JsonCovertDemo.cs" />
     <Compile Include="Json\JsonParse.cs" />
