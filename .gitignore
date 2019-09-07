@@ -3,21 +3,6 @@
 ################################################################################
 
 /.vs
-
-/AdlsDemo/bin
-/AzureKustoDemo/bin
-/AzureLib/bin
-/CosmosDemo/bin
-/CSharpDemo/bin
-/CSharpDemoAux/bin
-/CSharpDemoReferenceAux/bin
-
-/AdlsDemo/obj
-/AzureKustoDemo/obj
-/AzureLib/obj
-/CosmosDemo/obj
-/CSharpDemo/obj
-/CSharpDemoAux/obj
-/CSharpDemoReferenceAux/obj
-
+/*/bin
+/*/obj
 /packages
