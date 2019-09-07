@@ -6,13 +6,14 @@
     using Microsoft.Azure.Documents.Client;
     using Newtonsoft.Json.Linq;
     using CSharpDemo.Azure.CosmosDB;
+    using System.Threading;
 
     public class AzureCosmosDBClientOperation
     {
         public static void MainMethod()
         {
             // "datacopdev","ideasdatacopppe" or "datacopprod"
-            AzureCosmosDBClient.KeyVaultName = "datacopdev";
+            AzureCosmosDBClient.KeyVaultName = "datacopprod";
 
             //UpdateAllAlertSettingsDemo();
             //UpdateAllDatasetTestCreatedBy();
@@ -21,6 +22,9 @@
 
             //DisableAllDataset();
             //EnableDataset();
+            DisableAllCosmosDatasetTest();
+            //EnableAllCosmosDatasetTestSuccessively();
+
 
             //QueryAlertSettingDemo();
             //QueryDataSetDemo();
@@ -712,6 +716,50 @@
             }
         }
 
+        public static void DisableAllCosmosDatasetTest()
+        {
+            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "DatasetTest");
+            // Collation: asc and desc is ascending and descending
+            IList<JObject> datasetTests = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c where c.dataFabric = 'Cosmos' and c.status = 'Enabled'")).Result;
+            foreach (JObject datasetTest in datasetTests)
+            {
+                string curTime = DateTime.UtcNow.ToString("o");
+                Console.WriteLine(curTime);
+                Console.WriteLine(datasetTest["id"]);
+                datasetTest["status"] = "Disabled";
+                datasetTest["lastModifiedTime"] = curTime;
+                datasetTest["resultExpirePeriod"] = "48:00:00";
+
+                azureCosmosDBClient.UpsertDocumentAsync(datasetTest).Wait();
+            }
+        }
+
+        public static void EnableAllCosmosDatasetTestSuccessively()
+        {
+            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "DatasetTest");
+            // Collation: asc and desc is ascending and descending
+            IList<JObject> datasetTests = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c where c.dataFabric = 'Cosmos' and c.status = 'Disabled'")).Result;
+
+            // Enable 1 cosmos datasetTest every 7 minute
+            int enableCountOnce = 1, periodOnce = 7 * 60 * 1000;
+            int count = 0;
+            foreach (JObject datasetTest in datasetTests)
+            {
+                string curTime = DateTime.UtcNow.ToString("o");
+                Console.WriteLine(curTime);
+                Console.WriteLine(datasetTest["id"]);
+                datasetTest["status"] = "Enabled";
+                datasetTest["lastModifiedTime"] = curTime;
+                azureCosmosDBClient.UpsertDocumentAsync(datasetTest).Wait();
+                count++;
+                if (count == enableCountOnce)
+                {
+                    count = 0;
+                    Thread.Sleep(periodOnce);
+                }
+
+            }
+        }
         public static void QueryAlertSettingDemo()
         {
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "AlertSettings");
