@@ -7,24 +7,30 @@
     using Newtonsoft.Json.Linq;
     using CSharpDemo.Azure.CosmosDB;
     using System.Threading;
+    using Newtonsoft.Json;
+    using AzureLib.KeyVault;
 
     public class AzureCosmosDBClientOperation
     {
+        // "datacopdev","ideasdatacopppe" or "datacopprod"
+        static string KeyVaultName = "datacopprod";
+
         public static void MainMethod()
         {
-            // "datacopdev","ideasdatacopppe" or "datacopprod"
-            AzureCosmosDBClient.KeyVaultName = "datacopprod";
+            AzureCosmosDBClient.KeyVaultName = KeyVaultName;
 
             //UpdateAllAlertSettingsDemo();
             //UpdateAllDatasetTestCreatedBy();
             //UpdateAllDatasetForMerging();
             //UpdateAllDatasetTestForMerging();
+            //UpdateAllCosmosTestResultExpirePeriod();
+
 
             //DisableAllDataset();
             //EnableDataset();
-            DisableAllCosmosDatasetTest();
+            //DisableAllCosmosDatasetTest();
             //EnableAllCosmosDatasetTestSuccessively();
-
+            EnableAllCosmosDatasetTestWhenNoActiveMessage();
 
             //QueryAlertSettingDemo();
             //QueryDataSetDemo();
@@ -678,6 +684,29 @@
             }
         }
 
+        public static void UpdateAllCosmosTestResultExpirePeriod()
+        {
+            string oldResultExpirePeriod = "48.00:00:00";
+            string newResultExpirePeriod = "2.00:00:00";
+            int count = 0;
+
+            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "PartitionedTestRun");
+            // Collation: asc and desc is ascending and descending
+            IList<JObject> testRuns = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec($@"SELECT * FROM c WHERE c.dataFabric= 'Cosmos' and c.resultExpirePeriod = '{oldResultExpirePeriod}'")).Result;
+
+            foreach (JObject testRun in testRuns)
+            {
+                Console.WriteLine(testRun["id"].ToString());
+
+                testRun["resultExpirePeriod"] = newResultExpirePeriod;
+                testRun["partitionKey"] = JsonConvert.SerializeObject(DateTime.Parse(testRun["partitionKey"].ToString())).Trim('"') + "Z";
+                azureCosmosDBClient.UpsertDocumentAsync(testRun).Wait();
+
+                count++;
+            }
+            Console.WriteLine($"count: {count}");
+        }
+
         public static void DisableAllDataset()
         {
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "Dataset");
@@ -728,7 +757,7 @@
                 Console.WriteLine(datasetTest["id"]);
                 datasetTest["status"] = "Disabled";
                 datasetTest["lastModifiedTime"] = curTime;
-                datasetTest["resultExpirePeriod"] = "48:00:00";
+                //datasetTest["resultExpirePeriod"] = "2.00:00:00";
 
                 azureCosmosDBClient.UpsertDocumentAsync(datasetTest).Wait();
             }
@@ -760,6 +789,48 @@
 
             }
         }
+
+        public static void EnableAllCosmosDatasetTestWhenNoActiveMessage()
+        {
+            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "DatasetTest");
+            // Collation: asc and desc is ascending and descending
+            IList<JObject> datasetTests = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c where c.dataFabric = 'Cosmos' and c.status = 'Disabled'")).Result;
+
+            // Enable 1 cosmos datasetTest every 15 minute
+            int periodOnce = 15 * 60 * 1000;
+            foreach (JObject datasetTest in datasetTests)
+            {
+                string curTime = DateTime.UtcNow.ToString("o");
+                Console.WriteLine(curTime);
+                Console.WriteLine(datasetTest["id"]);
+                datasetTest["status"] = "Enabled";
+                datasetTest["lastModifiedTime"] = curTime;
+                azureCosmosDBClient.UpsertDocumentAsync(datasetTest).Wait();
+                bool existCosmosMessage = true;
+                while (existCosmosMessage)
+                {
+                    Thread.Sleep(periodOnce);
+                    existCosmosMessage = ExistCosmosMessage();
+                }
+
+            }
+        }
+
+        private static bool ExistCosmosMessage()
+        {
+            string queueName = "cosmostest";
+            ISecretProvider secretProvider = KeyVaultSecretProvider.Instance;
+            string serviceBusConnectionString = secretProvider.GetSecretAsync(KeyVaultName, "ServiceBusConnectionString").Result;
+            Dictionary<string, long> messageCountDetails = MicrosoftServiceBusLib.MicrosoftServiceBusClient.GetMessageCountDetails(serviceBusConnectionString, queueName);
+            //foreach (var messageCountDetail in messageCountDetails)
+            //{
+            //    Console.WriteLine($"{messageCountDetail.Key}\t{messageCountDetail.Value}");
+            //}
+            long existCosmosMessage = messageCountDetails["activeCount"] + messageCountDetails["scheduledMessageCount"];
+            Console.WriteLine($"ExistCosmosMessage: {existCosmosMessage}");
+            return existCosmosMessage > 0;
+        }
+
         public static void QueryAlertSettingDemo()
         {
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "AlertSettings");

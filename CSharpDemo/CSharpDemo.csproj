@@ -284,6 +284,10 @@
       <Project>{c43ef999-b1ad-4bb8-a0f6-6dffcc2a4f0b}</Project>
       <Name>CSharpDemoAux</Name>
     </ProjectReference>
+    <ProjectReference Include="..\MicrosoftServiceBusLib\MicrosoftServiceBusLib.csproj">
+      <Project>{91578222-fab1-4d83-a4c6-06bb83985a05}</Project>
+      <Name>MicrosoftServiceBusLib</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

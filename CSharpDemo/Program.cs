@@ -11,6 +11,7 @@ using CSharpDemo.Parallel;
 using CSharpDemo.RetrierDir;
 using CSharpDemoAux;
 using Microsoft.Azure.Documents;
+using Microsoft.Azure.ServiceBus;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
@@ -34,7 +35,7 @@ namespace CSharpDemo
         static void Main(string[] args)
         {
             AzureCosmosDBClientOperation.MainMethod();
-            AzureServiceBus.MainMethod();
+            //AzureServiceBus.MainMethod();
 
             //QueryIncidents.MainMethod();
             //FireIncident.MainMethod();
