@@ -3,6 +3,12 @@
     using Microsoft.ServiceBus;
     using System.Collections.Generic;
 
+    /* We need to use lib Microsoft.ServiceBus when we want to get the more information of ServiceBus message.
+     * Such as message count and so on.
+     * Doc link: 
+     * https://docs.microsoft.com/en-us/azure/service-bus-messaging/message-counters
+     * https://docs.microsoft.com/en-us/dotnet/api/microsoft.servicebus.messaging
+     */
     public class MicrosoftServiceBusClient
     {
         public static long GetMessageCount(string connectionString, string queueName)

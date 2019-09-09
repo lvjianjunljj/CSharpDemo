@@ -19,7 +19,7 @@
             //GetLastTestDemo();
 
             //UpsertTestDemoToCosmosDB();
-            //ReadTestDemoFromCosmosDB();
+            //ReadTestDemoTestLongMaxValueFromCosmosDB();
 
             //DeleteTestDemo();
         }
@@ -56,11 +56,11 @@
 
         public static void UpsertTestDemoToCosmosDB()
         {
-            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("CosmosDBTest", "TestCollection");
+            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCopTest", "Test");
 
             AzureCosmosDBTestClass t = new AzureCosmosDBTestClass();
             t.Id = Guid.NewGuid().ToString();
-            t.PartitionKey = "key_1";
+            t.PartitionKey = DateTime.UtcNow.ToString();
             Console.WriteLine(t.Id);
             t.TestA = "a";
             t.TestB = "b";
@@ -78,24 +78,28 @@
             t.TestLongMaxValueViaLong = long.MaxValue;
             t.TestLongMaxValueViaDouble = long.MaxValue;
             t.CreateDate = DateTime.Now;
+            t.TimeSpanTest = new TimeSpan(12, 0, 0);
 
             ResourceResponse<Document> resource = azureCosmosDBClient.UpsertDocumentAsync(t).Result;
             Console.WriteLine(resource);
         }
 
-        public static void ReadTestDemoFromCosmosDB()
+        public static void ReadTestDemoTestLongMaxValueFromCosmosDB()
         {
-            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("CosmosDBTest", "TestCollection");
-            AzureCosmosDBTestClass azureCosmosDBTestClass = azureCosmosDBClient.FindFirstOrDefaultItemAsync<AzureCosmosDBTestClass>(new SqlQuerySpec(@"SELECT * FROM c WHERE c.id='47252742-6edb-4c7f-9ebd-d9cd2f23ceb5'")).Result;
+            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCopTest", "Test");
+            AzureCosmosDBTestClass azureCosmosDBTestClass = azureCosmosDBClient.FindFirstOrDefaultItemAsync<AzureCosmosDBTestClass>(new SqlQuerySpec(@"SELECT * FROM c WHERE c.id='e4da3600-8520-481d-b3e5-9a05e8920731'")).Result;
             if (azureCosmosDBTestClass == null)
             {
                 Console.WriteLine("null");
             }
             else
             {
+                // Read long max value
                 Console.WriteLine(azureCosmosDBTestClass.TestLongMaxValueViaLong);
                 Console.WriteLine(azureCosmosDBTestClass.TestLongMaxValueViaDouble);
                 Console.WriteLine(azureCosmosDBTestClass.TestLongMaxValueViaLong == azureCosmosDBTestClass.TestLongMaxValueViaDouble);
+
+                Console.WriteLine();
             }
         }
 

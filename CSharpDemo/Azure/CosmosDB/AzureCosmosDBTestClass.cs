@@ -32,11 +32,6 @@
         [JsonProperty("TestHashSet")]
         public HashSet<string> TestHashSet { get; set; }
 
-        [JsonProperty("timestampTicks")]
-        public long TimestampTicks
-        {
-            get { return DateTime.UtcNow.Ticks; }
-        }
 
         [JsonProperty("testLongMaxValueViaLong")]
         public long TestLongMaxValueViaLong { get; set; }
@@ -46,6 +41,9 @@
 
         [JsonProperty("createDate")]
         public DateTime CreateDate { get; set; }
+
+        [JsonProperty("timeSpanTest")]
+        public TimeSpan TimeSpanTest { get; set; }
     }
     public class TestParentClass
     {

@@ -34,7 +34,7 @@ namespace CSharpDemo
     {
         static void Main(string[] args)
         {
-            AzureCosmosDBClientOperation.MainMethod();
+            //AzureCosmosDBClientOperation.MainMethod();
             //AzureServiceBus.MainMethod();
 
             //QueryIncidents.MainMethod();
@@ -43,8 +43,36 @@ namespace CSharpDemo
             //DatasetJsonFileOperation.MainMethod();
 
 
+            Console.WriteLine(JsonConvert.SerializeObject(DateTime.Parse("2019-06-01").ToString("u")).Trim('"'));
+
+
+
+            //TimeSpan t1 = JsonConvert.DeserializeObject<TimeSpan>("48:00:00");
+            //TimeSpan t2 = JsonConvert.DeserializeObject<TimeSpan>("48.00:00:00");
+
+            TimeSpan t1 = TimeSpan.Parse("24:00:00");
+            TimeSpan t2 = new TimeSpan(24, 0, 0, 0);
+            Console.WriteLine(t1 == t2);
+
+            Console.WriteLine(t1);
+            Console.WriteLine(t2);
+
+
+            string timeSpanTestClassStr = "{TimeSpanTest : '24:00:00'}";
+            JObject timeSpanTestClassJObject = JObject.Parse(timeSpanTestClassStr);
+            Console.WriteLine(timeSpanTestClassJObject["TimeSpanTest"]);
+            TimeSpanTestClass timeSpanTestClass = timeSpanTestClassJObject.ToObject<TimeSpanTestClass>();
+            Console.WriteLine(timeSpanTestClass.TimeSpanTest);
+
+
+            Console.WriteLine(JsonConvert.SerializeObject(timeSpanTestClass));
             Console.ReadKey();
 
+        }
+
+        class TimeSpanTestClass
+        {
+            public TimeSpan TimeSpanTest { get; set; }
         }
     }
 }

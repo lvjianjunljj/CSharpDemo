@@ -30,12 +30,13 @@
             //EnableDataset();
             //DisableAllCosmosDatasetTest();
             //EnableAllCosmosDatasetTestSuccessively();
-            EnableAllCosmosDatasetTestWhenNoActiveMessage();
+            //EnableAllCosmosDatasetTestWhenNoActiveMessage();
 
             //QueryAlertSettingDemo();
             //QueryDataSetDemo();
 
-            //DeleteTestRun();
+            //DeleteTestRunById();
+            DeleteCosmosTestRunByResultExpirePeriod();
 
             //MigrateData("DatasetTest");
 
@@ -854,7 +855,7 @@
             }
         }
 
-        public static void DeleteTestRun()
+        public static void DeleteTestRunById()
         {
             var datasetIds = new string[]
             {
@@ -879,6 +880,31 @@
                     ResourceResponse<Document> resource = azureCosmosDBClient.DeleteDocumentAsync(documentLink, reqOptions).Result;
                     Console.WriteLine(resource);
                 }
+            }
+        }
+
+        public static void DeleteCosmosTestRunByResultExpirePeriod()
+        {
+            string resultExpirePeriod = "2.00:00:00";
+            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "PartitionedTestRun");
+            // Collation: asc and desc is ascending and descending
+            IList<JObject> testRuns = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec($@"SELECT * FROM c WHERE c.dataFabric= 'Cosmos' and c.resultExpirePeriod = '{resultExpirePeriod}'")).Result;
+            foreach (JObject testRun in testRuns)
+            {
+                string id = testRun["id"].ToString();
+
+                if (id != "6df33f69-706e-43bd-8736-b3cb04515ad9") continue;
+
+                Console.WriteLine(testRun);
+                Console.WriteLine(testRun["partitionKey"]);
+                string partitionKey = testRun["partitionKey"].ToString();
+                partitionKey = JsonConvert.SerializeObject(DateTime.Parse(testRun["partitionKey"].ToString())).Trim('"');
+                string documentLink = UriFactory.CreateDocumentUri("DataCop", "Dataset", id).ToString();
+                Console.WriteLine(id);
+                Console.WriteLine(partitionKey);
+                //var reqOptions = new RequestOptions { PartitionKey = new PartitionKey(partitionKey) };
+                //ResourceResponse<Document> resource = azureCosmosDBClient.DeleteDocumentAsync(documentLink, reqOptions).Result;
+                //Console.WriteLine(resource);
             }
         }
     }
