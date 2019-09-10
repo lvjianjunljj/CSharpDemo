@@ -9,6 +9,7 @@
     using System.Threading;
     using Newtonsoft.Json;
     using AzureLib.KeyVault;
+    using System.Text.RegularExpressions;
 
     public class AzureCosmosDBClientOperation
     {
@@ -24,11 +25,12 @@
             //UpdateAllDatasetForMerging();
             //UpdateAllDatasetTestForMerging();
             //UpdateAllCosmosTestResultExpirePeriod();
+            //UpdateAllCosmosTestCreateTime();
 
 
             //DisableAllDataset();
             //EnableDataset();
-            //DisableAllCosmosDatasetTest();
+            DisableAllCosmosDatasetTest();
             //EnableAllCosmosDatasetTestSuccessively();
             //EnableAllCosmosDatasetTestWhenNoActiveMessage();
 
@@ -36,7 +38,7 @@
             //QueryDataSetDemo();
 
             //DeleteTestRunById();
-            DeleteCosmosTestRunByResultExpirePeriod();
+            //DeleteCosmosTestRunByResultExpirePeriod();
 
             //MigrateData("DatasetTest");
 
@@ -695,17 +697,55 @@
             // Collation: asc and desc is ascending and descending
             IList<JObject> testRuns = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec($@"SELECT * FROM c WHERE c.dataFabric= 'Cosmos' and c.resultExpirePeriod = '{oldResultExpirePeriod}'")).Result;
 
+            Console.WriteLine($"testRuns.Count: {testRuns.Count}");
             foreach (JObject testRun in testRuns)
             {
+                //if (testRun["id"].ToString() != "6a31c782-3151-48f6-babd-5a0f428a493f") continue;
                 Console.WriteLine(testRun["id"].ToString());
-
+                //Console.WriteLine(testRun);
+                string partitionKey = (Regex.Split(testRun.ToString(), "\"partitionKey\": \""))[1].Split('\"')[0];
+                Console.WriteLine(partitionKey);
                 testRun["resultExpirePeriod"] = newResultExpirePeriod;
-                testRun["partitionKey"] = JsonConvert.SerializeObject(DateTime.Parse(testRun["partitionKey"].ToString())).Trim('"') + "Z";
+                testRun["partitionKey"] = partitionKey;
                 azureCosmosDBClient.UpsertDocumentAsync(testRun).Wait();
 
                 count++;
             }
             Console.WriteLine($"count: {count}");
+        }
+
+        public static void UpdateAllCosmosTestCreateTime()
+        {
+            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "PartitionedTestRun");
+            for (int min = 0; min < 16; min++)
+            {
+                for (int sec = 0; sec < 60; sec++)
+                {
+                    for (int millisec = 0; millisec < 10; millisec++)
+                    {
+                        int count = 0;
+                        // Collation: asc and desc is ascending and descending
+                        IList<JObject> testRuns = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec($@"SELECT * FROM c WHERE c.dataFabric= 'Cosmos' and c.createTime > '2019-09-09T05:{min}:{sec}.{millisec}' and c.createTime < '2019-09-09T05:{min}:{sec}.{millisec + 1}' order by c.startTime desc")).Result;
+
+                        Console.WriteLine($"testRuns.Count: {testRuns.Count}");
+                        foreach (JObject testRun in testRuns)
+                        {
+                            if (testRun["id"].ToString() != "84c5a7cb-2c04-4142-bb57-fdb7b20fff2b") continue;
+                            Console.WriteLine(testRun["id"].ToString());
+                            //Console.WriteLine(testRun);
+                            string partitionKey = (Regex.Split(testRun.ToString(), "\"partitionKey\": \""))[1].Split('\"')[0];
+                            Console.WriteLine(partitionKey);
+                            testRun["createTime"] = testRun["startTime"];
+                            testRun["partitionKey"] = partitionKey;
+                            azureCosmosDBClient.UpsertDocumentAsync(testRun).Wait();
+
+                            count++;
+                        }
+                        Console.WriteLine($"count: {count}");
+                    }
+
+                }
+            }
         }
 
         public static void DisableAllDataset()

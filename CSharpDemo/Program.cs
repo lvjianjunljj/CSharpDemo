@@ -34,7 +34,7 @@ namespace CSharpDemo
     {
         static void Main(string[] args)
         {
-            //AzureCosmosDBClientOperation.MainMethod();
+            AzureCosmosDBClientOperation.MainMethod();
             //AzureServiceBus.MainMethod();
 
             //QueryIncidents.MainMethod();
