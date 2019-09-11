@@ -14,7 +14,7 @@
     public class AzureCosmosDBClientOperation
     {
         // "datacopdev","ideasdatacopppe" or "datacopprod"
-        static string KeyVaultName = "datacopprod";
+        static string KeyVaultName = "datacopdev";
 
         public static void MainMethod()
         {
@@ -30,7 +30,7 @@
 
             //DisableAllDataset();
             //EnableDataset();
-            DisableAllCosmosDatasetTest();
+            //DisableAllCosmosDatasetTest();
             //EnableAllCosmosDatasetTestSuccessively();
             //EnableAllCosmosDatasetTestWhenNoActiveMessage();
 
@@ -497,7 +497,7 @@
 
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "Dataset");
             // Collation: asc and desc is ascending and descending
-            IList<JObject> datasets = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c where c.dataFabric = 'ADLS' and c.isEnabled = true")).Result;
+            IList<JObject> datasets = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c where c.dataFabric = 'ADLS' and c.isEnabled = false and not is_defined(c.connectionInfo.streamPath)")).Result;
             foreach (var dataset in datasets)
             {
                 count++;
@@ -517,11 +517,10 @@
 
                 if (connectionInfo.GetType() == typeof(JObject) || connectionInfo.GetType() == typeof(JValue))
                 {
-                    if (connectionInfo.GetType() == typeof(JValue))
-                    {
-                        connectionInfo = JObject.Parse(connectionInfo.ToString());
-
-                    }
+                    //if (connectionInfo.GetType() == typeof(JValue))
+                    //{
+                    connectionInfo = JObject.Parse(connectionInfo.ToString());
+                    //}
                     if (connectionInfo["dataLakeStore"].ToString() == "ideas-prod-c14.azuredatalakestore.net")
                     {
                         connectionInfo["cosmosVC"] = "https://cosmos14.osdinfra.net/cosmos/Ideas.prod/";
@@ -533,9 +532,11 @@
                         dataset["connectionInfo"] = connectionInfo;
                         dataset["lastModifiedTime"] = DateTime.UtcNow.ToString("o");
                         //Console.WriteLine(dataset);
-                        //azureCosmosDBClient.UpsertDocumentAsync(dataset).Wait();
+                        Console.WriteLine(id);
+                        azureCosmosDBClient.UpsertDocumentAsync(dataset).Wait();
                     }
-                    else if (connectionInfo["dataLakeStore"].ToString() == "cfr-prod-c14.azuredatalakestore.net")
+                    //else if (connectionInfo["dataLakeStore"].ToString() == "cfr-prod-c14.azuredatalakestore.net")
+                    else
                     {
                         connectionInfo["streamPath"] = connectionInfo["streamPath"] ?? connectionInfo["dataLakePath"];
                         connectionInfo["streamPath"] = string.IsNullOrEmpty(connectionInfo["streamPath"].ToString()) ? connectionInfo["dataLakePath"] : connectionInfo["streamPath"];
@@ -545,15 +546,15 @@
                         ((JObject)connectionInfo).Remove("auth");
                         dataset["connectionInfo"] = connectionInfo;
                         dataset["lastModifiedTime"] = DateTime.UtcNow.ToString("o");
-                        Console.WriteLine(dataset);
+                        Console.WriteLine(id);
                         azureCosmosDBClient.UpsertDocumentAsync(dataset).Wait();
                     }
-                    else
-                    {
-                        Console.WriteLine("dataLakeStore is wrong");
-                        Console.WriteLine(id);
-                        Console.WriteLine(connectionInfo);
-                    }
+                    //else
+                    //{
+                    //    Console.WriteLine("dataLakeStore is wrong");
+                    //    Console.WriteLine(id);
+                    //    Console.WriteLine(connectionInfo);
+                    //}
                 }
                 else
                 {
