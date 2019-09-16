@@ -12,6 +12,7 @@
         const string Thumbprint = "7C3B9FAC23D24DB1313E7F985BB820FEF862A284";
         static void Main(string[] args)
         {
+
             // You can get the sample stram path from the doc: https://microsoftapc-my.sharepoint.com/personal/jianjlv_microsoft_com/_layouts/OneNote.aspx?id=%2Fpersonal%2Fjianjlv_microsoft_com%2FDocuments%2FJianjun%20%40%20Microsoft&wd=target%28Work.one%7C08C13A75-D69C-49FE-8D53-8DBF6710CCF0%2FSample%20Code%7CF29C765D-F05A-4516-8F35-08DCE5847D4C%2F%29
 
 
@@ -23,7 +24,7 @@
 
             //Console.WriteLine(GetRowCount("https://cosmos14.osdinfra.net/cosmos/IDEAs.Prod/shares/AD_DataAnalytics/AD_DataAnalytics/Data/PublishedForKatana/IDEA/2019/08/24/IDEA.DNA.Public.UserActivity.Misc_MAU_Daily/dataForKatana.ss"));
 
-            Console.WriteLine(GetRowCount("https://cosmos14.osdinfra.net/cosmos/Ideas.prod/local/Partner/PreRelease/dev/activeusage/excelcommercialdevice/2019/08/ExcelActiveDevices_2019_08_25.ss"));
+            Console.WriteLine(GetRowCount("https://cosmos14.osdinfra.net/cosmos/Ideas.prod/%20local/Partner/PreRelease/dev/activeusage/excelcommercialdevice/2019/08/ExcelActiveDevices_2019_08_25.ss"));
             Console.ReadKey();
         }
 

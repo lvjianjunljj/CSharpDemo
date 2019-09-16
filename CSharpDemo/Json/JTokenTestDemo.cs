@@ -9,7 +9,11 @@ namespace CSharpDemo.Json
 {
     class JTokenTestDemo
     {
-        static void MainMethod(string[] args)
+        public static void MainMethod()
+        {
+            //RecursiveAccessProperty();
+        }
+        static void RecursiveAccessProperty()
         {
             JTokenTest t = new JTokenTest();
             t.a = "a";
@@ -40,8 +44,8 @@ namespace CSharpDemo.Json
                 Type ty = value.GetType();
             }
             //Console.WriteLine(jToken["a"]);
-            Console.ReadKey();
         }
+
         private static string ConvertTestContentToHtmlString(JToken jTokenContent)
         {
             if (jTokenContent == null)

@@ -18,14 +18,12 @@ namespace AdlsDemo
             string clientId = secretProvider.GetSecretAsync("datacopdev", "AdlsAadAuthAppId").Result;
             string clientKey = secretProvider.GetSecretAsync("datacopdev", "AdlsAadAuthAppSecret").Result;
 
-
             var dataLakeClient = new DataLakeClient(clientId, clientKey);
 
-
             Console.WriteLine(dataLakeClient.CheckExists("ideas-prod-c14.azuredatalakestore.net",
-                "local/Scheduled/Datasets/Public/Profiles/OlsLicenses/v4/2019/08/01/LicensesCommercialHistory_2019-08-01.ss"));
+                "local/Scheduled/Datasets/Public/Profiles/OlsLicenses/v4/2019/08/20/LicensesCommercialHistory_2019-08-20.ss"));
             Console.WriteLine(dataLakeClient.GetFileSize("ideas-prod-c14.azuredatalakestore.net",
-                "local/Scheduled/Datasets/Public/Profiles/OlsLicenses/v4/2019/08/01/LicensesCommercialHistory_2019-08-01.ss"));
+                "local/Scheduled/Datasets/Public/Profiles/OlsLicenses/v4/2019/08/20/LicensesCommercialHistory_2019-08-20.ss"));
 
 
             Console.ReadKey();

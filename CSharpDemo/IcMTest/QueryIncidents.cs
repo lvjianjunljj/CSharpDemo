@@ -29,7 +29,7 @@ namespace CSharpDemo.IcMTest
 
             //LinkRootCause();
             //CreateRootCause();
-            //string rootCauseString = .GetRootCause(107063448);
+            //string rootCauseString = GetRootCause(107063448);
             //Console.WriteLine(rootCauseString);
             //SaveFile.FirstMethod(@"D:\data\company_work\IDEAs\IcMWork\root_cause_test.txt", rootCauseString);
 
@@ -44,6 +44,8 @@ namespace CSharpDemo.IcMTest
 
             //EditIncidentCustomFields();
             //EditIncidentCustomFieldsSimple();
+            EditIncidentInfo();
+
 
             //GetIncidentTeamCustomField(116142489);
 
@@ -59,7 +61,7 @@ namespace CSharpDemo.IcMTest
             //Console.WriteLine(activeIncidentIdList.Count);
 
             //GetIncident();
-            GetCFRIncident();
+            //GetCFRIncident();
         }
 
 
@@ -199,11 +201,35 @@ namespace CSharpDemo.IcMTest
             handler.ClientCertificates.Add(certificate);
             HttpClient client = new HttpClient(handler);
 
-            byte[] buffer = System.Text.Encoding.UTF8.GetBytes(EditIncidentCustomFieldsContent);
+            byte[] buffer = Encoding.UTF8.GetBytes(EditIncidentCustomFieldsContent);
             ByteArrayContent content = new ByteArrayContent(buffer);
             content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
             HttpRequestMessage request = new HttpRequestMessage(new HttpMethod("PATCH"), "https://icm.ad.msft.net/api/cert/incidents(109578527)");
+            request.Content = content;
+            HttpResponseMessage response = client.SendAsync(request).Result;
+
+            string responseString = response.Content.ReadAsStringAsync().Result;
+            Console.WriteLine(responseString);
+        }
+
+        public static void EditIncidentInfo()
+        {
+            // The schema of ImpactStartDate is very fixed, we just can use ToString("o") for updating it
+            string EditIncidentCustomFieldsContent = $@"{{'ImpactStartDate': '{DateTime.UtcNow.ToString("o")}'}}";
+
+            //EditIncidentCustomFieldsContent = $@"{{'Title': 'Test', 'Summary': 'Just for summary', 'ImpactStartDate' : '2015-09-10T19:00:00.0000000Z'}}";
+
+            WebRequestHandler handler = new WebRequestHandler();
+            X509Certificate2 certificate = GetCert("87a1331eac328ec321578c10ebc8cc4c356b005f");
+            handler.ClientCertificates.Add(certificate);
+            HttpClient client = new HttpClient(handler);
+
+            byte[] buffer = Encoding.UTF8.GetBytes(EditIncidentCustomFieldsContent);
+            ByteArrayContent content = new ByteArrayContent(buffer);
+            content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+
+            HttpRequestMessage request = new HttpRequestMessage(new HttpMethod("PATCH"), "https://icm.ad.msft.net/api/cert/incidents(137852320)");
             request.Content = content;
             HttpResponseMessage response = client.SendAsync(request).Result;
 
@@ -239,7 +265,7 @@ namespace CSharpDemo.IcMTest
             string myContent = "{ \"Category\": \"Other\" , \"Description\": \"description\" , \"Title\": \"title\" }";
             //string myContent = JsonConvert.SerializeObject(data);
             Console.WriteLine(myContent);
-            byte[] buffer = System.Text.Encoding.UTF8.GetBytes(myContent);
+            byte[] buffer = Encoding.UTF8.GetBytes(myContent);
             ByteArrayContent content = new ByteArrayContent(buffer);
             content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 

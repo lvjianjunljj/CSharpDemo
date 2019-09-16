@@ -8,6 +8,8 @@ namespace AzureKustoDemo
         static void Main(string[] args)
         {
             IcMKustoDemo.MainMethod();
+
+
             Console.ReadKey();
         }
     }
