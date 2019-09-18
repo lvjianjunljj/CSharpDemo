@@ -4,6 +4,7 @@ using Kusto.Cloud.Platform.Data;
 using Kusto.Data;
 using Kusto.Data.Net.Client;
 using System.Data;
+using AzureLib.KeyVault;
 
 /*
  * We need to install Microsoft.Azure.Kusto.Data from Nuget 
@@ -15,6 +16,16 @@ namespace AzureKustoDemo
     {
         public static void MainMethod()
         {
+            ISecretProvider secretProvider = KeyVaultSecretProvider.Instance;
+
+            string kustoAppId = secretProvider.GetSecretAsync("datacopdev", "KustoAppId").Result;
+            string kustoAppKey = secretProvider.GetSecretAsync("datacopdev", "KustoAppKey").Result;
+            string kustoAuthorityId = secretProvider.GetSecretAsync("datacopdev", "KustoAuthorityId").Result;
+
+            // The value is that "https://icmcluster.kusto.windows.net"
+            // It is not very necessary to save it in Azure KeyVault
+            string kustoConnectionString = secretProvider.GetSecretAsync("datacopdev", "KustoConnectionString").Result;
+
             string query = @"let idx = 0;
                         let cutoffDate = datetime_add('month',-idx , endofmonth(now()));
                         Incidents
@@ -24,13 +35,13 @@ namespace AzureKustoDemo
                         | distinct IncidentId
                         | count";
 
-            string url = @"https://icmcluster.kusto.windows.net/IcmDataWarehouse";
+            string url = $@"{kustoConnectionString}/IcmDataWarehouse";
             var kustoConnectionStringBuilder = new KustoConnectionStringBuilder(url)
             {
                 FederatedSecurity = true,
-                ApplicationClientId = "",
-                ApplicationKey = "",
-                Authority = ""
+                ApplicationClientId = kustoAppId,
+                ApplicationKey = kustoAppKey,
+                Authority = kustoAuthorityId
             };
 
             var client = KustoClientFactory.CreateCslQueryProvider(kustoConnectionStringBuilder);

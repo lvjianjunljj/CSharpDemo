@@ -8,11 +8,11 @@ namespace CSharpDemo.Json
     {
         public static void MainMethod()
         {
-            //NullStrTest();
+            StringTest();
             //DateTimeDeserializeTest();
         }
 
-        public static void NullStrTest()
+        public static void StringTest()
         {
             var settings = new JsonSerializerSettings
             {
@@ -20,7 +20,7 @@ namespace CSharpDemo.Json
                 MissingMemberHandling = MissingMemberHandling.Ignore,
             };
 
-            string texString = "{'tEstStr':'tEstStr', 'nullDefinedStr':null, 'EmptyStr':''}";
+            string texString = "{'tEstStr':'tEstStr', 'nullDefinedStr':null, 'EmptyStr':'', 'TrimStr':'  TrimStr    '}";
             // When we call DeserializeObject<T> function, ignore the case of property name by default
             // I think we can set the conifg by the input JsonSerializerSettings
             Tex tex = JsonConvert.DeserializeObject<Tex>(texString, settings);
@@ -44,6 +44,7 @@ namespace CSharpDemo.Json
             Console.WriteLine(tex.TestStr);
             Console.WriteLine(tex.NullStr ?? tex.TestStr);
             Console.WriteLine(tex.NullDefinedStr ?? tex.TestStr);
+            Console.WriteLine(tex.TrimStr);
 
 
             Console.WriteLine(JsonConvert.SerializeObject(tex));
@@ -51,10 +52,23 @@ namespace CSharpDemo.Json
 
         class Tex
         {
+            private string trimStr;
             public string TestStr { get; set; }
             public string NullStr { get; set; }
             public string NullDefinedStr { get; set; }
             public string EmptyStr { get; set; }
+
+            public string TrimStr
+            {
+                get
+                {
+                    return this.trimStr;
+                }
+                set
+                {
+                    this.trimStr = value.Trim();
+                }
+            }
         }
 
         public void DateTimeDeserializeTest()
