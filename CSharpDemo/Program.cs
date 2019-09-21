@@ -35,12 +35,13 @@ namespace CSharpDemo
         static void Main(string[] args)
         {
             //AzureCosmosDBClientOperation.MainMethod();
-            //AzureServiceBus.MainMethod();
+            AzureServiceBus.MainMethod();
 
             //QueryIncidents.MainMethod();
             //FireIncident.MainMethod();
 
-            //DatasetJsonFileOperation.MainMethod();
+            DatasetJsonFileOperation.MainMethod();
+
 
             Console.ReadKey();
 

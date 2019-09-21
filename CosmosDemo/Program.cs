@@ -20,6 +20,7 @@
             //CheckDirectoryExists();
 
             //GetRowCountIteratively("2019-07-10T00:00:00.0000000Z");
+            GetRowCount("https://cosmos14.osdinfra.net/cosmos/Ideas.prod /local/Partner/PreRelease/dev/activeusage/excelcommercialdevice/2019/08/ExcelActiveDevices_2019_08_25.ss");
 
             Console.ReadKey();
         }
@@ -33,7 +34,7 @@
             //stream = "https://cosmos14.osdinfra.net/cosmos/IDEAs.Ppe/local/ParquetConverter.py";
 
             // This link is not able to be accessed
-            //stream = "https://cosmos14.osdinfra.net/cosmos/IDEAs.Ppe/shares/CFR.ppe/local/Cooked/StateUserDirectory/StateUserDirectory_2019_07_24.ss";
+            //stream = "https://cosmos14.osdinfra.net/cosmos/IDEAs.Ppe/shares/CFR.ppe/local/Cooked/StateUserDirectory/StateUserDirectory_2019_07_24.ss";InnerException
             var certificate = GetCertificateByThumbprint(Thumbprint);
             VC.Setup(null, certificate);
 
@@ -144,6 +145,18 @@
                     Console.WriteLine("Cannot find the file...");
                     return null;
                 }
+                if (e.InnerException.GetType() == typeof(CosmosDirectoryNotFoundException))
+                {
+                    Console.WriteLine("Cannot find the directory...");
+                    return null;
+                }
+                if (e.InnerException.GetType() == typeof(CosmosArgumentException))
+                {
+                    Console.WriteLine($"CosmosArgumentException...{e.InnerException.Message}");
+                    return null;
+                }
+                Console.WriteLine(e.InnerException.GetType());
+                Console.WriteLine(e.InnerException.Message);
                 throw;
             }
             // This can catch any exception..

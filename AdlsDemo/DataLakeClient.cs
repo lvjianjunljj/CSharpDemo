@@ -7,6 +7,9 @@
     using Microsoft.Rest;
     using Microsoft.Rest.Azure.Authentication;
     using System.Threading;
+    using System.Collections.Generic;
+    using Newtonsoft.Json.Linq;
+    using System.Linq;
 
     public class DataLakeClient
     {
@@ -82,6 +85,44 @@
             {
                 Console.WriteLine($"Get directory entry from ADLS failed, error message:{adlsException.Message}");
                 return null;
+            }
+        }
+
+        public IEnumerable<JObject> EnumerateAdlsMetadataEntity(string store, string path)
+        {
+            var client = CreateAdlsClient(store, clientId, clientKey);
+            var entities = client.EnumerateDirectory(path);
+
+            try
+            {
+                Console.WriteLine(entities.Any());
+            }
+            catch (NullReferenceException ex)
+            {
+                Console.WriteLine($"NullReferenceException in function EnumerateAdlsMetadataCacheEntity, error message: {ex.Message}");
+                yield break;
+            }
+            foreach (var entity in entities)
+            {
+                if (entity.Type == DirectoryEntryType.FILE)
+                {
+                    var fileEntity = new JObject();
+
+                    fileEntity["FullName"] = entity.FullName;
+                    fileEntity["Name"] = entity.Name;
+                    fileEntity["Length"] = entity.Length;
+                    fileEntity["LastModifiedTime"] = entity.LastModifiedTime;
+                    fileEntity["LastAccessTime"] = entity.LastAccessTime;
+                    fileEntity["ExpiryTime"] = entity.ExpiryTime;
+                    yield return fileEntity;
+                }
+                else
+                {
+                    foreach (var adlsMetadataEntity in this.EnumerateAdlsMetadataEntity(store, entity.FullName))
+                    {
+                        yield return adlsMetadataEntity;
+                    }
+                }
             }
         }
 

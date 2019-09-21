@@ -25,11 +25,13 @@ namespace CSharpDemo.Json
             // I think we can set the conifg by the input JsonSerializerSettings
             Tex tex = JsonConvert.DeserializeObject<Tex>(texString, settings);
             JObject texJObject = JsonConvert.DeserializeObject<JObject>(texString, settings);
+            Console.WriteLine(JsonConvert.SerializeObject(texJObject, settings));
 
             Console.WriteLine(tex.NullStr == null);
             Console.WriteLine(tex.NullDefinedStr == null);
             Console.WriteLine(texJObject);
             Console.WriteLine(texJObject["nullStr"] == null);
+
 
             // Output is false true
             // It is very interesting
@@ -48,6 +50,7 @@ namespace CSharpDemo.Json
 
 
             Console.WriteLine(JsonConvert.SerializeObject(tex));
+            Console.WriteLine(JsonConvert.SerializeObject(tex, settings));
         }
 
         class Tex
