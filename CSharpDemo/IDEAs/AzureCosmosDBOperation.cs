@@ -14,7 +14,7 @@
     public class AzureCosmosDBClientOperation
     {
         // "datacopdev","ideasdatacopppe" or "datacopprod"
-        static string KeyVaultName = "datacopdev";
+        static string KeyVaultName = "ideasdatacopppe";
 
         public static void MainMethod()
         {
@@ -35,7 +35,8 @@
             //EnableAllCosmosDatasetTestWhenNoActiveMessage();
 
             //QueryAlertSettingDemo();
-            //QueryDataSetDemo();
+            QueryDataSetDemo();
+            //QueryTestRunTestContentDemo();
 
             //DeleteTestRunById();
             //DeleteCosmosTestRunByResultExpirePeriod();
@@ -894,6 +895,37 @@
             {
                 Console.WriteLine(jObject);
             }
+        }
+
+        public static void QueryTestRunTestContentDemo()
+        {
+            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "PartitionedTestRun");
+            // Collation: asc and desc is ascending and descending
+            IList<JObject> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c where c.id = '041a25cb-2921-4c94-87b8-6729460171fb'")).Result;
+            foreach (JObject jObject in list)
+            {
+                Console.WriteLine(jObject["testContent"].ToString());
+                var compReq = JsonConvert.DeserializeObject<CosmosCompletenessTestContent>(jObject["testContent"].ToString());
+                Console.WriteLine(compReq.FileRowCountMaxLimit);
+            }
+        }
+
+        private class CosmosCompletenessTestContent
+        {
+            /// <summary>
+            /// Gets or sets the row count min limit.
+            /// </summary>
+            /// <value>The row count min limit.</value>
+            [JsonProperty("fileRowCountMinLimit", Required = Required.Always)]
+            public long FileRowCountMinLimit { get; set; }
+
+            /// <summary>
+            /// Gets or sets the row count max limit.
+            /// Using double type to avoid the issue of digital out of bounds.
+            /// </summary>
+            /// <value>The row count max limit.</value>
+            [JsonProperty("fileRowCountMaxLimit", Required = Required.Always)]
+            public double FileRowCountMaxLimit { get; set; }
         }
 
         public static void DeleteTestRunById()

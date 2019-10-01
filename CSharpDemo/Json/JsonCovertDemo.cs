@@ -8,8 +8,9 @@ namespace CSharpDemo.Json
     {
         public static void MainMethod()
         {
-            StringTest();
+            //StringTest();
             //DateTimeDeserializeTest();
+            DoubleDeserializeTest();
         }
 
         public static void StringTest()
@@ -20,40 +21,40 @@ namespace CSharpDemo.Json
                 MissingMemberHandling = MissingMemberHandling.Ignore,
             };
 
-            string texString = "{'tEstStr':'tEstStr', 'nullDefinedStr':null, 'EmptyStr':'', 'TrimStr':'  TrimStr    '}";
+            string stringConvertDemoClassStr = "{'tEstStr':'tEstStr', 'nullDefinedStr':null, 'EmptyStr':'', 'TrimStr':'  TrimStr    '}";
             // When we call DeserializeObject<T> function, ignore the case of property name by default
             // I think we can set the conifg by the input JsonSerializerSettings
-            Tex tex = JsonConvert.DeserializeObject<Tex>(texString, settings);
-            JObject texJObject = JsonConvert.DeserializeObject<JObject>(texString, settings);
-            Console.WriteLine(JsonConvert.SerializeObject(texJObject, settings));
+            StringConvertDemoClass stringConvertDemo = JsonConvert.DeserializeObject<StringConvertDemoClass>(stringConvertDemoClassStr, settings);
+            JObject stringConvertDemoJObject = JsonConvert.DeserializeObject<JObject>(stringConvertDemoClassStr, settings);
+            Console.WriteLine(JsonConvert.SerializeObject(stringConvertDemoJObject, settings));
 
-            Console.WriteLine(tex.NullStr == null);
-            Console.WriteLine(tex.NullDefinedStr == null);
-            Console.WriteLine(texJObject);
-            Console.WriteLine(texJObject["nullStr"] == null);
+            Console.WriteLine(stringConvertDemo.NullStr == null);
+            Console.WriteLine(stringConvertDemo.NullDefinedStr == null);
+            Console.WriteLine(stringConvertDemoJObject);
+            Console.WriteLine(stringConvertDemoJObject["nullStr"] == null);
 
 
             // Output is false true
             // It is very interesting
-            Console.WriteLine(texJObject["nullDefinedStr"] == null);
-            Console.WriteLine(texJObject["nullDefinedStr"].ToString() == "");
+            Console.WriteLine(stringConvertDemoJObject["nullDefinedStr"] == null);
+            Console.WriteLine(stringConvertDemoJObject["nullDefinedStr"].ToString() == "");
 
-            Console.WriteLine(texJObject["EmptyStr"].ToString() == "");
+            Console.WriteLine(stringConvertDemoJObject["EmptyStr"].ToString() == "");
 
-            Console.WriteLine(texJObject["nullStr"] ?? texJObject["tEstStr"]);
-            Console.WriteLine(texJObject["nullDefinedStr"] ?? texJObject["tEstStr"]);
+            Console.WriteLine(stringConvertDemoJObject["nullStr"] ?? stringConvertDemoJObject["tEstStr"]);
+            Console.WriteLine(stringConvertDemoJObject["nullDefinedStr"] ?? stringConvertDemoJObject["tEstStr"]);
 
-            Console.WriteLine(tex.TestStr);
-            Console.WriteLine(tex.NullStr ?? tex.TestStr);
-            Console.WriteLine(tex.NullDefinedStr ?? tex.TestStr);
-            Console.WriteLine(tex.TrimStr);
+            Console.WriteLine(stringConvertDemo.TestStr);
+            Console.WriteLine(stringConvertDemo.NullStr ?? stringConvertDemo.TestStr);
+            Console.WriteLine(stringConvertDemo.NullDefinedStr ?? stringConvertDemo.TestStr);
+            Console.WriteLine(stringConvertDemo.TrimStr);
 
 
-            Console.WriteLine(JsonConvert.SerializeObject(tex));
-            Console.WriteLine(JsonConvert.SerializeObject(tex, settings));
+            Console.WriteLine(JsonConvert.SerializeObject(stringConvertDemo));
+            Console.WriteLine(JsonConvert.SerializeObject(stringConvertDemo, settings));
         }
 
-        class Tex
+        class StringConvertDemoClass
         {
             private string trimStr;
             public string TestStr { get; set; }
@@ -87,6 +88,26 @@ namespace CSharpDemo.Json
             // Doc link: https://docs.microsoft.com/en-us/dotnet/standard/base-types/standard-date-and-time-format-strings
             Console.WriteLine(dateTime.ToString("o"));
             Console.WriteLine(dateTime.ToString("r"));
+        }
+
+        public static void DoubleDeserializeTest()
+        {
+            var settings = new JsonSerializerSettings
+            {
+                NullValueHandling = NullValueHandling.Ignore,
+                MissingMemberHandling = MissingMemberHandling.Ignore,
+            };
+
+            string doubleConvertDemoClassStr = "{'Num1':9.2233720368547758E+18, 'Num2':1234}";
+            DoubleConvertDemoClass doubleConvertDemoClass = JsonConvert.DeserializeObject<DoubleConvertDemoClass>(doubleConvertDemoClassStr, settings);
+            Console.WriteLine(doubleConvertDemoClass.Num1);
+            Console.WriteLine(doubleConvertDemoClass.Num2);
+        }
+
+        class DoubleConvertDemoClass
+        {
+            public double Num1 { get; set; }
+            public double Num2 { get; set; }
         }
     }
 }

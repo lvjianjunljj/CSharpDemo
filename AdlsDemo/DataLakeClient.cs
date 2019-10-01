@@ -91,30 +91,33 @@
         public IEnumerable<JObject> EnumerateAdlsMetadataEntity(string store, string path)
         {
             var client = CreateAdlsClient(store, clientId, clientKey);
-            var entities = client.EnumerateDirectory(path);
+            var entities = client.EnumerateDirectory(path).GetEnumerator();
 
-            try
+            while (true)
             {
-                Console.WriteLine(entities.Any());
-            }
-            catch (NullReferenceException ex)
-            {
-                Console.WriteLine($"NullReferenceException in function EnumerateAdlsMetadataCacheEntity, error message: {ex.Message}");
-                yield break;
-            }
-            foreach (var entity in entities)
-            {
+                DirectoryEntry entity;
+                try
+                {
+                    if (!entities.MoveNext())
+                    {
+                        break;
+                    }
+                    entity = entities.Current;
+                }
+                catch (NullReferenceException ex)
+                {
+                    Console.WriteLine($"NullReferenceException in function EnumerateAdlsMetadataCacheEntity, error message: {ex.Message}");
+                    break;
+                }
+                var fileEntity = new JObject();
                 if (entity.Type == DirectoryEntryType.FILE)
                 {
-                    var fileEntity = new JObject();
-
                     fileEntity["FullName"] = entity.FullName;
                     fileEntity["Name"] = entity.Name;
                     fileEntity["Length"] = entity.Length;
                     fileEntity["LastModifiedTime"] = entity.LastModifiedTime;
                     fileEntity["LastAccessTime"] = entity.LastAccessTime;
                     fileEntity["ExpiryTime"] = entity.ExpiryTime;
-                    yield return fileEntity;
                 }
                 else
                 {
@@ -123,6 +126,7 @@
                         yield return adlsMetadataEntity;
                     }
                 }
+                yield return fileEntity;
             }
         }
 
