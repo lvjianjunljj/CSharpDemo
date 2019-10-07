@@ -104,10 +104,14 @@
                     }
                     entity = entities.Current;
                 }
-                catch (NullReferenceException ex)
+                catch (AdlsException e)
                 {
-                    Console.WriteLine($"NullReferenceException in function EnumerateAdlsMetadataCacheEntity, error message: {ex.Message}");
-                    break;
+                    if (e.HttpStatus == HttpStatusCode.NotFound)
+                    {
+                        Console.WriteLine(1111);
+                        break;
+                    }
+                    throw;
                 }
                 var fileEntity = new JObject();
                 if (entity.Type == DirectoryEntryType.FILE)
@@ -118,6 +122,7 @@
                     fileEntity["LastModifiedTime"] = entity.LastModifiedTime;
                     fileEntity["LastAccessTime"] = entity.LastAccessTime;
                     fileEntity["ExpiryTime"] = entity.ExpiryTime;
+                    yield return fileEntity;
                 }
                 else
                 {
@@ -126,7 +131,6 @@
                         yield return adlsMetadataEntity;
                     }
                 }
-                yield return fileEntity;
             }
         }
 
