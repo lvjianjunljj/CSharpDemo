@@ -35,7 +35,7 @@ namespace MetagraphDemo
             Console.ReadKey();
         }
 
-        private static string metagraphRootUrl = "https://api.metagraph.officeppe.net/2.0/";
+        private static string metagraphRootUrl = "https://api.metagraphppe.officeppe.net/2.0/";
 
         // This is the tenant id for Microsoft
         private static string microsoftTenantId = @"";
