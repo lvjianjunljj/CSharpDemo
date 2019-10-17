@@ -51,7 +51,7 @@ namespace CSharpDemo.Parallel
         public async Task AsyncFunction(int index)
         {
             // I think this is a good funciton for test
-            await Task.Delay(TimeSpan.FromSeconds(1));
+            await Task.Delay(TimeSpan.FromSeconds(4));
             Console.WriteLine(index);
         }
 

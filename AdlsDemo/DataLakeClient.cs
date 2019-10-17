@@ -91,7 +91,16 @@
         public IEnumerable<JObject> EnumerateAdlsMetadataEntity(string store, string path)
         {
             var client = CreateAdlsClient(store, clientId, clientKey);
-            var entities = client.EnumerateDirectory(path).GetEnumerator();
+            IEnumerator<DirectoryEntry> entities;
+            try
+            {
+                entities = client.EnumerateDirectory(path).GetEnumerator();
+            }
+            catch (ArgumentException ae)
+            {
+                Console.WriteLine(ae.Message);
+                yield break;
+            }
 
             while (true)
             {
@@ -108,7 +117,7 @@
                 {
                     if (e.HttpStatus == HttpStatusCode.NotFound)
                     {
-                        Console.WriteLine(1111);
+                        Console.WriteLine("Not Found Error!!!");
                         break;
                     }
                     throw;
@@ -127,6 +136,34 @@
                 else
                 {
                     foreach (var adlsMetadataEntity in this.EnumerateAdlsMetadataEntity(store, entity.FullName))
+                    {
+                        yield return adlsMetadataEntity;
+                    }
+                }
+            }
+        }
+
+        public IEnumerable<JObject> EnumerateAdlsMetadataEntityFor(string store, string path)
+        {
+            var client = CreateAdlsClient(store, clientId, clientKey);
+            var entities = client.EnumerateDirectory(path);
+
+            foreach (var entity in client.EnumerateDirectory(path))
+            {
+                var fileEntity = new JObject();
+                if (entity.Type == DirectoryEntryType.FILE)
+                {
+                    fileEntity["FullName"] = entity.FullName;
+                    fileEntity["Name"] = entity.Name;
+                    fileEntity["Length"] = entity.Length;
+                    fileEntity["LastModifiedTime"] = entity.LastModifiedTime;
+                    fileEntity["LastAccessTime"] = entity.LastAccessTime;
+                    fileEntity["ExpiryTime"] = entity.ExpiryTime;
+                    yield return fileEntity;
+                }
+                else
+                {
+                    foreach (var adlsMetadataEntity in this.EnumerateAdlsMetadataEntityFor(store, entity.FullName))
                     {
                         yield return adlsMetadataEntity;
                     }

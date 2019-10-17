@@ -63,7 +63,14 @@ namespace AdlsDemo
 
             foreach (var entity in entities)
             {
-                Console.WriteLine(1234);
+                Console.WriteLine(entity);
+            }
+
+            entities = dataLakeClient.EnumerateAdlsMetadataEntity("ideas-prod-c14.azuredatalakestore.net",
+                "");
+
+            foreach (var entity in entities)
+            {
                 Console.WriteLine(entity);
             }
         }

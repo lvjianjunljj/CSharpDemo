@@ -24,41 +24,28 @@ namespace CSharpDemo.IcMTest
         {
             // ignore all cert errors in this sample
             //ServicePointManager.ServerCertificateValidationCallback = (a, b, c, d) => true;
-            //SaveFile.FirstMethod(@"D:\data\company_work\IDEAs\IcMWork\test\incident2_test.txt", jsonString);
-
 
             //LinkRootCause();
             //CreateRootCause();
-            //string rootCauseString = GetRootCause(107063448);
-            //Console.WriteLine(rootCauseString);
-            //SaveFile.FirstMethod(@"D:\data\company_work\IDEAs\IcMWork\root_cause_test.txt", rootCauseString);
 
+            //SaveFile.FirstMethod(@"D:\data\company_work\IDEAs\IcMWork\root_cause_test.txt", GetRootCause(107063448));
             //SaveFile.FirstMethod(@"D:\data\company_work\IDEAs\IcMWork\tenants_list.html", GetTenants());
+            //SaveFile.FirstMethod(@"D:\data\company_work\IDEAs\IcMWork\test\description_entries_test.txt", GetDescriptionEntries());
 
             //AddDescriptionEntry();
 
 
-            //string descriptionEntriesJsonString = GetDescriptionEntries();
-            //SaveFile.FirstMethod(@"D:\data\company_work\IDEAs\IcMWork\test\description_entries_test.txt", descriptionEntriesJsonString);
-
-
             //EditIncidentCustomFields();
             //EditIncidentCustomFieldsSimple();
-            EditIncidentInfo();
+            //EditIncidentInfo();
 
 
             //GetIncidentTeamCustomField(116142489);
 
 
-            //Reslove all the active alert for test in DEV
-            //List<long> activeIncidentIdList = GetIncidentIdList(@"IDEAS\IDEAsDataCopTest", "ACTIVE", "DEV");
-            //foreach (long incidnetId in activeIncidentIdList)
-            //{
-            //    Console.WriteLine(incidnetId);
-            //    MitigateIncident(incidnetId);
-            //    ResolveIncident(incidnetId);
-            //}
-            //Console.WriteLine(activeIncidentIdList.Count);
+            //ResloveActiveAlert();
+
+            CompareTeamAlertBaseCreated();
 
             //GetIncident();
             //GetCFRIncident();
@@ -376,64 +363,18 @@ namespace CSharpDemo.IcMTest
 
         public static List<long> GetIncidentIdList(string owningTeamId, string incidentStatus = null, string environment = null)
         {
-            HttpWebResponse result;
-            HttpWebRequest req;
-            string json = null;
-            string url;
-
-            url = $@"https://icm.ad.msft.net/api/cert/incidents?&$filter=OwningTeamId eq '{owningTeamId}'";
-            List<long> incidentIdList = new List<long>();
-            while (url != null)
+            string url = $@"https://icm.ad.msft.net/api/cert/incidents?&$filter=OwningTeamId eq '{owningTeamId}'";
+            if (incidentStatus != null)
             {
-                // ACTIVE
-                if (incidentStatus != null)
-                {
-                    url += $@" and Status eq '{incidentStatus}'";
-                }
-                if (environment != null)
-                {
-                    url += $@" and IncidentLocation/Environment eq '{environment}'";
-                }
-
-                req = WebRequest.CreateHttp(url);
-                url = null;
-                try
-                {
-                    X509Certificate cert = GetCert("87a1331eac328ec321578c10ebc8cc4c356b005f");
-                    if (cert == null)
-                    {
-                        Console.WriteLine("cert is null");
-                        return incidentIdList;
-                    }
-                    req.ClientCertificates.Add(cert);
-                    // submit the request
-                    result = (HttpWebResponse)req.GetResponse();
-
-                    // read out the response stream as text
-                    using (Stream data = result.GetResponseStream())
-                    {
-                        if (data != null)
-                        {
-                            TextReader tr = new StreamReader(data);
-                            json = tr.ReadToEnd();
-                        }
-                    }
-                    JObject jsonObject = JObject.Parse(json);
-                    //Console.WriteLine(json);
-                    List<Incident> incidentList = JsonConvert.DeserializeObject<List<Incident>>(jsonObject["value"].ToString());
-                    foreach (Incident i in incidentList) incidentIdList.Add(i.Id);
-                    if (jsonObject["odata.nextLink"] != null)
-                    {
-                        url = jsonObject["odata.nextLink"].ToString();
-                    }
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e.Message);
-                    return incidentIdList;
-                }
+                url += $@" and Status eq '{incidentStatus}'";
             }
-            //Console.WriteLine(incidentIdList.Count);
+            if (environment != null)
+            {
+                url += $@" and IncidentLocation/Environment eq '{environment}'";
+            }
+            List<long> incidentIdList = new List<long>();
+            IEnumerable<Incident> incidents = GetIncidentListStatic<Incident>(url);
+            foreach (Incident i in incidents) incidentIdList.Add(i.Id);
             return incidentIdList;
         }
         public static void AcknowledgeIncident(long incidentId)
@@ -474,6 +415,19 @@ namespace CSharpDemo.IcMTest
             {
                 Console.WriteLine(e.Message);
             }
+        }
+
+        public static void ResloveActiveAlert()
+        {
+            //Reslove all the active alert for test in DEV
+            List<long> activeIncidentIdList = GetIncidentIdList(@"IDEAS\IDEAsDataCopTest", "ACTIVE", "DEV");
+            foreach (long incidnetId in activeIncidentIdList)
+            {
+                Console.WriteLine(incidnetId);
+                MitigateIncident(incidnetId);
+                ResolveIncident(incidnetId);
+            }
+            Console.WriteLine(activeIncidentIdList.Count);
         }
 
         public static void MitigateIncident(long incidentId)
@@ -659,15 +613,11 @@ namespace CSharpDemo.IcMTest
 
         public static void GetIncident()
         {
-            //JavaScriptSerializer serializer = new JavaScriptSerializer();
-            HttpWebResponse result;
-            HttpWebRequest req;
-            string json = null;
             string url;
-
             // build the URL we'll hit
-            string LastSyncTimeString = DateTime.UtcNow.AddHours(-10000).ToString("s");
-            url = $@"https://icm.ad.msft.net/api/cert/incidents?$filter=OwningTeamId eq 'IDEAS\IDEAsDataCopTest' and Id eq 126785415 and ModifiedDate ge datetime'{LastSyncTimeString}'";
+            string LastSyncTimeString = DateTime.UtcNow.AddHours(-100).ToString("s");
+            url = $@"https://icm.ad.msft.net/api/cert/incidents?$filter=OwningTeamId eq 'IDEAS\ScorecardTest' and ModifiedDate ge datetime'{LastSyncTimeString}'";
+            // CreatedBy is not a valid filter in the query url
             // and CreatedBy eq 'DataCopMonitor'
 
             //url = $@"https://icm.ad.msft.net/api/cert/incidents?$filter=IncidentLocation/ServiceInstanceId eq 'DataCopAlertMicroService' and Status eq 'Active' and IncidentLocation/Environment eq 'prod'";
@@ -682,9 +632,9 @@ namespace CSharpDemo.IcMTest
 
             //url = $@"https://icm.ad.msft.net/api/cert/incidents(108097160)";
 
-            url = @"https://icm.ad.msft.net/api/cert/incidents?$filter=OwningContactAlias eq 'jianjlv'";
+            //url = @"https://icm.ad.msft.net/api/cert/incidents?$filter=OwningContactAlias eq 'jianjlv'";
 
-            //url = string.Format("https://{0}/api/cert/incidents({1})", "icm.ad.msft.net", 123500905);
+            //url = string.Format("https://{0}/api/cert/incidents({1})", "icm.ad.msft.net", 145576096);
 
             //url = @"https://icm.ad.msft.net/api/cert/incidents?$filter=OwningTeamId eq 'IDEAS\IDEAsDataCopTest' and 
             //    CustomFieldGroups/any(cfg:cfg/CustomFields/any
@@ -692,85 +642,62 @@ namespace CSharpDemo.IcMTest
             //    ) and  Status eq 'RESOLVED'";
 
 
-
-            // create the request
-            req = WebRequest.CreateHttp(url);
-            // add in the cert we'll authenticate with
-            // "87a1331eac328ec321578c10ebc8cc4c356b005f" is the CertThumbprint
-            try
+            IEnumerable<JToken> incidents = GetIncidentListStatic<JToken>(url);
+            int count = 0;
+            foreach (var incident in incidents)
             {
-                X509Certificate cert = GetCert("87a1331eac328ec321578c10ebc8cc4c356b005f");
-                if (cert == null)
-                {
-                    Console.WriteLine("cert is null");
-                }
-                req.ClientCertificates.Add(cert);
-                // submit the request
-                result = (HttpWebResponse)req.GetResponse();
+                count++;
+                Console.WriteLine(incident["Id"]);
+                Console.WriteLine(incident["Title"]);
+                Console.WriteLine(incident["Status"]);
+            }
+            Console.WriteLine($"count: {count}");
+        }
+        public static void CompareTeamAlertBaseCreated()
+        {
+            string[] teamIds = new string[]
+            {
+                @"IDEAS\ConsumerGraphTeam",
+                @"IDEAS\CustomerExperience-ProductEngagement",
+                @"IDEAS\DigitalAnalytics",
+                @"IDEAS\DigitalAnalyticsTest",
+                //@"IDEAS\Explore",
+                @"IDEAS\FieldMetrics",
+                @"IDEAS\FieldTest",
+                @"IDEAS\Growth",
+                @"IDEAS\IDEAsDataCop",
+                @"IDEAS\IDEAsDataCopTest",
+                @"IDEAS\IDEASDataModelTeam",
+                @"IDEAS\IncidentManager",
+                @"IDEAS\Scorecard",
+                @"IDEAS\ScorecardTest",
+                @"IDEAS\SRTTest",
+                @"IDEAS\Triage",
 
-                // read out the response stream as text
-                using (Stream data = result.GetResponseStream())
-                {
-                    if (data != null)
-                    {
-                        TextReader tr = new StreamReader(data);
-                        json = tr.ReadToEnd();
-                    }
-                }
+                @"CUSTOMERINSIGHTANDANALYSIS\CIA",
+                @"CAPSENSEMONITORING\Triage"
+            };
 
-                Console.WriteLine(json);
+            foreach (string teamId in teamIds)
+            {
+                // query the last month alerts
+                string LastSyncTimeString = DateTime.UtcNow.AddMonths(-1).ToString("s");
 
-                // deserialize it into an incident object
-                //Incident incident = serializer.Deserialize<Incident>(json);
-
-                //JObject jObject = JObject.Parse(json);
-                //List<Incident> incidentList = new List<Incident>();
-                //foreach (JToken jToken in jObject.GetValue("value"))
-                //{
-                //    incidentList.Add(serializer.Deserialize<Incident>(jToken.ToString()));
-                //}
-
-
-                //// TODO: do something with the incident
-                //foreach (Incident inci in incidentList)
-                //{
-                //    Console.WriteLine(inci.IncidentLocation.ServiceInstanceId);
-                //}
-
-
-                JObject jsonObject = JObject.Parse(json);
-
-                //List<Incident> incidents = JsonConvert.DeserializeObject<List<Incident>>(jsonObject["value"].ToString());
-                //Console.WriteLine(incidents.Count);
-
-                //List<object> l = new List<object>();
-                //foreach (var incident in incidents)
-                //{
-                //    if (incident.Source.CreatedBy.Equals("DataCopMonitor"))
-                //        l.Add(incident);
-                //}
-
-                //foreach (Incident item in l)
-                //{
-                //    Console.WriteLine(item.Id);
-                //}
-
-
-                // Not reference Microsoft.AzureAd.Icm
-                JArray incidents = JsonConvert.DeserializeObject<JArray>(jsonObject["value"].ToString());
+                string url = $@"https://icm.ad.msft.net/api/cert/incidents?$filter=OwningTeamId eq '{teamId}' and ModifiedDate ge datetime'{LastSyncTimeString}' and IncidentLocation/Environment eq 'prod'";
+                int count = 0, count2 = 0;
+                IEnumerable<JToken> incidents = GetIncidentListStatic<JToken>(url);
                 foreach (var incident in incidents)
                 {
-                    Console.WriteLine(incident["Id"]);
-                    Console.WriteLine(incident["Title"]);
-                    Console.WriteLine(incident["Status"]);
+                    count++;
+                    if (string.Equals(incident?["Source"]?["CreatedBy"]?.ToString(), "DataCopMonitor"))
+                        count2++;
                 }
 
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
+
+                Console.WriteLine($"teamId: {teamId}, count: {count}, count2: {count2}");
             }
         }
+
 
         public static void GetCFRIncident()
         {
@@ -828,18 +755,29 @@ namespace CSharpDemo.IcMTest
             }
         }
 
+        private static IEnumerable<T> GetIncidentListStatic<T>(string queryUrl)
+        {
+            QueryIncidents queryInstance = new QueryIncidents();
+            return queryInstance.GetIncidentList<T>(queryUrl);
+        }
+
         public IEnumerable<T> GetIncidentList<T>(string owningTeamId, DateTime cutOffTime)
         {
             string icMRESTAPIQueryByTeamUriTemplate = "https://icm.ad.msft.net/api/cert/incidents?&$filter=OwningTeamId eq '{0}' and ModifiedDate ge datetime'{1}' and IncidentLocation/Environment eq '{2}'";
             // build the URL we'll hit
             string url = string.Format(icMRESTAPIQueryByTeamUriTemplate, owningTeamId, cutOffTime.ToString("s"), "PROD");
-            while (url != null)
+            return GetIncidentList<T>(url);
+        }
+
+        private IEnumerable<T> GetIncidentList<T>(string queryUrl)
+        {
+            while (queryUrl != null)
             {
                 // create the request
-                HttpWebRequest req = WebRequest.CreateHttp(url);
+                HttpWebRequest req = WebRequest.CreateHttp(queryUrl);
 
                 // set url null first to avoid falling into an infinite loop
-                url = null;
+                queryUrl = null;
 
                 // add in the cert we'll authenticate with
 
@@ -863,6 +801,7 @@ namespace CSharpDemo.IcMTest
                         TextReader tr = new StreamReader(data);
                         string json = tr.ReadToEnd();
                         JObject jsonObject = JObject.Parse(json);
+                        //JArray incidents = JsonConvert.DeserializeObject<JArray>(jsonObject["value"].ToString());
                         List<T> incidentList = JsonConvert.DeserializeObject<List<T>>(jsonObject["value"].ToString());
                         foreach (T incident in incidentList)
                         {
@@ -870,7 +809,7 @@ namespace CSharpDemo.IcMTest
                         }
                         if (jsonObject["odata.nextLink"] != null)
                         {
-                            url = jsonObject["odata.nextLink"].ToString();
+                            queryUrl = jsonObject["odata.nextLink"].ToString();
                         }
                     }
                 }

@@ -20,7 +20,8 @@
             //CheckDirectoryExists();
 
             //GetRowCountIteratively("2019-07-10T00:00:00.0000000Z");
-            GetRowCount("https://cosmos14.osdinfra.net/cosmos/Ideas.prod /local/Partner/PreRelease/dev/activeusage/excelcommercialdevice/2019/08/ExcelActiveDevices_2019_08_25.ss");
+            Console.WriteLine(GetRowCount("https://cosmos14.osdinfra.net/cosmos/Ideas.prod///local/Partner/PreRelease/dev/activeusage/excelcommercialdevice/2019/08/ExcelActiveDevices_2019_08_25.ss"));
+
 
             Console.ReadKey();
         }
