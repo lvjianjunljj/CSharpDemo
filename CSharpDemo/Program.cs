@@ -42,10 +42,15 @@ namespace CSharpDemo
 
             //DatasetJsonFileOperation.MainMethod();
 
-            AzureActiveDirectoryToken.MainMethod();
-            Console.ReadKey();
+            //AzureActiveDirectoryToken.MainMethod();
+
+            for (int i = 0; i < 10; i++)
+            {
+                Console.WriteLine(Guid.NewGuid());
+        }
+        Console.ReadKey();
 
         }
-    }
+}
 }
 
