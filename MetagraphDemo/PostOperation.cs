@@ -16,11 +16,15 @@
         {
 
             //JObject interfaceJObejct = GenerateInterfaceJObejctSample(out string interfaceId);
+            JObject interfaceJObejct = GetOperation.GetIDEAsDataInterface("a75b373c-0b21-428c-a44e-207a2883872c");
+            string interfaceId = Guid.NewGuid().ToString();
 
-            //PostIDEAsDataInterface(interfaceId, interfaceJObejct.ToString());
-            //Console.WriteLine($"interface id: {interfaceId}");
-            //GetOperation.GetIDEAsDataInterface1("a75b373c-0b21-428c-a44e-207a2883872c");
-            //GetOperation.GetIDEAsDataInterfaceByName("test_jianjlv1111");
+            interfaceJObejct["identifier"] = interfaceId;
+            interfaceJObejct["name"] = "test_jianjlv1111";
+
+            PostIDEAsDataInterface(interfaceId, interfaceJObejct.ToString());
+            Console.WriteLine($"interface id: {interfaceId}");
+            GetOperation.GetIDEAsDataInterface(interfaceId);
 
             //JObject onBoardRequestJObejct = GenerateOnBoardRequestJObejctSample(out string onBoardRequestId);
 
@@ -43,7 +47,7 @@
         private static void PostIDEAsDataInterface(string id, string interfaceContent)
         {
             Console.WriteLine($"Post IDEAsDataInterface {id}");
-            string url = $"{metagraphRootUrl}IDEAsDataInterfaces";
+            string url = $"{metagraphRootUrl}IDEAsDataInterfaces({id})";
 
             string respString = SendRequestString(url, "Post", interfaceContent).Result;
             Console.WriteLine(respString);

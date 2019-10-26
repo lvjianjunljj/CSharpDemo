@@ -17,16 +17,21 @@
 
             //JObject interfaceJObejct = GenerateInterfaceJObejctSample(out string interfaceId);
 
-            //PutIDEAsDataInterface(interfaceId, interfaceJObejct.ToString());
-            //Console.WriteLine($"interface id: {interfaceId}");
-            //GetOperation.GetIDEAsDataInterface(interfaceId);
-            Console.WriteLine(GetOperation.GetIDEAsDataInterface("a75b373c-0b21-428c-a44e-207a2883872c"));
+            JObject interfaceJObejct = GetOperation.GetIDEAsDataInterface("a75b373c-0b21-428c-a44e-207a2883872c");
+            string interfaceId = Guid.NewGuid().ToString();
 
-            //JObject onBoardRequestJObejct = GenerateOnBoardRequestJObejctSample(out string onBoardRequestId);
+            interfaceJObejct["identifier"] = interfaceId;
+            interfaceJObejct["name"] = "test_jianjlv1111";
 
-            //PutIDEAsOnBoardRequest(onBoardRequestId, onBoardRequestJObejct.ToString());
-            //Console.WriteLine($"onBoardRequest id: {onBoardRequestId}");
-            //GetOperation.GetIDEAsOnBoardRequest(onBoardRequestId);
+            PutIDEAsDataInterface(interfaceId, interfaceJObejct.ToString());
+            Console.WriteLine($"interface id: {interfaceId}");
+            Console.WriteLine(GetOperation.GetIDEAsDataInterface(interfaceId));
+
+            JObject onBoardRequestJObejct = GenerateOnBoardRequestJObejctSample(out string onBoardRequestId);
+
+            PutIDEAsOnBoardRequest(onBoardRequestId, onBoardRequestJObejct.ToString());
+            Console.WriteLine($"onBoardRequest id: {onBoardRequestId}");
+            Console.WriteLine(GetOperation.GetIDEAsOnBoardRequest(onBoardRequestId));
         }
 
         private static string metagraphRootUrl = Constant.METAGRAPH_ROOT_URL;
@@ -43,7 +48,7 @@
             Console.WriteLine($"Put IDEAsDataInterface {id}");
             string url = $"{metagraphRootUrl}IDEAsDataInterfaces({id})";
 
-            string respString = SendRequestString(url, "Patch", interfaceContent).Result;
+            string respString = SendRequestString(url, "PUT", interfaceContent).Result;
             Console.WriteLine(string.IsNullOrEmpty(respString));
             Console.WriteLine($"_{respString}_");
         }
@@ -54,7 +59,7 @@
             Console.WriteLine($"Put IDEAsOnBoardRequest {id}");
             string url = $"{metagraphRootUrl}IDEAsOnboardRequests({id})";
 
-            string respString = SendRequestString(url, "Put", onBoardRequestContent).Result;
+            string respString = SendRequestString(url, "PUT", onBoardRequestContent).Result;
             Console.WriteLine(string.IsNullOrEmpty(respString));
         }
 

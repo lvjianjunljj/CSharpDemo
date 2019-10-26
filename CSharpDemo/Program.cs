@@ -44,13 +44,12 @@ namespace CSharpDemo
 
             //AzureActiveDirectoryToken.MainMethod();
 
-            for (int i = 0; i < 10; i++)
-            {
-                Console.WriteLine(Guid.NewGuid());
-        }
-        Console.ReadKey();
+            var a = DateTime.Now;
+            Console.WriteLine(a.GetType().ToString() == "System.DateTime");
+
+            Console.ReadKey();
 
         }
-}
+    }
 }
 
