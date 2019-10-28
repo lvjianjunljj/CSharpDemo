@@ -45,9 +45,9 @@ namespace CSharpDemo.IcMTest
 
             //ResloveActiveAlert();
 
-            CompareTeamAlertBaseCreated();
+            //CompareTeamAlertBaseCreated();
 
-            //GetIncident();
+            GetIncident();
             //GetCFRIncident();
         }
 
@@ -640,7 +640,6 @@ namespace CSharpDemo.IcMTest
             //    CustomFieldGroups/any(cfg:cfg/CustomFields/any
             //    (cf:cf/Name eq 'DatasetId' and cf/Type eq 'ShortString' and cf/Value eq 'Test')
             //    ) and  Status eq 'RESOLVED'";
-
 
             IEnumerable<JToken> incidents = GetIncidentListStatic<JToken>(url);
             int count = 0;

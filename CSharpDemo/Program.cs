@@ -8,6 +8,7 @@ using CSharpDemo.IcMTest;
 using CSharpDemo.IDEAs;
 using CSharpDemo.Json;
 using CSharpDemo.Parallel;
+using CSharpDemo.ReflectionDemo;
 using CSharpDemo.RetrierDir;
 using CSharpDemoAux;
 using Microsoft.Azure.Documents;
@@ -43,9 +44,6 @@ namespace CSharpDemo
             //DatasetJsonFileOperation.MainMethod();
 
             //AzureActiveDirectoryToken.MainMethod();
-
-            var a = DateTime.Now;
-            Console.WriteLine(a.GetType().ToString() == "System.DateTime");
 
             Console.ReadKey();
 

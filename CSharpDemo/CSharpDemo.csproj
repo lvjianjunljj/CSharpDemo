@@ -246,6 +246,7 @@
     <Compile Include="Parallel\ThreadDemo.cs" />
     <Compile Include="StringDemo.cs" />
     <Compile Include="TimerDemo.cs" />
+    <Compile Include="ReflectionDemo\TypeDemo.cs" />
     <Compile Include="URLCodeDemo.cs" />
     <Compile Include="WebUIHtmlControlsDemo.cs" />
     <Compile Include="FileOperation\WriteFile.cs" />
