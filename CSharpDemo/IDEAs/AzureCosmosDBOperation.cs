@@ -14,7 +14,7 @@
     public class AzureCosmosDBClientOperation
     {
         // "datacopdev","ideasdatacopppe" or "datacopprod"
-        static string KeyVaultName = "ideasdatacopppe";
+        static string KeyVaultName = "datacopdev";
 
         public static void MainMethod()
         {

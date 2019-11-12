@@ -11,6 +11,11 @@ namespace CSharpDemo.Parallel
     {
         public static void MainMethod()
         {
+            TestTaskFunctionWithoutAwait1();
+        }
+
+        public static void TestTaskFunctionWithoutAwait1()
+        {
             TaskDemo taskDemo = new TaskDemo();
             Task[] tasks = new Task[10];
             for (int i = 0; i < 10; i++)
@@ -29,7 +34,7 @@ namespace CSharpDemo.Parallel
 
         // The several Test1 functions is running in serial(They have the same Current Thread ID) 
         // and several Test2 functions is running in parallel(They have different Current Thread ID).
-        public static void TestTaskFunctionWithoutAwait()
+        public static void TestTaskFunctionWithoutAwait2()
         {
             Task[] tasks = new Task[10];
             TaskDemo p = new TaskDemo();

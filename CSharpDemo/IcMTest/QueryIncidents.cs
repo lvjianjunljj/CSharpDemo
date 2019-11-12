@@ -625,7 +625,7 @@ namespace CSharpDemo.IcMTest
             // "icm.ad.msft.net" is the OdataServiceBaseUri
             //url = string.Format("https://{0}/api/cert/incidents({1})", "icm.ad.msoppe.msft.net", id);
 
-            //url = @"https://icm.ad.msft.net/api/cert/incidents?$filter=OwningTeamId eq 'IDEAS\IDEAsDataCopTest' and Id eq 108097160";
+            url = @"https://icm.ad.msft.net/api/cert/incidents?$filter=OwningTeamId eq 'IDEAS\IDEAsDataCopTest' and Id eq 108097160";
 
             // an error query
             //url = @"https://icm.ad.msft.net/api/cert/incidents?&$filter=OwningTeamId eq '<The SQL oncall team>' and ModifiedDate ge datetime'2019-04-11T15:24:41'";
@@ -641,6 +641,7 @@ namespace CSharpDemo.IcMTest
             //    (cf:cf/Name eq 'DatasetId' and cf/Type eq 'ShortString' and cf/Value eq 'Test')
             //    ) and  Status eq 'RESOLVED'";
 
+            url = $"https://icm.ad.msft.net/api/cert/incidents?&$filter=OwningTeamId eq 'IDEAS\\DataCopTest' and ModifiedDate ge datetime'{DateTime.Now.AddHours(-30).ToString("s")}' and IncidentLocation/Environment eq 'PROD'";
             IEnumerable<JToken> incidents = GetIncidentListStatic<JToken>(url);
             int count = 0;
             foreach (var incident in incidents)

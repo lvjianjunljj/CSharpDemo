@@ -53,6 +53,7 @@
 
             // Function VC.StreamExists will return false if the input is path of a directory.
             Console.WriteLine(VC.DirectoryExists(directoryName));
+            //List<StreamInfo> a = VC.GetDirectoryInfo("", false);
         }
 
         // This function also just can check the existing of file not directory.
