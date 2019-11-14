@@ -377,6 +377,7 @@ namespace CSharpDemo.IcMTest
             foreach (Incident i in incidents) incidentIdList.Add(i.Id);
             return incidentIdList;
         }
+
         public static void AcknowledgeIncident(long incidentId)
         {
             string EditIncidentDescriptionEntryContent = @"
@@ -816,6 +817,21 @@ namespace CSharpDemo.IcMTest
             }
         }
 
+        /// <summary>Gets the cert</summary>
+        /// <param name="certId">cert identifier</param>
+        /// <returns>resulting value</returns>
+        public static X509Certificate2 GetCert(string certId)
+        {
+
+            if (string.IsNullOrEmpty(certId))
+            {
+                return null;
+            }
+
+            return GetCert(certId, StoreLocation.CurrentUser) ??
+                   GetCert(certId, StoreLocation.LocalMachine);
+        }
+
         private static X509Certificate2 GetCert(string certId, StoreLocation location)
         {
             X509Certificate2 result = null;
@@ -836,21 +852,6 @@ namespace CSharpDemo.IcMTest
                 certStore.Close();
             }
             return result;
-        }
-
-        /// <summary>Gets the cert</summary>
-        /// <param name="certId">cert identifier</param>
-        /// <returns>resulting value</returns>
-        public static X509Certificate2 GetCert(string certId)
-        {
-
-            if (string.IsNullOrEmpty(certId))
-            {
-                return null;
-            }
-
-            return GetCert(certId, StoreLocation.CurrentUser) ??
-                   GetCert(certId, StoreLocation.LocalMachine);
         }
     }
 }

@@ -13,12 +13,12 @@
         public static void MainMethod()
         {
             // keyVault name csharpmvcwebapikeyvault for csharpmvcwebapicosmosdb
-            AzureCosmosDBClient.KeyVaultName = "csharpmvcwebapikeyvault";
+            AzureCosmosDBClient.KeyVaultName = "datacopdev";
 
             //QueryTestDemo();
             //GetLastTestDemo();
 
-            //UpsertTestDemoToCosmosDB();
+            UpsertTestDemoToCosmosDB();
             //ReadTestDemoTestLongMaxValueFromCosmosDB();
 
             //DeleteTestDemo();
@@ -56,7 +56,7 @@
 
         public static void UpsertTestDemoToCosmosDB()
         {
-            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCopTest", "Test");
+            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "MonitorReport");
 
             AzureCosmosDBTestClass t = new AzureCosmosDBTestClass();
             t.Id = Guid.NewGuid().ToString();
