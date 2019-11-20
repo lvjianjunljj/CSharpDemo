@@ -37,7 +37,7 @@ namespace CSharpDemo
     {
         static void Main(string[] args)
         {
-            //AzureCosmosDBClientOperation.MainMethod();
+            AzureCosmosDBClientOperation.MainMethod();
             //AzureServiceBus.MainMethod();
             //AzureCosmosDB.MainMethod();
 
@@ -46,12 +46,6 @@ namespace CSharpDemo
 
             //DatasetJsonFileOperation.MainMethod();
             //AzureActiveDirectoryToken.MainMethod();
-
-            var stopWatch = Stopwatch.StartNew();
-            Thread.Sleep(1000);
-            Console.WriteLine(stopWatch.ElapsedMilliseconds);
-            Thread.Sleep(1000);
-            Console.WriteLine(stopWatch.ElapsedMilliseconds);
 
 
             Console.ReadKey();
