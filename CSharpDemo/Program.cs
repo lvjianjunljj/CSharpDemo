@@ -19,6 +19,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Net.Http;
@@ -46,10 +47,14 @@ namespace CSharpDemo
             //DatasetJsonFileOperation.MainMethod();
             //AzureActiveDirectoryToken.MainMethod();
 
-            DateTimeDemo.MainMethod();
+            var stopWatch = Stopwatch.StartNew();
+            Thread.Sleep(1000);
+            Console.WriteLine(stopWatch.ElapsedMilliseconds);
+            Thread.Sleep(1000);
+            Console.WriteLine(stopWatch.ElapsedMilliseconds);
+
 
             Console.ReadKey();
-
         }
 
     }

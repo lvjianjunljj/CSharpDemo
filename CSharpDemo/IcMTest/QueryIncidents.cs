@@ -43,12 +43,14 @@ namespace CSharpDemo.IcMTest
             //GetIncidentTeamCustomField(116142489);
 
 
-            //ResloveActiveAlert();
+            //ResloveDevActiveAlert();
+            //ResolveDemoAlert();
 
             //CompareTeamAlertBaseCreated();
 
-            GetIncident();
+            //GetIncident();
             //GetCFRIncident();
+            //GetCurrentOnCallDemo();
         }
 
 
@@ -380,12 +382,10 @@ namespace CSharpDemo.IcMTest
 
         public static void AcknowledgeIncident(long incidentId)
         {
-            string EditIncidentDescriptionEntryContent = @"
+            string acknowledgementParametersEntryContent = @"
                 {
-                  'NewDescriptionEntry' : { 
-                    'Text' : 'add new description entry test', 
-                    'RenderType' : 'Html',
-                    'Cause' : 'Transferred'
+                  'AcknowledgementParameters' : { 
+                    'AcknowledgeContactAlias' : 'administrator'
                   }
                 }";
             HttpWebRequest req;
@@ -403,13 +403,13 @@ namespace CSharpDemo.IcMTest
                     Console.WriteLine("cert is null");
                 }
                 req.ClientCertificates.Add(cert);
-                byte[] buffer = Encoding.UTF8.GetBytes(EditIncidentDescriptionEntryContent);
+                byte[] buffer = Encoding.UTF8.GetBytes(acknowledgementParametersEntryContent);
 
                 req.ContentType = "application/json";
                 req.ContentLength = 0;
-                //Stream reqStream = req.GetRequestStream();
-                //reqStream.Write(buffer, 0, buffer.Length);
-                //reqStream.Close();
+                Stream reqStream = req.GetRequestStream();
+                reqStream.Write(buffer, 0, buffer.Length);
+                reqStream.Close();
                 req.GetResponse();
             }
             catch (Exception e)
@@ -418,7 +418,16 @@ namespace CSharpDemo.IcMTest
             }
         }
 
-        public static void ResloveActiveAlert()
+        public static void ResolveDemoAlert()
+        {
+            long incidnetId = 158751867;
+            //MitigateIncident(incidnetId);
+            //ResolveIncident(incidnetId);
+            // Cannot work
+            UpdateMitigationData(incidnetId);
+        }
+
+        public static void ResloveDevActiveAlert()
         {
             //Reslove all the active alert for test in DEV
             List<long> activeIncidentIdList = GetIncidentIdList(@"IDEAS\IDEAsDataCopTest", "ACTIVE", "DEV");
@@ -470,9 +479,11 @@ namespace CSharpDemo.IcMTest
             }
             catch (Exception e)
             {
+                // Will return 400 bad reqeust error for mitigated incident.
                 Console.WriteLine(e.Message);
             }
         }
+
         public static void ResolveIncident(long incidentId)
         {
             string MitigateIncidentContent = @"
@@ -504,6 +515,52 @@ namespace CSharpDemo.IcMTest
 
                 req.ClientCertificates.Add(cert);
                 byte[] buffer = Encoding.UTF8.GetBytes(MitigateIncidentContent);
+
+                req.ContentType = "application/json";
+                req.ContentLength = buffer.Length;
+                Stream reqStream = req.GetRequestStream();
+                reqStream.Write(buffer, 0, buffer.Length);
+                reqStream.Close();
+                req.GetResponse();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+        }
+
+        // Failed to edit mitigation info for an incident.
+        public static void UpdateMitigationData(long incidentId)
+        {
+            string editIncidentDescriptionEntryContent = @"
+                {
+                  'MitigationData' : { 
+                    'ChangedBy' : 'IDEAS\IDEAsDataCopTest', 
+                    }
+                  },
+                  'ResolutionData' : { 
+                    'ChangedBy' : 'IDEAS\IDEAsDataCopTest', 
+                    }
+                  }
+                }";
+
+            HttpWebRequest req;
+            string url;
+
+            url = $"https://icm.ad.msft.net/api/cert/incidents({incidentId})";
+            req = WebRequest.CreateHttp(url);
+            req.Method = "PATCH";
+
+            try
+            {
+                X509Certificate cert = GetCert("87a1331eac328ec321578c10ebc8cc4c356b005f");
+                if (cert == null)
+                {
+                    Console.WriteLine("cert is null");
+                }
+
+                req.ClientCertificates.Add(cert);
+                byte[] buffer = Encoding.UTF8.GetBytes(editIncidentDescriptionEntryContent);
 
                 req.ContentType = "application/json";
                 req.ContentLength = buffer.Length;
@@ -626,7 +683,7 @@ namespace CSharpDemo.IcMTest
             // "icm.ad.msft.net" is the OdataServiceBaseUri
             //url = string.Format("https://{0}/api/cert/incidents({1})", "icm.ad.msoppe.msft.net", id);
 
-            url = @"https://icm.ad.msft.net/api/cert/incidents?$filter=OwningTeamId eq 'IDEAS\IDEAsDataCopTest' and Id eq 108097160";
+            url = @"https://icm.ad.msft.net/api/cert/incidents?$filter=OwningTeamId eq 'IDEAS\IDEAsDataCopTest' and Id eq 158751867";
 
             // an error query
             //url = @"https://icm.ad.msft.net/api/cert/incidents?&$filter=OwningTeamId eq '<The SQL oncall team>' and ModifiedDate ge datetime'2019-04-11T15:24:41'";
@@ -642,7 +699,6 @@ namespace CSharpDemo.IcMTest
             //    (cf:cf/Name eq 'DatasetId' and cf/Type eq 'ShortString' and cf/Value eq 'Test')
             //    ) and  Status eq 'RESOLVED'";
 
-            url = $"https://icm.ad.msft.net/api/cert/incidents?&$filter=OwningTeamId eq 'IDEAS\\DataCopTest' and ModifiedDate ge datetime'{DateTime.Now.AddHours(-30).ToString("s")}' and IncidentLocation/Environment eq 'PROD'";
             IEnumerable<JToken> incidents = GetIncidentListStatic<JToken>(url);
             int count = 0;
             foreach (var incident in incidents)
@@ -754,6 +810,73 @@ namespace CSharpDemo.IcMTest
             {
                 Console.WriteLine(e.Message);
             }
+        }
+
+        // Doc link: https://icmdocs.azurewebsites.net/developers/OnCall/DirectoryService.html
+        public static void GetCurrentOnCallDemo()
+        {
+            IList<long> teamIds = new List<long>(new long[] { 54671, 53839 });
+            IList<string> onCallAliases = GetCurrentOnCallAlias(teamIds);
+            foreach (var onCallAlias in onCallAliases)
+            {
+                Console.WriteLine(onCallAlias);
+            }
+        }
+
+        public static IList<string> GetCurrentOnCallAlias(IList<long> teamIds)
+        {
+            IList<string> onCallAliases = new List<string>();
+            string oncallRequstBodyContent = $@"
+                {{
+                  'TeamIds': {JsonConvert.SerializeObject(teamIds)}
+                }}";
+            HttpWebRequest req;
+            string url;
+
+            url = $"https://oncallapi.prod.microsofticm.com/Directory/GetCurrentOnCallForCurrentShiftForTeams";
+            req = WebRequest.CreateHttp(url);
+            req.Method = "POST";
+
+            try
+            {
+                X509Certificate cert = GetCert("87a1331eac328ec321578c10ebc8cc4c356b005f");
+                if (cert == null)
+                {
+                    Console.WriteLine("cert is null");
+                }
+
+                req.ClientCertificates.Add(cert);
+                byte[] buffer = Encoding.UTF8.GetBytes(oncallRequstBodyContent);
+
+                req.ContentType = "application/json";
+                req.ContentLength = buffer.Length;
+                Stream reqStream = req.GetRequestStream();
+                reqStream.Write(buffer, 0, buffer.Length);
+                reqStream.Close();
+                HttpWebResponse result = (HttpWebResponse)req.GetResponse();
+
+                // read out the response stream as text
+                using (Stream data = result.GetResponseStream())
+                {
+                    if (data != null)
+                    {
+                        TextReader tr = new StreamReader(data);
+                        var json = tr.ReadToEnd();
+                        Console.WriteLine(JObject.Parse(json)["value"][0]["ShiftCurrentOnCalls"][0]["CurrentOnCallContacts"][0]["Alias"]);
+                        Console.WriteLine(json);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+            return onCallAliases;
+        }
+
+        public static void GetTeamIdByPublicId()
+        {
+
         }
 
         private static IEnumerable<T> GetIncidentListStatic<T>(string queryUrl)

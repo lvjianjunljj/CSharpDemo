@@ -17,8 +17,9 @@
 
             //QueryTestDemo();
             //GetLastTestDemo();
+            TestQueryStringLength();
 
-            UpsertTestDemoToCosmosDB();
+            //UpsertTestDemoToCosmosDB();
             //ReadTestDemoTestLongMaxValueFromCosmosDB();
 
             //DeleteTestDemo();
@@ -33,6 +34,26 @@
             {
                 Console.WriteLine(t.Id);
                 Console.WriteLine(JsonConvert.SerializeObject(t));
+            }
+        }
+
+        // The SQL query text has the maximum limit of 262144 characters.
+        public static void TestQueryStringLength()
+        {
+            string queryString = "SELECT * FROM c where c.id in (\"8e2d4c95-8749-4ff9-baa6-2034be957aa2\"";
+            for (int i = 0; i < 6719; i++)
+            {
+                queryString += ",\"8e2d4c95-8749-4ff9-baa6-2034be957aa2\"";
+            }
+            queryString += ") order by c.timestampTicks asc";
+            Console.WriteLine(queryString.Length);
+            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "Alert");
+            // Collation: asc and desc is ascending and descending
+            IList<JObject> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(queryString)).Result;
+            foreach (JObject j in list)
+            {
+                Console.WriteLine(j["id"]);
+                Console.WriteLine(j);
             }
         }
 
