@@ -1,6 +1,8 @@
 ﻿namespace CSharpDemo.IDEAs
 {
+    using CSharpDemo.Azure.CosmosDB;
     using CSharpDemo.FileOperation;
+    using Microsoft.Azure.Documents;
     using Newtonsoft.Json.Linq;
     using System;
 
@@ -14,6 +16,33 @@
             //UpdateAllDatasetJsonForMergingADLSCosmos();
             //UpdateOldPathSchemaDatasetJsonForMergingADLSCosmos();
             //UpdateCFRDatasetJsonForMergingADLSCosmos();
+            //DisableAllDatasets();
+        }
+        public static void DisableAllDatasets()
+        {
+            AzureCosmosDBClient.KeyVaultName = "datacopprod";
+            string fileFolder = FolderPath + @"\PROD\DataVC\Monitor";
+            var filePaths = ReadFile.GetFolderSubPaths(fileFolder, ReadType.File, PathType.Absolute);
+            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "DatasetTest");
+            foreach (var filePath in filePaths)
+            {
+                var fileContentString = ReadFile.ThirdMethod(filePath);
+                var json = JObject.Parse(fileContentString);
+                var id = json["id"].ToString();
+                if (id.Equals("01883b87-5b20-40f4-90f2-2ce6cbdfa766"))
+                {
+
+                    var jObjectInCosmosDb = azureCosmosDBClient.FindFirstOrDefaultItemAsync<JObject>(new SqlQuerySpec($"SELECT * FROM c where c.id = '{id}'")).Result;
+                    if (jObjectInCosmosDb != null)
+                    {
+
+                        jObjectInCosmosDb["status"] = "Disabled";
+                        //jObjectInCosmosDb["testContent"]["isStreamSet"] = true;
+                        Console.WriteLine(jObjectInCosmosDb);
+                        //azureCosmosDBClient.UpsertDocumentAsync(json).Wait();
+                    }
+                }
+            }
         }
 
         public static void UpdateAllDatasetJsonForMergingADLSCosmos()

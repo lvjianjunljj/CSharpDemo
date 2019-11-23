@@ -44,7 +44,7 @@ namespace CSharpDemo.IcMTest
 
 
             //ResloveDevActiveAlert();
-            //ResolveDemoAlert();
+            ResolveDemoAlert();
 
             //CompareTeamAlertBaseCreated();
 
@@ -420,11 +420,11 @@ namespace CSharpDemo.IcMTest
 
         public static void ResolveDemoAlert()
         {
-            long incidnetId = 158751867;
-            //MitigateIncident(incidnetId);
-            //ResolveIncident(incidnetId);
+            long incidnetId = 159689066;
+            MitigateIncident(incidnetId);
+            ResolveIncident(incidnetId);
             // Cannot work
-            UpdateMitigationData(incidnetId);
+            //UpdateMitigationData(incidnetId);
         }
 
         public static void ResloveDevActiveAlert()
@@ -452,6 +452,7 @@ namespace CSharpDemo.IcMTest
                     'MitigateContactAlias' : 'jianjlv'
                   }
                 }";
+            MitigateIncidentContent = string.Format("{{'MitigateParameters':{{'IsCustomerImpacting':'True','IsNoise':'False','Mitigation':'Mitigate the test incident','HowFixed':'Fixed By Automation','MitigateContactAlias':'{0}'}}}}", "jianjlv");
             HttpWebRequest req;
             string url;
 
@@ -498,6 +499,7 @@ namespace CSharpDemo.IcMTest
                     'ResolveContactAlias' : 'jianjlv'
                   }
                 }";
+            MitigateIncidentContent = string.Format("{{'ResolveParameters':{{'IsCustomerImpacting':'False','IsNoise':'True','Description':{{'Text':'Resolve the test incident','RenderType':'Plaintext'}},'ResolveContactAlias':'{0}'}}}}", "jianjlv");
             HttpWebRequest req;
             string url;
 

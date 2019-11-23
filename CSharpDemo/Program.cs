@@ -37,7 +37,7 @@ namespace CSharpDemo
     {
         static void Main(string[] args)
         {
-            AzureCosmosDBClientOperation.MainMethod();
+            //AzureCosmosDBClientOperation.MainMethod();
             //AzureServiceBus.MainMethod();
             //AzureCosmosDB.MainMethod();
 
@@ -46,6 +46,7 @@ namespace CSharpDemo
 
             //DatasetJsonFileOperation.MainMethod();
             //AzureActiveDirectoryToken.MainMethod();
+
 
 
             Console.ReadKey();

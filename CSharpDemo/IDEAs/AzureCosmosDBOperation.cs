@@ -21,22 +21,6 @@
         {
             AzureCosmosDBClient.KeyVaultName = KeyVaultName;
 
-
-            var filePaths = ReadFile.GetFolderSubPaths(@"D:\IDEAs\Ibiza\Source\DataCopMonitors\PROD\DataVC\Monitor", ReadType.File, PathType.Absolute);
-            foreach (var filePath in filePaths)
-            {
-                var fileContentString = ReadFile.ThirdMethod(filePath);
-                var json = JObject.Parse(fileContentString);
-                var id = json["id"].ToString();
-                if (id.Equals("01883b87-5b20-40f4-90f2-2ce6cbdfa766"))
-                {
-                    //json["status"] = "Disabled";
-                    Console.WriteLine(json);
-                    AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "Dataset");
-                    azureCosmosDBClient.UpsertDocumentAsync(json).Wait();
-                }
-            }
-
             //UpdateAllAlertSettingsDemo();
             //UpdateAllDatasetTestCreatedBy();
             //UpdateAllDatasetForMerging();
