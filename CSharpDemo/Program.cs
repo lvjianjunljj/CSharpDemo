@@ -1,4 +1,5 @@
 ﻿using AzureLib.KeyVault;
+using CSharpDemo.Application;
 using CSharpDemo.Azure;
 using CSharpDemo.Azure.CosmosDB;
 using CSharpDemo.CSharpInDepth.Part1;
@@ -47,11 +48,8 @@ namespace CSharpDemo
             //DatasetJsonFileOperation.MainMethod();
             //AzureActiveDirectoryToken.MainMethod();
 
-
-
             Console.ReadKey();
         }
-
     }
 }
 
