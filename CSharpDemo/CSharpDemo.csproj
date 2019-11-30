@@ -181,6 +181,7 @@
     <Compile Include="ClassInheritDemo.cs" />
     <Compile Include="CmdHelper.cs" />
     <Compile Include="Constant.cs" />
+    <Compile Include="ConstructorDemo.cs" />
     <Compile Include="ConvertDemo.cs" />
     <Compile Include="Azure\CosmosDB\AzureCosmosDBTestClass.cs" />
     <Compile Include="CSharpInDepth\Part1\LINQDemo.cs" />
