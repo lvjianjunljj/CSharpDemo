@@ -15,7 +15,7 @@
     public class AzureCosmosDBClientOperation
     {
         // "datacopdev","ideasdatacopppe" or "datacopprod"
-        static string KeyVaultName = "datacopprod";
+        static string KeyVaultName = "ideasdatacopppe";
 
         public static void MainMethod()
         {
@@ -38,6 +38,7 @@
             //QueryAlertSettingDemo();
             //QueryDataSetDemo();
             //QueryTestRunTestContentDemo();
+            QueryMonitroReportDemo();
 
             //DeleteTestRunById();
             //DeleteCosmosTestRunByResultExpirePeriod();
@@ -909,6 +910,61 @@
                 var compReq = JsonConvert.DeserializeObject<CosmosCompletenessTestContent>(jObject["testContent"].ToString());
                 Console.WriteLine(compReq.FileRowCountMaxLimit);
             }
+        }
+
+        public static void QueryMonitroReportDemo()
+        {
+            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "MonitorReport");
+
+            DateTime timeStamp = DateTime.Parse("2019-11-26T06:00:00");
+            string datasetTestId = "0faf52e7-b4bc-4674-8f1e-ff2c65e12f02";
+            Grain grain = Grain.Hourly;
+            string sqlQueryString = @"SELECT * FROM c" +
+                                                         $" WHERE c.datasetTestId='{datasetTestId}' and c.timeStamp='{timeStamp.ToString("s")}' and c.grain='{grain.ToString()}'";
+            Console.WriteLine(sqlQueryString);
+            IList<JObject> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(sqlQueryString)).Result;
+            foreach (JObject jObject in list)
+            {
+                Console.WriteLine(jObject);
+            }
+        }
+
+        public enum Grain
+        {
+            /// <summary>
+            /// Non-Value
+            /// </summary>
+            None = 0,
+
+            /// <summary>
+            /// Hourly Grain - Once per hour
+            /// </summary>
+            Hourly,
+
+            /// <summary>
+            /// Daily Grain - Once per day
+            /// </summary>
+            Daily,
+
+            /// <summary>
+            /// Weeekly Grain - Once per week
+            /// </summary>
+            Weekly,
+
+            /// <summary>
+            /// Monthly Grain - Once per month (always on the first of every month)
+            /// </summary>
+            Monthly,
+
+            /// <summary>
+            /// Monthly Grain - Once per month (always test at the end of every month)
+            /// </summary>
+            EndOfMonth,
+
+            /// <summary>
+            /// Yearly Grain - Once per year
+            /// </summary>
+            Yearly
         }
 
         private class CosmosCompletenessTestContent

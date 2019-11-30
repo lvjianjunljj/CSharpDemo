@@ -13,11 +13,13 @@
         public static void MainMethod()
         {
             // keyVault name csharpmvcwebapikeyvault for csharpmvcwebapicosmosdb
-            AzureCosmosDBClient.KeyVaultName = "datacopdev";
+            AzureCosmosDBClient.KeyVaultName = "ideasdatacopppe";
 
+
+            CreateNewContainer();
             //QueryTestDemo();
             //GetLastTestDemo();
-            TestQueryStringLength();
+            //TestQueryStringLength();
 
             //UpsertTestDemoToCosmosDB();
             //ReadTestDemoTestLongMaxValueFromCosmosDB();
@@ -25,12 +27,19 @@
             //DeleteTestDemo();
         }
 
+        public static void CreateNewContainer()
+        {
+            // It call fucntion Client.CreateDocumentCollectionIfNotExistsAsync in the constructor.
+            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "DemoDataset");
+            azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "MonitorReport");
+            azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "MonitorRunResult");
+        }
         public static void QueryTestDemo()
         {
-            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("CosmosDBTest", "TestCollection");
+            var azureCosmosDBClient = new AzureCosmosDBClient("CosmosDBTest", "TestCollection");
             // Collation: asc and desc is ascending and descending
-            IList<AzureCosmosDBTestClass> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<AzureCosmosDBTestClass>(new SqlQuerySpec(@"SELECT * FROM c order by c.timestampTicks asc")).Result;
-            foreach (AzureCosmosDBTestClass t in list)
+            var list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<AzureCosmosDBTestClass>(new SqlQuerySpec(@"SELECT * FROM c order by c.timestampTicks asc")).Result;
+            foreach (var t in list)
             {
                 Console.WriteLine(t.Id);
                 Console.WriteLine(JsonConvert.SerializeObject(t));

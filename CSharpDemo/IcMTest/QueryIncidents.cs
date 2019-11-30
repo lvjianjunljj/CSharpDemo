@@ -44,13 +44,14 @@ namespace CSharpDemo.IcMTest
 
 
             //ResloveDevActiveAlert();
-            ResolveDemoAlert();
+            //ResolveDemoAlert();
 
             //CompareTeamAlertBaseCreated();
 
             //GetIncident();
             //GetCFRIncident();
             //GetCurrentOnCallDemo();
+
         }
 
 
@@ -712,6 +713,7 @@ namespace CSharpDemo.IcMTest
             }
             Console.WriteLine($"count: {count}");
         }
+
         public static void CompareTeamAlertBaseCreated()
         {
             string[] teamIds = new string[]

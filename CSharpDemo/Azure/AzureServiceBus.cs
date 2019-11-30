@@ -10,12 +10,13 @@
     {
         public static void MainMethod()
         {
-            //string keyVaultName = "datacopdev";
+            string keyVaultName = "datacopdev";
             //string keyVaultName = "ideasdatacopppe";
-            string keyVaultName = "datacopprod";
+            //string keyVaultName = "datacopprod";
             //string queueName = "cosmostest";
             //string queueName = "alert";
-            string queueName = "onboardingrequest";
+            //string queueName = "onboardingrequest";
+            string queueName = "orchestratortrigger";
             //string queueName = "onboardingresponse";
             ISecretProvider secretProvider = KeyVaultSecretProvider.Instance;
             string serviceBusConnectionString = secretProvider.GetSecretAsync(keyVaultName, "ServiceBusConnectionString").Result;
@@ -56,9 +57,13 @@
 
             //string response = "{\"requestId\":\"c7c864d1-9a5e-4a02-afa4-fb2bf3399273\",\"datasetId\":\"7e118c1e-f2b3-462d-97ce-f45bc7a378f8\",\"status\":200,\"scores\":{\"scoreTime\":\"2019-09-19T08:37:25.1608155Z\",\"score\":100.0,\"measures\":[{\"type\":\"Availability\",\"score\":100.0,\"errors\":[]}]},\"requestor\":\"OnboardRequest\"}";
             string messageStr = "{\"requestId\":\"136503cc-745f-4c6e-a0f3-ebf4555b1f14\",\"requestType\":\"Adhoc\",\"dataset\":{\"id\":\"f4967631-884d-41a5-92ff-16be925bdf1b\",\"name\":\"SandCOATPRaw\",\"createTime\":\"0001-01-01T00:00:00\",\"lastModifiedTime\":\"0001-01-01T00:00:00\",\"connectionInfo\":{\"cosmosVC\":\"https://cosmos14.osdinfra.net/cosmos/Ideas.prod/\",\"dataLakeStore\":\"\",\"streamPath\":\"shares/ffo.antispam/SafeAttachment/%Y/%m/%d/ATPUsage.ss\"},\"dataFabric\":\"Cosmos\",\"category\":\"None\",\"startDate\":\"2019-05-01T00:00:00Z\",\"rollingWindow\":\"60.00:00:00\",\"grain\":\"Daily\",\"sla\":\"3.0:0:0\",\"isEnabled\":false,\"ttl\":-1}}";
-            Message message = new Message(Encoding.UTF8.GetBytes(messageStr));
-            message.MessageId = Guid.NewGuid().ToString();
-            queueClient.SendAsync(message).Wait();
+            for (int i = 0; i < 10; i++)
+            {
+                Message message = new Message(Encoding.UTF8.GetBytes(messageStr));
+                message.MessageId = Guid.NewGuid().ToString();
+
+                queueClient.SendAsync(message).Wait();
+            }
 
             Console.WriteLine(datasetId);
             Console.WriteLine("End...");
