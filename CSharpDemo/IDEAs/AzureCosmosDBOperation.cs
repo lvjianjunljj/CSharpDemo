@@ -15,7 +15,7 @@
     public class AzureCosmosDBClientOperation
     {
         // "datacopdev","ideasdatacopppe" or "datacopprod"
-        static string KeyVaultName = "ideasdatacopppe";
+        static string KeyVaultName = "datacopprod";
 
         public static void MainMethod()
         {
@@ -38,10 +38,12 @@
             //QueryAlertSettingDemo();
             //QueryDataSetDemo();
             //QueryTestRunTestContentDemo();
-            QueryMonitroReportDemo();
+            //QueryMonitroReportDemo();
 
             //DeleteTestRunById();
             //DeleteCosmosTestRunByResultExpirePeriod();
+            // We can use this function to delete instance without any limitation.
+            //DeleteAlertsWithoutIncidentId();
 
             //MigrateData("DatasetTest");
 
@@ -1012,6 +1014,35 @@
                 }
             }
         }
+
+        // Delete CosmosDB instance without partitionKey
+        public static void DeleteAlertsWithoutIncidentId()
+        {
+            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "Alert");
+            // Collation: asc and desc is ascending and descending
+            IList<JObject> alerts = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT top 1000 * FROM c WHERE not is_defined(c.incidentId)")).Result;
+            while (alerts.Count > 0)
+            {
+                foreach (JObject alert in alerts)
+                {
+                    string id = alert["id"].ToString();
+                    Console.WriteLine(id);
+                    string documentLink = GetDocumentLink("DataCop", "Alert", id);
+                    ResourceResponse<Document> resource = azureCosmosDBClient.DeleteDocumentAsync(documentLink).Result;
+                    //Console.WriteLine(resource);
+                }
+                alerts = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT top 1000 * FROM c WHERE not is_defined(c.incidentId)")).Result;
+            }
+        }
+
+        private static string GetDocumentLink(
+            string databaseName,
+            string collectionName,
+            string documentId) => GetCollectionLink(databaseName, collectionName) + $"docs/{documentId}";
+
+        private static string GetCollectionLink(
+            string databaseName,
+            string collectionName) => $"/dbs/{databaseName}/colls/{collectionName}/";
 
         public static void DeleteCosmosTestRunByResultExpirePeriod()
         {
