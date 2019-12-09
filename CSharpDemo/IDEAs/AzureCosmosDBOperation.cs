@@ -43,7 +43,7 @@
             //DeleteTestRunById();
             //DeleteCosmosTestRunByResultExpirePeriod();
             // We can use this function to delete instance without any limitation.
-            //DeleteAlertsWithoutIncidentId();
+            DeleteAlertsWithoutIncidentId();
 
             //MigrateData("DatasetTest");
 

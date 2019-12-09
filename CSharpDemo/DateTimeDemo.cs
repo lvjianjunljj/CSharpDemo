@@ -8,9 +8,51 @@
     {
         public static void MainMethod()
         {
-            PrintDateTime();
-            GetStartTimeDemo();
-            CompareWithJsonConvertSerializeObject();
+            //PrintDateTime();
+            //GetStartTimeDemo();
+            //CompareWithJsonConvertSerializeObject();
+            TimeZoneDemo();
+        }
+
+        public static void TimeZoneDemo()
+        {
+            Console.WriteLine("DateTime.UtcNow.ToString(\"o\") demo");
+            string timeStringO = DateTime.UtcNow.ToString("o");
+            Console.WriteLine($"UtcNow.ToString(\"o\"): {timeStringO}");
+            // Note: 
+            // When we parse the time string contains TimeZoneInfo(generate from ToString("o")), 
+            // it will return the dateTime based on the local timeZone.
+            // The ToString result of DateTime.Now ends with "Z"
+            DateTime timeParseO = DateTime.Parse(timeStringO);
+            Console.WriteLine($"DateTime.Parse().ToString(\"o\"): {timeParseO:o}");
+            Console.WriteLine();
+
+            Console.WriteLine("DateTime.Now.ToString(\"o\") demo");
+            timeStringO = DateTime.Now.ToString("o");
+            // The ToString result of DateTime.Now ends with "+08:00"
+            Console.WriteLine($"Now.ToString(\"o\"): {timeStringO}");
+            timeParseO = DateTime.Parse(timeStringO);
+            Console.WriteLine($"DateTime.Parse().ToString(\"o\"): {timeParseO:o}");
+            Console.WriteLine();
+
+            Console.WriteLine("DateTime.UtcNo.ToString(\"s\") demo");
+            string timeStringS = DateTime.UtcNow.ToString("s");
+            Console.WriteLine($"UtcNow.ToString(\"s\"): {timeStringS}");
+            // DateTime.UtcNow.ToString("s") does not contains TimeZoneInfo, 
+            // so parse functio can return the same value with the source DateTime but without timeZone info
+            // Actually it has been different from the source dateTime if we use ToUniversalTime() function to convert it to UniversalTime(By default with local TimeZone if not contains TimeZone info)
+            DateTime timeParseS = DateTime.Parse(timeStringS);
+            Console.WriteLine($"DateTime.Parse().ToString(\"o\"): {timeParseS:o}");
+            Console.WriteLine($"DateTime.Parse().ToUniversalTime().ToString(\"o\"): {timeParseS.ToUniversalTime():o}");
+            Console.WriteLine();
+
+            // We can use function TimeZoneInfo.ConvertTimeToUtc or ToUniversalTime() to convert the DateTime with local TimeZone info or without TimeZone info to UniversalTime()
+            Console.WriteLine("ToUniversalTime() demo");
+            Console.WriteLine($"UtcNow.ToString(\"s\"): {timeStringS}");
+            Console.WriteLine($"DateTime.Parse().ToString(\"o\"): {timeParseS:o}");
+            Console.WriteLine($"DateTime.Parse().ToUniversalTime().ToString(\"o\"): {timeParseS.ToUniversalTime():o}");
+            Console.WriteLine($"TimeZoneInfo.ConvertTimeToUtc(DateTime.Parse()).ToString(\"o\"): {TimeZoneInfo.ConvertTimeToUtc(timeParseS):o}");
+            //Console.WriteLine(TimeZoneInfo.ConvertTimeToUtc());
         }
 
         public static void CompareWithJsonConvertSerializeObject()
