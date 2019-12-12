@@ -49,5 +49,11 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\AzureLib\AzureLib.csproj">
+      <Project>{8a3f3ce0-e84d-42bc-846e-7531b5a1b8be}</Project>
+      <Name>AzureLib</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
