@@ -88,18 +88,20 @@
         {
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "MonitorReport");
 
-            AzureCosmosDBTestClass t = new AzureCosmosDBTestClass();
-            t.Id = Guid.NewGuid().ToString();
-            t.PartitionKey = DateTime.UtcNow.ToString();
-            Console.WriteLine(t.Id);
-            t.TestA = "a";
-            t.TestB = "b";
-            t.TestC = "cc";
-            t.TestHashSet = new HashSet<string>();
+            var t = new AzureCosmosDBTestClass
+            {
+                Id = Guid.NewGuid().ToString(),
+                PartitionKey = DateTime.UtcNow.ToString(),
+                TestA = "a",
+                TestB = "b",
+                TestC = "cc",
+                TestHashSet = new HashSet<string>()
+            };
             t.TestHashSet.Add("1");
             t.TestHashSet.Add("2");
             t.TestHashSet.Add("3");
             t.TestHashSet.Add("4");
+            Console.WriteLine(t.Id);
             // the value of long.MaxValue is 9223372036854775807
             // But in the Azure CosmosDB, this two value will be shown as 9223372036854776000
             // When you get it from Azure CosmosDB, you will get the value 9223372036854775807

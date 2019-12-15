@@ -11,14 +11,19 @@
     {
         static void Main(string[] args)
         {
-            Console.WriteLine(1234);
             ISecretProvider secretProvider = KeyVaultSecretProvider.Instance;
-            string connectionString = secretProvider.GetSecretAsync("datacopprod",
-                "IDEAsPortalPPEConnectionString").Result;
-            Console.WriteLine(connectionString);
+            //string connectionString = secretProvider.GetSecretAsync("datacopprod", "IDEAsPortalPPEConnectionString").Result;
+            string connectionString = secretProvider.GetSecretAsync("csharpmvcwebapikeyvault", "SQLConnectionString").Result;
             var sqlDal = new SqlDataAccessLayer(connectionString);
-            string cmdText = "SELECT Date, CONVERT(decimal, SUM([Value])) AS MetricValue FROM [DataQuality].[CommercialActiveUsageStats] WITH (NOLOCK) WHERE Date = @Date AND DataRefreshState = 'Stable' AND DateAggregationType = 'RL28' AND [Key] IN ('Platform_web_Count') AND [Workload] IN ('Exchange') GROUP BY Date ORDER BY Date DESC";
+            //string cmdText = "SELECT Date, CONVERT(decimal, SUM([Value])) AS MetricValue FROM [DataQuality].[CommercialActiveUsageStats] WITH (NOLOCK) WHERE Date = @Date AND DataRefreshState = 'Stable' AND DateAggregationType = 'RL28' AND [Key] IN ('Platform_web_Count') AND [Workload] IN ('Exchange') GROUP BY Date ORDER BY Date DESC";
+            string cmdText = @"SELECT count([userid]) as MetricValue
+                                  FROM[dbo].[user_info]
+                                where[userid] > 3";
+            cmdText = @"SELECT CAST(1 AS BIT) as MetricValue
+                           FROM[dbo].[user_info]
+                        where[userid] > 3";
             Console.WriteLine(GetMetricValue(sqlDal, "testName", CommandType.Text, cmdText, DateTime.UtcNow.AddDays(-1), 300).Result);
+
             Console.ReadKey();
         }
 
@@ -37,11 +42,16 @@
         private static async Task<double> GetMetricValue(ISqlDataAccessLayer sqlDal, string testName, CommandType cmdType,
             string cmdText, DateTime date, int cmdTimeoutInSeconds)
         {
-            var dateParam = new SqlParameter("@Date", SqlDbType.DateTime);
-            dateParam.Value = date;
+            var dateParam = new SqlParameter("@Date", SqlDbType.DateTime)
+            {
+                Value = date
+            };
 
             var sqlCommand = sqlDal.CreateSqlCommand(cmdType, cmdText, new List<SqlParameter> { dateParam }, cmdTimeoutInSeconds);
-            var metricValue = await sqlDal.GetQueryResultAsDouble(sqlCommand, "MetricValue");
+            //var metricValue = await sqlDal.GetQueryResultAsDouble(sqlCommand, "MetricValue");
+            //var metricValue = await sqlDal.GetQueryResult(sqlCommand, "MetricValue", false);
+            var metricValue = await sqlDal.GetQueryResult(sqlCommand, "MetricValue", Double.NaN);
+
 
             // Throw an exception when either of the dates returns no metric value (Double.NaN)
             if (Double.IsNaN(metricValue))
@@ -63,6 +73,8 @@
         /// <param name="columnName">The column name that has a double to be extracted.</param>
         /// <returns>The double in the first row of the given column or Double.NaN otherwise.</returns>
         Task<double> GetQueryResultAsDouble(SqlCommand sqlCommand, string columnName);
+
+        Task<T> GetQueryResult<T>(SqlCommand sqlCommand, string columnName, T original);
 
         /// <summary>
         /// Asynchronously check if the given command will return any row in SQL.
@@ -108,7 +120,7 @@
         /// <summary>
         /// The connection
         /// </summary>
-        private SqlConnection connection;
+        private readonly SqlConnection connection;
 
         /// <summary>
         /// Constructs a SQL data access layer that will communicate with a database using the given connection string.
@@ -160,12 +172,52 @@
                         // The metric value types in the databases currently are bigint and numeric.
                         // In both cases, the limit of double before it's losing precision of integers is 2^53.
                         // That number is way beyond the number that metric value will ever hit.
+                        // For bit return we need to parse the value to bool.
+                        //var a = bool.Parse(sqlDataReader[columnName].ToString());
                         result = double.Parse(sqlDataReader[columnName].ToString());
 
                         // check for duplicate rows after reading the first row
                         if (sqlDataReader.Read())
                         {
                             var msg = "Invalid cmdText passed to GetQueryResultAsDouble - database returns more than one row.";
+                            throw new Exception(msg);
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                this.connection.Close();
+            }
+
+            return result;
+        }
+
+        public async Task<T> GetQueryResult<T>(SqlCommand sqlCommand, string columnName, T original)
+        {
+            if (string.IsNullOrEmpty(columnName))
+            {
+                var msg = "Invalid parameter passed to GetQueryResultAsBool - columnName cannot be null or empty.";
+                throw new ArgumentException(msg);
+            }
+
+            T result = original;
+            try
+            {
+                using (var sqlDataReader = await ResilientlyExecuteCommand(sqlCommand))
+                {
+                    if (sqlDataReader.Read())
+                    {
+                        // The metric value types in the databases currently are bigint and numeric.
+                        // In both cases, the limit of double before it's losing precision of integers is 2^53.
+                        // That number is way beyond the number that metric value will ever hit.
+                        //result = T.Parse(sqlDataReader[columnName].ToString());
+                        result = (T)Convert.ChangeType(sqlDataReader[columnName].ToString(), typeof(T));
+
+                        // check for duplicate rows after reading the first row
+                        if (sqlDataReader.Read())
+                        {
+                            var msg = "Invalid cmdText passed to GetQueryResultAsBool - database returns more than one row.";
                             throw new Exception(msg);
                         }
                     }
@@ -219,9 +271,11 @@
 
             // TODO : FxCop warning, this variable cmdText is susceptible to SQL injection. 
             // Consider using a stored proc or parameterized SQL query instead of building the query with string concatenations. 
-            var sqlCommand = new SqlCommand(cmdText, this.connection);
-            sqlCommand.CommandType = cmdType;
-            sqlCommand.CommandTimeout = cmdTimeoutInSeconds;
+            var sqlCommand = new SqlCommand(cmdText, this.connection)
+            {
+                CommandType = cmdType,
+                CommandTimeout = cmdTimeoutInSeconds
+            };
             if (parameters != null)
             {
                 parameters.ForEach(delegate (SqlParameter parameter) { sqlCommand.Parameters.Add(parameter); });

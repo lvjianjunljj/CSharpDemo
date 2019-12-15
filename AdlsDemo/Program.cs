@@ -59,7 +59,7 @@ namespace AdlsDemo
             var dataLakeClient = new DataLakeClient(clientId, clientKey);
 
             IEnumerable<JObject> entities = dataLakeClient.EnumerateAdlsMetadataEntity("ideas-prod-c14.azuredatalakestore.net",
-                "local/Scheduled/Datasets/Public/Profiles/OlsLicenses/v4/2019");
+                "local/Klondike/Raw/");
 
             foreach (var entity in entities)
             {

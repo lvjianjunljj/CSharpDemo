@@ -40,7 +40,7 @@ namespace CSharpDemo.IcMTest
             //EditIncidentInfo();
 
 
-            //GetIncidentTeamCustomField(116142489);
+            GetIncidentTeamCustomField(162426570);
 
 
             //ResloveDevActiveAlert();
@@ -195,8 +195,10 @@ namespace CSharpDemo.IcMTest
             ByteArrayContent content = new ByteArrayContent(buffer);
             content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
-            HttpRequestMessage request = new HttpRequestMessage(new HttpMethod("PATCH"), "https://icm.ad.msft.net/api/cert/incidents(109578527)");
-            request.Content = content;
+            HttpRequestMessage request = new HttpRequestMessage(new HttpMethod("PATCH"), "https://icm.ad.msft.net/api/cert/incidents(109578527)")
+            {
+                Content = content
+            };
             HttpResponseMessage response = client.SendAsync(request).Result;
 
             string responseString = response.Content.ReadAsStringAsync().Result;
@@ -219,8 +221,10 @@ namespace CSharpDemo.IcMTest
             ByteArrayContent content = new ByteArrayContent(buffer);
             content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
-            HttpRequestMessage request = new HttpRequestMessage(new HttpMethod("PATCH"), "https://icm.ad.msft.net/api/cert/incidents(137852320)");
-            request.Content = content;
+            HttpRequestMessage request = new HttpRequestMessage(new HttpMethod("PATCH"), "https://icm.ad.msft.net/api/cert/incidents(137852320)")
+            {
+                Content = content
+            };
             HttpResponseMessage response = client.SendAsync(request).Result;
 
             string responseString = response.Content.ReadAsStringAsync().Result;
@@ -248,10 +252,12 @@ namespace CSharpDemo.IcMTest
 
             //FormUrlEncodedContent content = new FormUrlEncodedContent(values);
 
-            Test data = new Test();
-            data.Category = "Other";
-            data.Description = "description";
-            data.Title = "Title";
+            Test data = new Test
+            {
+                Category = "Other",
+                Description = "description",
+                Title = "Title"
+            };
             string myContent = "{ \"Category\": \"Other\" , \"Description\": \"description\" , \"Title\": \"title\" }";
             //string myContent = JsonConvert.SerializeObject(data);
             Console.WriteLine(myContent);

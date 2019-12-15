@@ -15,7 +15,7 @@
     public class AzureCosmosDBClientOperation
     {
         // "datacopdev","ideasdatacopppe" or "datacopprod"
-        static string KeyVaultName = "datacopprod";
+        static readonly string KeyVaultName = "datacopprod";
 
         public static void MainMethod()
         {
@@ -39,11 +39,12 @@
             //QueryDataSetDemo();
             //QueryTestRunTestContentDemo();
             //QueryMonitroReportDemo();
+            //QueryTestRunCount();
 
             //DeleteTestRunById();
             //DeleteCosmosTestRunByResultExpirePeriod();
             // We can use this function to delete instance without any limitation.
-            DeleteAlertsWithoutIncidentId();
+            //DeleteAlertsWithoutIncidentId();
 
             //MigrateData("DatasetTest");
 
@@ -928,6 +929,31 @@
             foreach (JObject jObject in list)
             {
                 Console.WriteLine(jObject);
+            }
+        }
+
+        public static void QueryTestRunCount()
+        {
+            int minute = 5;
+            var startTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc);
+
+            var startDate = DateTime.UtcNow.AddDays(-1);
+
+            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "PartitionedTestRun");
+
+            for (int i = 0; i < 100; i++)
+            {
+                var endDate = startDate.AddMinutes(minute);
+                var startTs = (startDate - startTime).TotalSeconds;
+                var endTs = (endDate - startTime).TotalSeconds;
+                startDate = endDate;
+                string sqlQueryString = $"SELECT value count(1) FROM c where c._ts > {startTs} and c._ts < {endTs} and c.lastModifiedBy = 'AlertService'";
+                IList<object> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<object>(new SqlQuerySpec(sqlQueryString)).Result;
+                foreach (var count in list)
+                {
+                    Console.WriteLine($"{startDate:o}: {count}");
+                }
+
             }
         }
 
