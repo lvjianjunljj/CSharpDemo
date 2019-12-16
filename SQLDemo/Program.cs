@@ -1,11 +1,11 @@
 ﻿namespace SQLDemo
 {
     using AzureLib.KeyVault;
+    using SQLDemo.DataAccessLayer;
     using System;
     using System.Collections.Generic;
     using System.Data;
     using System.Data.SqlClient;
-    using System.Threading;
     using System.Threading.Tasks;
     class Program
     {
@@ -19,10 +19,19 @@
             string cmdText = @"SELECT count([userid]) as MetricValue
                                   FROM[dbo].[user_info]
                                 where[userid] > 3";
+            //Console.WriteLine(GetMetricValueAsDouble(sqlDal, "testName", CommandType.Text, cmdText, DateTime.UtcNow.AddDays(-1), 300).Result);
             cmdText = @"SELECT CAST(1 AS BIT) as MetricValue
                            FROM[dbo].[user_info]
-                        where[userid] > 3";
-            Console.WriteLine(GetMetricValue(sqlDal, "testName", CommandType.Text, cmdText, DateTime.UtcNow.AddDays(-1), 300).Result);
+                        where[userid] > 6";
+            cmdText = @"SELECT CASE WHEN EXISTS (
+                            SELECT *
+                            FROM[dbo].[user_info]
+                            where[userid] = 2
+                        )
+                        THEN CAST(1 AS BIT)
+                        ELSE CAST(0 AS BIT) END
+                        as MetricValue";
+            Console.WriteLine(GetMetricValueAsBool(sqlDal, "testName", CommandType.Text, cmdText, DateTime.UtcNow.AddDays(-1), 300).Result);
 
             Console.ReadKey();
         }
@@ -39,7 +48,7 @@
         /// <param name="cmdTimeoutInSeconds">The command timeout in seconds.</param>
         /// <returns>Task&lt;System.Double&gt;.</returns>
         /// <exception cref="ArgumentException"></exception>
-        private static async Task<double> GetMetricValue(ISqlDataAccessLayer sqlDal, string testName, CommandType cmdType,
+        private static async Task<double> GetMetricValueAsDouble(ISqlDataAccessLayer sqlDal, string testName, CommandType cmdType,
             string cmdText, DateTime date, int cmdTimeoutInSeconds)
         {
             var dateParam = new SqlParameter("@Date", SqlDbType.DateTime)
@@ -48,9 +57,9 @@
             };
 
             var sqlCommand = sqlDal.CreateSqlCommand(cmdType, cmdText, new List<SqlParameter> { dateParam }, cmdTimeoutInSeconds);
-            //var metricValue = await sqlDal.GetQueryResultAsDouble(sqlCommand, "MetricValue");
+            var metricValue = await sqlDal.GetQueryResultAsDouble(sqlCommand, "MetricValue");
             //var metricValue = await sqlDal.GetQueryResult(sqlCommand, "MetricValue", false);
-            var metricValue = await sqlDal.GetQueryResult(sqlCommand, "MetricValue", Double.NaN);
+            //var metricValue = await sqlDal.GetQueryResult(sqlCommand, "MetricValue", Double.NaN);
 
 
             // Throw an exception when either of the dates returns no metric value (Double.NaN)
@@ -62,290 +71,30 @@
 
             return metricValue;
         }
-    }
-
-    public interface ISqlDataAccessLayer : IDisposable
-    {
-        /// <summary>
-        /// Asynchronously run the given command in the SQL database.
-        /// </summary>
-        /// <param name="sqlCommand">The command to be run by SQL data access layer.</param>
-        /// <param name="columnName">The column name that has a double to be extracted.</param>
-        /// <returns>The double in the first row of the given column or Double.NaN otherwise.</returns>
-        Task<double> GetQueryResultAsDouble(SqlCommand sqlCommand, string columnName);
-
-        Task<T> GetQueryResult<T>(SqlCommand sqlCommand, string columnName, T original);
 
         /// <summary>
-        /// Asynchronously check if the given command will return any row in SQL.
+        /// Private helper to get metric value.
         /// </summary>
-        /// <param name="sqlCommand">The command to be run by SQL data access layer.</param>
-        /// <returns>whether the given command return any row.</returns>
-        Task<bool> HasRows(SqlCommand sqlCommand);
-
-        /// <summary>
-        /// Private helper method to create a SqlCommand.
-        /// </summary>
-        /// <param name="cmdType">The type of the command (text, stored procedure, or table direct).</param>
-        /// <param name="cmdText">The command to run.</param>
-        /// <param name="parameters">The list of parameters required by the command.</param>
+        /// <param name="sqlDal">The SQL data access layer that will communicate with the SQL database.</param>
+        /// <param name="testName">The name of test for logging purposes.</param>
+        /// <param name="cmdType">The type of the commmand (text, stored procedure, or table direct).</param>
+        /// <param name="cmdText">command to run.</param>
+        /// <param name="date">The date of the metric.</param>
         /// <param name="cmdTimeoutInSeconds">The command timeout in seconds.</param>
-        /// <returns></returns>
-        SqlCommand CreateSqlCommand(CommandType cmdType, string cmdText, List<SqlParameter> parameters, int cmdTimeoutInSeconds = 60);
-    }
-
-    public sealed class SqlDataAccessLayer : ISqlDataAccessLayer
-    {
-        /// <summary>
-        /// The number of retries on failure
-        /// </summary>
-        private const short MAX_RETRIES = 3;
-
-        /// <summary>
-        /// The base time in seconds for thread to sleep.
-        /// This number will be multiplied for each failure.
-        /// </summary>
-        private const short SLEEP_TIME_ON_RETRY_IN_SECONDS = 5;
-
-        /// <summary>
-        /// The transient error codes
-        /// https://docs.microsoft.com/en-us/azure/sql-database/sql-database-develop-error-messages
-        /// </summary>
-        private static readonly ISet<int> TransientErrorNumbers = new HashSet<int> { -2, 4060, 40501, 40613, 49918, 49919, 49920, 4221 };
-
-        /// <summary>
-        /// The disposed
-        /// </summary>
-        private bool disposed;
-        /// <summary>
-        /// The connection
-        /// </summary>
-        private readonly SqlConnection connection;
-
-        /// <summary>
-        /// Constructs a SQL data access layer that will communicate with a database using the given connection string.
-        /// </summary>
-        /// <param name="connectionString">The connection string that allows communication with a certain SQL database.</param>
+        /// <returns>Task&lt;System.Double&gt;.</returns>
         /// <exception cref="ArgumentException"></exception>
-        public SqlDataAccessLayer(string connectionString)
+        private static async Task<bool> GetMetricValueAsBool(ISqlDataAccessLayer sqlDal, string testName, CommandType cmdType,
+            string cmdText, DateTime date, int cmdTimeoutInSeconds)
         {
-            if (string.IsNullOrEmpty(connectionString))
+            var dateParam = new SqlParameter("@Date", SqlDbType.DateTime)
             {
-                var msg = "Invalid parameter passed to SqlDataAccessLayer ctor - connectionString cannot be null or empty.";
-                throw new ArgumentException(msg);
-            }
-
-            this.disposed = false;
-            this.connection = new SqlConnection(connectionString);
-
-            //if (connectionString.IndexOf("Password", StringComparison.OrdinalIgnoreCase) < 0 && connectionString.IndexOf("PWD", StringComparison.OrdinalIgnoreCase) < 0)
-            //{
-            //    var tokenProvider = new AzureServiceTokenProvider();
-            //    connection.AccessToken = tokenProvider.GetAccessTokenAsync("https://database.windows.net/").Result;
-            //}
-        }
-
-        /// <summary>
-        /// Asynchronously run the given command in the SQL database.
-        /// An exception will be thrown if there are multiple rows returned.
-        /// </summary>
-        /// <param name="sqlCommand">The command to be run by SQL data access layer.</param>
-        /// <param name="columnName">The column name that has a double to be extracted.</param>
-        /// <returns>The double in the first row of the given column if any or Double.NaN otherwise.</returns>
-        /// <exception cref="ArgumentException">
-        /// </exception>
-        public async Task<double> GetQueryResultAsDouble(SqlCommand sqlCommand, string columnName)
-        {
-            if (string.IsNullOrEmpty(columnName))
-            {
-                var msg = "Invalid parameter passed to GetQueryResultAsDouble - columnName cannot be null or empty.";
-                throw new ArgumentException(msg);
-            }
-
-            double result = Double.NaN;
-            try
-            {
-                using (var sqlDataReader = await ResilientlyExecuteCommand(sqlCommand))
-                {
-                    if (sqlDataReader.Read())
-                    {
-                        // The metric value types in the databases currently are bigint and numeric.
-                        // In both cases, the limit of double before it's losing precision of integers is 2^53.
-                        // That number is way beyond the number that metric value will ever hit.
-                        // For bit return we need to parse the value to bool.
-                        //var a = bool.Parse(sqlDataReader[columnName].ToString());
-                        result = double.Parse(sqlDataReader[columnName].ToString());
-
-                        // check for duplicate rows after reading the first row
-                        if (sqlDataReader.Read())
-                        {
-                            var msg = "Invalid cmdText passed to GetQueryResultAsDouble - database returns more than one row.";
-                            throw new Exception(msg);
-                        }
-                    }
-                }
-            }
-            finally
-            {
-                this.connection.Close();
-            }
-
-            return result;
-        }
-
-        public async Task<T> GetQueryResult<T>(SqlCommand sqlCommand, string columnName, T original)
-        {
-            if (string.IsNullOrEmpty(columnName))
-            {
-                var msg = "Invalid parameter passed to GetQueryResultAsBool - columnName cannot be null or empty.";
-                throw new ArgumentException(msg);
-            }
-
-            T result = original;
-            try
-            {
-                using (var sqlDataReader = await ResilientlyExecuteCommand(sqlCommand))
-                {
-                    if (sqlDataReader.Read())
-                    {
-                        // The metric value types in the databases currently are bigint and numeric.
-                        // In both cases, the limit of double before it's losing precision of integers is 2^53.
-                        // That number is way beyond the number that metric value will ever hit.
-                        //result = T.Parse(sqlDataReader[columnName].ToString());
-                        result = (T)Convert.ChangeType(sqlDataReader[columnName].ToString(), typeof(T));
-
-                        // check for duplicate rows after reading the first row
-                        if (sqlDataReader.Read())
-                        {
-                            var msg = "Invalid cmdText passed to GetQueryResultAsBool - database returns more than one row.";
-                            throw new Exception(msg);
-                        }
-                    }
-                }
-            }
-            finally
-            {
-                this.connection.Close();
-            }
-
-            return result;
-        }
-
-        /// <summary>
-        /// Asynchronously check if the given command will return any row in SQL.
-        /// </summary>
-        /// <param name="sqlCommand">The command to be run by SQL data access layer.</param>
-        /// <returns>whether the given command return any row.</returns>
-        public async Task<bool> HasRows(SqlCommand sqlCommand)
-        {
-            try
-            {
-                using (var sqlDataReader = await ResilientlyExecuteCommand(sqlCommand))
-                {
-                    return sqlDataReader.HasRows;
-                }
-            }
-            finally
-            {
-                this.connection.Close();
-            }
-        }
-
-        /// <summary>
-        /// Private helper method to create a SqlCommand.
-        /// </summary>
-        /// <param name="cmdType">The type of the command (text, stored procedure, or table direct).</param>
-        /// <param name="cmdText">The command to run.</param>
-        /// <param name="parameters">The list of parameters required by the command.</param>
-        /// <param name="cmdTimeoutInSeconds">The command timeout in seconds.</param>
-        /// <returns>SqlCommand.</returns>
-        /// <exception cref="ArgumentException"></exception>
-        public SqlCommand CreateSqlCommand(CommandType cmdType, string cmdText, List<SqlParameter> parameters = null,
-            int cmdTimeoutInSeconds = 60)
-        {
-            if (string.IsNullOrEmpty(cmdText))
-            {
-                var msg = "Invalid parameter passed to SqlDataAccessLayer.GetQueryResultAsDouble - cmdText cannot be null or empty.";
-                throw new ArgumentException(msg);
-            }
-
-            // TODO : FxCop warning, this variable cmdText is susceptible to SQL injection. 
-            // Consider using a stored proc or parameterized SQL query instead of building the query with string concatenations. 
-            var sqlCommand = new SqlCommand(cmdText, this.connection)
-            {
-                CommandType = cmdType,
-                CommandTimeout = cmdTimeoutInSeconds
+                Value = date
             };
-            if (parameters != null)
-            {
-                parameters.ForEach(delegate (SqlParameter parameter) { sqlCommand.Parameters.Add(parameter); });
-            }
 
-            return sqlCommand;
-        }
+            var sqlCommand = sqlDal.CreateSqlCommand(cmdType, cmdText, new List<SqlParameter> { dateParam }, cmdTimeoutInSeconds);
+            var metricValue = await sqlDal.GetQueryResultAsBool(sqlCommand, "MetricValue");
 
-        /// <summary>
-        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-        /// </summary>
-        public void Dispose()
-        {
-            InternalDispose();
-            GC.SuppressFinalize(this);
-        }
-
-        /// <summary>
-        /// Internals the dispose.
-        /// </summary>
-        private void InternalDispose()
-        {
-            if (!this.disposed)
-            {
-                this.connection.Dispose();
-                this.disposed = true;
-            }
-        }
-
-        /// <summary>
-        /// Resiliently try to execute command MAX_RETRIES times when timeout or transient error happens
-        /// </summary>
-        /// <param name="sqlCommand">The command to be executed</param>
-        /// <returns></returns>
-        private async Task<SqlDataReader> ResilientlyExecuteCommand(SqlCommand sqlCommand)
-        {
-            for (int i = 0; i < MAX_RETRIES; i++)
-            {
-                try
-                {
-                    this.connection.Open();
-                    return await sqlCommand.ExecuteReaderAsync();
-                }
-                catch (SqlException ex)
-                {
-                    // Sleep then retry when it's a timeout or a transient error
-                    // Closing and reopening fresh connection per SQL retry best practices
-                    if (TransientErrorNumbers.Contains(ex.Number))
-                    {
-                        this.connection.Close();
-                        Thread.Sleep((int)Math.Pow(SLEEP_TIME_ON_RETRY_IN_SECONDS, i + 1) * 1000);
-                        continue;
-                    }
-                    else
-                    {
-                        throw ex;
-                    }
-                }
-            }
-
-            this.connection.Open();
-            return await sqlCommand.ExecuteReaderAsync();
-        }
-
-        /// <summary>
-        /// Finalizes an instance of the <see cref="SqlDataAccessLayer"/> class.
-        /// </summary>
-        ~SqlDataAccessLayer()
-        {
-            InternalDispose();
+            return metricValue;
         }
     }
 }
