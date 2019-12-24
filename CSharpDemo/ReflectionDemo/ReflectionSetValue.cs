@@ -41,7 +41,7 @@ namespace CSharpDemo.ReflectionDemo
             //    propertyInfo.SetValue(t, Convert.ChangeType("One", propertyInfo.PropertyType));
             //}
 
-            // We can convert string to Enum with Convert.ChangeType function
+            // We can convert string to Enum with TypeDescriptor.GetConverter function
             propertyInfo?.SetValue(t, TypeDescriptor.GetConverter(propertyInfo.PropertyType).ConvertFromString("Two"));
 
 

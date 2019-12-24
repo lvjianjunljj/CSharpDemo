@@ -8,16 +8,14 @@
     {
         public static void MainMethod()
         {
-            //CheckStreamExists();
+            CheckStreamExists();
             //CheckDirectoryExists();
 
             //GetRowCountIteratively("2019-07-10T00:00:00.0000000Z");
 
             //GetStreamInfosDemo();
 
-            CompareStreamInfoRowCount();
-
-            Console.ReadKey();
+            //CompareStreamInfoRowCount();
         }
 
         public static void CheckStreamExists()
@@ -29,6 +27,8 @@
 
             // This link is not able to be accessed
             //stream = "https://cosmos14.osdinfra.net/cosmos/IDEAs.Ppe/shares/CFR.ppe/local/Cooked/StateUserDirectory/StateUserDirectory_2019_07_24.ss";InnerException
+
+            stream = "https://cosmos14.osdinfra.net/cosmos/IDEAs.Private.Data//shares/IDEAs.Prod.Data/Private/Profiles/Tenant/Commercial/IDEAsPrivateTenantProfile/Streams/v1/2019/10/IDEAsPrivateTenantProfile_History_2019_10_01.ss";
             Console.WriteLine(CosmosClient.CheckStreamExists(stream));
         }
 

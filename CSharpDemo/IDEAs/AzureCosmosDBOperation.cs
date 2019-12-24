@@ -15,7 +15,7 @@
     public class AzureCosmosDBClientOperation
     {
         // "datacopdev","ideasdatacopppe" or "datacopprod"
-        static readonly string KeyVaultName = "datacopprod";
+        static readonly string KeyVaultName = "ideasdatacopppe";
 
         public static void MainMethod()
         {
@@ -27,6 +27,7 @@
             //UpdateAllDatasetTestForMerging();
             //UpdateAllCosmosTestResultExpirePeriod();
             //UpdateAllCosmosTestCreateTime();
+            //UpsertServiceMonitorDemo();
 
 
             //DisableAllDataset();
@@ -39,6 +40,7 @@
             //QueryDataSetDemo();
             //QueryTestRunTestContentDemo();
             //QueryMonitroReportDemo();
+            QueryServiceMonitorDemo();
             //QueryTestRunCount();
 
             //DeleteTestRunById();
@@ -755,6 +757,13 @@
             }
         }
 
+        public static void UpsertServiceMonitorDemo()
+        {
+            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "ServiceMonitor");
+            var jObject = JObject.Parse(@"{'datasetId': 'a4353e4b-1611-4965-8334-4c81fd824dad', 'expectedTestRunStatus': 'Success','isEnabled': true}");
+            azureCosmosDBClient.UpsertDocumentAsync(jObject).Wait();
+        }
+
         public static void DisableAllDataset()
         {
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "Dataset");
@@ -925,6 +934,18 @@
             string sqlQueryString = @"SELECT * FROM c" +
                                                          $" WHERE c.datasetTestId='{datasetTestId}' and c.timeStamp='{timeStamp.ToString("s")}' and c.grain='{grain.ToString()}'";
             Console.WriteLine(sqlQueryString);
+            IList<JObject> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(sqlQueryString)).Result;
+            foreach (JObject jObject in list)
+            {
+                Console.WriteLine(jObject);
+            }
+        }
+
+        public static void QueryServiceMonitorDemo()
+        {
+            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "ServiceMonitor");
+
+            string sqlQueryString = @"SELECT * FROM c where c.isEnabled = true";
             IList<JObject> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(sqlQueryString)).Result;
             foreach (JObject jObject in list)
             {

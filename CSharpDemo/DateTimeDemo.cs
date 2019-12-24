@@ -22,7 +22,7 @@
             // Note: 
             // When we parse the time string contains TimeZoneInfo(generate from ToString("o")), 
             // it will return the dateTime based on the local timeZone.
-            // The ToString result of DateTime.Now ends with "Z"
+            // The ToString result of DateTime.UtcNow ends with "Z"
             DateTime timeParseO = DateTime.Parse(timeStringO);
             Console.WriteLine($"DateTime.Parse().ToString(\"o\"): {timeParseO:o}");
             Console.WriteLine();
@@ -52,7 +52,49 @@
             Console.WriteLine($"DateTime.Parse().ToString(\"o\"): {timeParseS:o}");
             Console.WriteLine($"DateTime.Parse().ToUniversalTime().ToString(\"o\"): {timeParseS.ToUniversalTime():o}");
             Console.WriteLine($"TimeZoneInfo.ConvertTimeToUtc(DateTime.Parse()).ToString(\"o\"): {TimeZoneInfo.ConvertTimeToUtc(timeParseS):o}");
-            //Console.WriteLine(TimeZoneInfo.ConvertTimeToUtc());
+            Console.WriteLine();
+
+            Console.WriteLine("DateTime.UtcNo.ToString(\"s\") append 'Z' demo");
+            // You can just append a letter 'Z' to set the TimeZoneInfo Zulu Time Zone for the date string without TimeZoneInfo
+            // And this operation won't change the TimeZoneInfo for the date string with TimeZoneInfo
+            string timeStringSEndZ = timeStringS + "Z";
+            DateTime timeParseSEndZ = DateTime.Parse(timeStringSEndZ).ToUniversalTime();
+            Console.WriteLine($"UtcNow.ToString(\"s\") + \"Z\": {timeStringSEndZ}");
+            Console.WriteLine($"DateTime.Parse().ToUniversalTime().ToString(\"o\"): {timeParseSEndZ:o}");
+
+
+            string timeStringSEndTimeZoneZ = timeStringS + "+08:00Z";
+            DateTime timeParseSEndTimeZoneZ = DateTime.Parse(timeStringSEndZ).ToUniversalTime();
+            Console.WriteLine($"UtcNow.ToString(\"s\") + \"Z\": {timeStringSEndTimeZoneZ}");
+            Console.WriteLine($"DateTime.Parse().ToUniversalTime().ToString(\"o\"): {timeParseSEndTimeZoneZ:o}");
+            Console.WriteLine();
+
+            string timeStringWithHourInfo = DateTime.UtcNow.ToString("yyyy-MM-dd") + "Z";
+            timeStringWithHourInfo = "2018-10-24 22:04:42Z";
+            DateTime timeParseWithHourInfo = DateTime.Parse(timeStringWithHourInfo).ToUniversalTime();
+            Console.WriteLine($"UtcNow.ToString(\"s\") + \"Z\": {timeStringWithHourInfo}");
+            Console.WriteLine($"DateTime.Parse().ToUniversalTime().ToString(\"o\"): {timeParseWithHourInfo:o}");
+
+            /* Note:
+             * This kind of dateText "2018-10-24 22:04:42" cannot append time zone info.
+             * Just this kind of dateText "2018-10-24T22:04:42" can append time zone info.
+             * Just like this: 
+             * "2018-10-24T22:04:42Z"
+             * "2018-10-24T22:04:42+8:00Z"
+             */
+            try
+            {
+                Console.WriteLine(DateTime.Parse("08/18/2018 07:22:16-07:00Z").ToUniversalTime());
+            }
+            catch (FormatException)
+            {
+                Console.WriteLine("FormatException");
+                Console.WriteLine(DateTime.Parse("2018-10-11T00:00:00Z").ToUniversalTime());
+            }
+
+            Console.WriteLine();
+            Console.WriteLine(DateTime.Parse("2018-10-11T00:00:00Z").ToUniversalTime().ToString());
+            Console.WriteLine(DateTime.Parse("2018-10-11T00:00:00Z").ToString());
         }
 
         public static void CompareWithJsonConvertSerializeObject()

@@ -208,6 +208,7 @@
     <Compile Include="DIStudy\ThreeLayers\Demo1.cs" />
     <Compile Include="DIStudy\ThreeLayers\Demo2.cs" />
     <Compile Include="DIStudy\ThreeLayers\Demo3.cs" />
+    <Compile Include="DynamicDemo.cs" />
     <Compile Include="EnumDemo.cs" />
     <Compile Include="ExceptionDemo.cs" />
     <Compile Include="ExplicitOperatorDemo.cs" />

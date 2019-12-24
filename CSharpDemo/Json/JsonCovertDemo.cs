@@ -8,12 +8,20 @@ namespace CSharpDemo.Json
     {
         public static void MainMethod()
         {
-            //StringTest();
-            //DateTimeDeserializeTest();
-            DoubleDeserializeTest();
+            TypeDemo();
+            //StringDemo();
+            //DateTimeDeserializeDemo();
+            //DoubleDeserializeDemo();
         }
 
-        public static void StringTest()
+        public static void TypeDemo()
+        {
+            string typeConvertDemoClassStr = "{'Type1':'System.Boolean'}";
+            var typeConvertDemo = JsonConvert.DeserializeObject<TypeConvertDemoClass>(typeConvertDemoClassStr);
+            Console.WriteLine("Get the actual type of Type1: {0}", typeConvertDemo.Type1);
+        }
+
+        public static void StringDemo()
         {
             var settings = new JsonSerializerSettings
             {
@@ -54,28 +62,7 @@ namespace CSharpDemo.Json
             Console.WriteLine(JsonConvert.SerializeObject(stringConvertDemo, settings));
         }
 
-        class StringConvertDemoClass
-        {
-            private string trimStr;
-            public string TestStr { get; set; }
-            public string NullStr { get; set; }
-            public string NullDefinedStr { get; set; }
-            public string EmptyStr { get; set; }
-
-            public string TrimStr
-            {
-                get
-                {
-                    return this.trimStr;
-                }
-                set
-                {
-                    this.trimStr = value.Trim();
-                }
-            }
-        }
-
-        public void DateTimeDeserializeTest()
+        public static void DateTimeDeserializeDemo()
         {
             string dateString = "0001-01-01T00:00:00";
 
@@ -90,7 +77,7 @@ namespace CSharpDemo.Json
             Console.WriteLine(dateTime.ToString("r"));
         }
 
-        public static void DoubleDeserializeTest()
+        public static void DoubleDeserializeDemo()
         {
             var settings = new JsonSerializerSettings
             {
@@ -104,10 +91,37 @@ namespace CSharpDemo.Json
             Console.WriteLine(doubleConvertDemoClass.Num2);
         }
 
-        class DoubleConvertDemoClass
+    }
+
+    class StringConvertDemoClass
+    {
+        private string trimStr;
+        public string TestStr { get; set; }
+        public string NullStr { get; set; }
+        public string NullDefinedStr { get; set; }
+        public string EmptyStr { get; set; }
+
+        public string TrimStr
         {
-            public double Num1 { get; set; }
-            public double Num2 { get; set; }
+            get
+            {
+                return this.trimStr;
+            }
+            set
+            {
+                this.trimStr = value.Trim();
+            }
         }
+    }
+
+    class DoubleConvertDemoClass
+    {
+        public double Num1 { get; set; }
+        public double Num2 { get; set; }
+    }
+
+    class TypeConvertDemoClass
+    {
+        public Type Type1 { get; set; }
     }
 }
