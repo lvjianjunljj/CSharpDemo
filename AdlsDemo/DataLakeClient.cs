@@ -88,6 +88,26 @@
             }
         }
 
+        public void CreateFile(string store, string path, string content)
+        {
+            try
+            {
+                var client = CreateAdlsClient(store, clientId, clientKey);
+                var stream = client.CreateFile(path, IfExists.Overwrite);
+                // CanRead is false but function GetFileSize works for this path.
+                //Console.WriteLine(stream.CanRead);
+                byte[] data = System.Text.Encoding.Default.GetBytes(content);
+                //开始写入
+                stream.Write(data, 0, data.Length);
+                stream.Flush();
+                stream.Close();
+            }
+            catch (AdlsException adlsException)
+            {
+                Console.WriteLine($"Get directory entry from ADLS failed, error message:{adlsException.Message}");
+            }
+        }
+
         public IEnumerable<JObject> EnumerateAdlsMetadataEntity(string store, string path)
         {
             var client = CreateAdlsClient(store, clientId, clientKey);
