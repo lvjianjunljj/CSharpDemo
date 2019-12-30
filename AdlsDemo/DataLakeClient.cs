@@ -104,7 +104,20 @@
             }
             catch (AdlsException adlsException)
             {
-                Console.WriteLine($"Get directory entry from ADLS failed, error message:{adlsException.Message}");
+                Console.WriteLine($"Create ADLS file failed, error message:{adlsException.Message}");
+            }
+        }
+
+        public void DeleteFile(string store, string path)
+        {
+            try
+            {
+                var client = CreateAdlsClient(store, clientId, clientKey);
+                var stream = client.Delete(path);
+            }
+            catch (AdlsException adlsException)
+            {
+                Console.WriteLine($"Create ADLS file failed, error message:{adlsException.Message}");
             }
         }
 

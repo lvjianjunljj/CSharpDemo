@@ -52,6 +52,13 @@ namespace CSharpDemo
 
             //JsonCovertDemo.MainMethod();
 
+            string folderPath = @"D:\data\company_work\M365\IDEAs\DataCopServiceMonitor\datacop_service_monitor_test_file\";
+            for (int i = 1; i < 11; i++)
+            {
+                string fileName = "datacop_service_monitor_test_2019_12_" + (i > 9 ? $"{i}" : $"0{i}");
+                SaveFile.FirstMethod(folderPath + fileName + ".ss", fileName);
+            }
+
             Console.ReadKey();
         }
     }

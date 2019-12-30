@@ -18,6 +18,7 @@ namespace AdlsDemo
             //CheckAdlsFileExistsDemo();
             //GetAdlsFileSizeDemo();
             InsertAdlsFileDemo();
+            //DeleteAdlsFileDemo();
             //GetEnumerateAdlsMetadataEntityDemo();
 
             Console.ReadKey();
@@ -61,9 +62,27 @@ namespace AdlsDemo
             string folderPath = @"local/users/jianjlv/";
             for (int i = 1; i < 11; i++)
             {
+                string fileName = "datacop_service_monitor_test_2019_12_" + (i > 9 ? $"{i}" : $"0{i}");
+                //dataLakeClient.CreateFile("ideas-prod-c14.azuredatalakestore.net", folderPath + fileName + ".ss", fileName);
+                Console.WriteLine(dataLakeClient.GetFileSize("ideas-prod-c14.azuredatalakestore.net", folderPath + fileName + ".ss"));
+            }
+        }
+
+        public static void DeleteAdlsFileDemo()
+        {
+            ISecretProvider secretProvider = KeyVaultSecretProvider.Instance;
+
+            string clientId = secretProvider.GetSecretAsync("datacopdev", "AdlsAadAuthAppId").Result;
+            string clientKey = secretProvider.GetSecretAsync("datacopdev", "AdlsAadAuthAppSecret").Result;
+
+            var dataLakeClient = new DataLakeClient(clientId, clientKey);
+
+            string folderPath = @"local/users/jianjlv/";
+            for (int i = 1; i < 11; i++)
+            {
                 string fileName = "datacop_service_monitor_adls_test_2019_12_" + (i > 9 ? $"{i}" : $"0{i}");
-                dataLakeClient.CreateFile("ideas-prod-c14.azuredatalakestore.net", folderPath + fileName + ".ss", fileName);
-                //Console.WriteLine(dataLakeClient.GetFileSize("ideas-prod-c14.azuredatalakestore.net", folderPath + fileName + ".ss"));
+                //dataLakeClient.DeleteFile("ideas-prod-c14.azuredatalakestore.net", folderPath + fileName + ".ss");
+                Console.WriteLine(dataLakeClient.CheckExists("ideas-prod-c14.azuredatalakestore.net", folderPath + fileName + ".ss"));
             }
         }
 
