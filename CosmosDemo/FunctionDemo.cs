@@ -8,7 +8,7 @@
     {
         public static void MainMethod()
         {
-            CheckStreamExists();
+            //CheckStreamExists();
             //CheckDirectoryExists();
 
             //GetRowCountIteratively("2019-07-10T00:00:00.0000000Z");
@@ -16,6 +16,8 @@
             //GetStreamInfosDemo();
 
             //CompareStreamInfoRowCount();
+
+            //UploadFileDemo();
         }
 
         public static void CheckStreamExists()
@@ -28,7 +30,7 @@
             // This link is not able to be accessed
             //stream = "https://cosmos14.osdinfra.net/cosmos/IDEAs.Ppe/shares/CFR.ppe/local/Cooked/StateUserDirectory/StateUserDirectory_2019_07_24.ss";InnerException
 
-            stream = "https://cosmos14.osdinfra.net/cosmos/IDEAs.Private.Data//shares/IDEAs.Prod.Data/Private/Profiles/Tenant/Commercial/IDEAsPrivateTenantProfile/Streams/v1/2019/10/IDEAsPrivateTenantProfile_History_2019_10_01.ss";
+            stream = "https://cosmos14.osdinfra.net/cosmos/IDEAs.Prod/users/jianjlv/datacop_service_monitor_test_2019_12_01.ss";
             Console.WriteLine(CosmosClient.CheckStreamExists(stream));
         }
 
@@ -79,17 +81,14 @@
             }
         }
 
-        public static void CompareStreamInfoRowCount()
+        public static void UploadFileDemo()
         {
-            string directoryPath = "https://cosmos14.osdinfra.net/cosmos/IDEAs.Prod//local/Partner/PreRelease/dev/activeusage/sharepointcommercial/2019/08/";
-
-            List<JToken> streamInfos = CosmosClient.GetStreamInfos(directoryPath);
-            foreach (var streamInfo in streamInfos)
+            string directoryPath = @"https://cosmos14.osdinfra.net/cosmos/IDEAs.Prod/users/jianjlv/";
+            string folderPath = @"D:\data\company_work\M365\IDEAs\DataCopServiceMonitor\datacop_service_monitor_test_file\";
+            for (int i = 1; i < 11; i++)
             {
-                long? rowCount = CosmosClient.GetRowCount(streamInfo["StreamName"].ToString());
-                // They are different...So sad.
-                Console.WriteLine(streamInfo["Length"]);
-                Console.WriteLine(rowCount);
+                string fileName = "datacop_service_monitor_test_2019_12_" + (i > 9 ? $"{i}" : $"0{i}");
+                CosmosClient.UploadFile(folderPath + fileName + ".ss", directoryPath + fileName + ".ss", 3650);
             }
         }
     }

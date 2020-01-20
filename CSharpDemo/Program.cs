@@ -52,14 +52,51 @@ namespace CSharpDemo
 
             //JsonCovertDemo.MainMethod();
 
-            string folderPath = @"D:\data\company_work\M365\IDEAs\DataCopServiceMonitor\datacop_service_monitor_test_file\";
-            for (int i = 1; i < 11; i++)
+            //string folderPath = @"D:\data\company_work\M365\IDEAs\DataCopServiceMonitor\datacop_service_monitor_test_file\";
+            //for (int i = 1; i < 11; i++)
+            //{
+            //    string fileName = "datacop_service_monitor_test_2019_12_" + (i > 9 ? $"{i}" : $"0{i}");
+            //    SaveFile.FirstMethod(folderPath + fileName + ".ss", fileName);
+            //}
+            //Console.WriteLine(DateTime.UtcNow.ToString("o"));
+
+
+            TestA a = new TestA();
+            a.TestB = new TestB
             {
-                string fileName = "datacop_service_monitor_test_2019_12_" + (i > 9 ? $"{i}" : $"0{i}");
-                SaveFile.FirstMethod(folderPath + fileName + ".ss", fileName);
-            }
+                A = "BA"
+            };
+            a.Dict = new Dictionary<string, string>();
+            a.Dict.Add("A", "A");
+
+            var aa = a.GetClone();
+            aa.TestB.A = "AA";
+            aa.Dict["A"] = "B";
+            Console.WriteLine(a.TestB.A);
+            Console.WriteLine(a.Dict["A"]);
+
+            Dictionary<string, string> dict = new Dictionary<string, string>();
+            Console.WriteLine(dict.ContainsKey(""));
+            Console.WriteLine(dict.ContainsKey(null));
+
 
             Console.ReadKey();
         }
+    }
+    public class TestA
+    {
+        public string StringA { get; set; }
+        public string StringB { get; set; }
+        public TestB TestB { get; set; }
+        public Dictionary<string, string> Dict { get; set; }
+        public TestA GetClone()
+        {
+            return (TestA)this.MemberwiseClone();
+        }
+    }
+
+    public class TestB
+    {
+        public string A { get; set; }
     }
 }

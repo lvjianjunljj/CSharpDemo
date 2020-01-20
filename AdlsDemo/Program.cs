@@ -34,7 +34,7 @@ namespace AdlsDemo
             var dataLakeClient = new DataLakeClient(clientId, clientKey);
 
             Console.WriteLine(dataLakeClient.CheckExists("ideas-prod-c14.azuredatalakestore.net",
-                "local/Scheduled/Datasets/Public/Profiles/OlsLicenses/v4/2019/08/20/LicensesCommercialHistory_2019-08-20.ss"));
+                "/local/Scheduled/Datasets/Private/Users/DataQuality/ConsumerUserProfile/v1/2019/11/ConsumerUserFABBSProfile_CorrectnessStats_2019_11_25.ss"));
         }
 
         public static void GetAdlsFileSizeDemo()
@@ -59,7 +59,7 @@ namespace AdlsDemo
 
             var dataLakeClient = new DataLakeClient(clientId, clientKey);
 
-            string folderPath = @"local/users/jianjlv/";
+            string folderPath = @"/users/jianjlv/";
             for (int i = 1; i < 11; i++)
             {
                 string fileName = "datacop_service_monitor_test_2019_12_" + (i > 9 ? $"{i}" : $"0{i}");

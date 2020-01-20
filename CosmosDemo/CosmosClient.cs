@@ -1,10 +1,12 @@
 ﻿namespace CosmosDemo
 {
+    using Microsoft.Cosmos.ExportClient;
     using Microsoft.Cosmos.FrontEnd.Contract;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
     using System;
     using System.Collections.Generic;
+    using System.IO;
     using VcClient;
 
     class CosmosClient
@@ -118,6 +120,20 @@
                 streamInfoJTokens.Add(JToken.Parse(JsonConvert.SerializeObject(streamInfo)));
             }
             return streamInfoJTokens;
+        }
+
+        /// <summary>
+        /// Upload a file to the VC using the method overload which will preserve line boundaries on large files.
+        /// </summary>
+        /// <param name="source">Path to the local file.</param>
+        /// <param name="dest">Desired stream location.</param>
+        /// <param name="expiryDays">Expiry in days (if null, will use default of 30 days).</param>
+        public static void UploadFile(string source, string dest, int? expiryDays = null)
+        {
+            var certificate = CertificateGenerator.GetCertificateByThumbprint();
+            VC.Setup(null, certificate);
+            var fi = new FileInfo(source);
+            VC.Upload(source, dest, 0, fi.Length, false, TimeSpan.FromDays(expiryDays ?? 30), false);
         }
     }
 }
