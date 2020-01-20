@@ -179,6 +179,7 @@
     <Compile Include="Azure\ServiceBus\AzureServiceBusSingleClient.cs" />
     <Compile Include="Azure\AzureSQLDatabase.cs" />
     <Compile Include="ClassInheritDemo.cs" />
+    <Compile Include="CloneDemo.cs" />
     <Compile Include="CmdHelper.cs" />
     <Compile Include="Constant.cs" />
     <Compile Include="ConstructorDemo.cs" />
