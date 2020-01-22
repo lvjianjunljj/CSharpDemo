@@ -9,6 +9,7 @@
         public static void MainMethod()
         {
             //CheckStreamExists();
+            //CheckRowCount();
             //CheckDirectoryExists();
 
             //GetRowCountIteratively("2019-07-10T00:00:00.0000000Z");
@@ -30,8 +31,15 @@
             // This link is not able to be accessed
             //stream = "https://cosmos14.osdinfra.net/cosmos/IDEAs.Ppe/shares/CFR.ppe/local/Cooked/StateUserDirectory/StateUserDirectory_2019_07_24.ss";InnerException
 
-            stream = "https://cosmos14.osdinfra.net/cosmos/IDEAs.Prod/users/jianjlv/datacop_service_monitor_test_2019_12_01.ss";
+            stream = "https://cosmos14.osdinfra.net/cosmos/Ideas.prod//users/jianjlv/datacop_service_monitor_test_2019_12_07.ss";
             Console.WriteLine(CosmosClient.CheckStreamExists(stream));
+        }
+
+        public static void CheckRowCount()
+        {
+            string stream = "https://cosmos14.osdinfra.net/cosmos/IDEAs.Prod/users/jianjlv/datacop_service_monitor_test_2019_12_01.ss";
+            long? rowCount = CosmosClient.GetRowCount(stream);
+            Console.WriteLine($"rowCount: {rowCount}");
         }
 
         public static void CheckDirectoryExists()

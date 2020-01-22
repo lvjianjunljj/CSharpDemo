@@ -13,11 +13,11 @@
         public static void MainMethod()
         {
             // keyVault name csharpmvcwebapikeyvault for csharpmvcwebapicosmosdb
-            AzureCosmosDBClient.KeyVaultName = "ideasdatacopppe";
+            AzureCosmosDBClient.KeyVaultName = "csharpmvcwebapikeyvault";
 
 
-            CreateNewContainer();
-            //QueryTestDemo();
+            //CreateNewContainer();
+            QueryTestDemo();
             //GetLastTestDemo();
             //TestQueryStringLength();
 

@@ -8,10 +8,12 @@ namespace CSharpDemo.Json
     {
         public static void MainMethod()
         {
-            TypeDemo();
+            //TypeDemo();
             //StringDemo();
             //DateTimeDeserializeDemo();
             //DoubleDeserializeDemo();
+            //ParentClassDemo();
+
         }
 
         public static void TypeDemo()
@@ -91,6 +93,20 @@ namespace CSharpDemo.Json
             Console.WriteLine(doubleConvertDemoClass.Num2);
         }
 
+        // It is impossible to deserialize to parent class and then convert it to target class,
+        // Right way is to deserialize to JToken then use ToObejct<T> function to convert it to target class.
+        public static void ParentClassDemo()
+        {
+            string typeConvertDemoClassStr = "{'Type1':'System.Boolean'}";
+            var objectClass = JsonConvert.DeserializeObject<JToken>(typeConvertDemoClassStr);
+            var typeClass = objectClass.ToObject<TypeConvertDemoClass>();
+            Console.WriteLine("Get the actual type of Type1: {0}", typeClass.Type1);
+
+            // Two wrong ways.
+            //var objectClass = JsonConvert.DeserializeObject<object>(typeConvertDemoClassStr);
+            //var typeClass = objectClass as TypeConvertDemoClass;
+            //var typeClass = (TypeConvertDemoClass)Convert.ChangeType(objectClass, typeof(TypeConvertDemoClass));
+        }
     }
 
     class StringConvertDemoClass

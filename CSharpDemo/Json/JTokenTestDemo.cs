@@ -12,8 +12,10 @@ namespace CSharpDemo.Json
         public static void MainMethod()
         {
             //RecursiveAccessProperty();
+            TryParseDemo();
         }
-        static void RecursiveAccessProperty()
+
+        public static void RecursiveAccessProperty()
         {
             JTokenTest t = new JTokenTest();
             t.a = "a";
@@ -46,6 +48,22 @@ namespace CSharpDemo.Json
             //Console.WriteLine(jToken["a"]);
         }
 
+        public static void TryParseDemo()
+        {
+            string jTokenStr = "{'id2':'id2','name2':'name2'}";
+            var jToken = JsonConvert.DeserializeObject<JToken>(jTokenStr);
+            if (TryParseToJTokenTest(jToken, out TryParseClass1 tryParseClass1, out TryParseClass2 tryParseClass2))
+            {
+                Console.WriteLine("tryParseClass1.Id1: {0}", tryParseClass1.Id1);
+                Console.WriteLine("tryParseClass1.Name1: {0}", tryParseClass1.Name1);
+            }
+            else
+            {
+                Console.WriteLine("tryParseClass2.Id2: {0}", tryParseClass2.Id2);
+                Console.WriteLine("tryParseClass2.Name2: {0}", tryParseClass2.Name2);
+            }
+        }
+
         private static string ConvertTestContentToHtmlString(JToken jTokenContent)
         {
             if (jTokenContent == null)
@@ -76,6 +94,23 @@ namespace CSharpDemo.Json
             return htmlString + "</table>";
         }
 
+        private static bool TryParseToJTokenTest(JToken inputJToken, out TryParseClass1 tryParseClass1, out TryParseClass2 tryParseClass2)
+        {
+            try
+            {
+                tryParseClass1 = inputJToken.ToObject<TryParseClass1>();
+                tryParseClass2 = null;
+                return true;
+            }
+            catch (JsonSerializationException e)
+            {
+                Console.WriteLine(e.Message);
+                tryParseClass1 = null;
+                tryParseClass2 = inputJToken.ToObject<TryParseClass2>();
+                return false;
+            }
+        }
+
     }
     class JTokenTest
     {
@@ -94,9 +129,42 @@ namespace CSharpDemo.Json
     class JTokenTest2
     {
         public string d { get; set; }
+        public string str { get; set; }
         public JTokenTest2(string d)
         {
             this.d = d;
         }
+    }
+
+    class TryParseClass1
+    {
+        /// <summary>
+        /// Gets or sets the id for this test run
+        /// </summary>
+        /// <value>The identifier.</value>
+        [JsonProperty(PropertyName = "id1", Required = Required.Always)]
+        public string Id1 { get; set; }
+
+        /// <summary>
+        /// Gets or sets the tag to indicate who is the last one to update the entity
+        /// </summary>
+        [JsonProperty(PropertyName = "name1", Required = Required.Always)]
+        public string Name1 { get; set; }
+    }
+
+    class TryParseClass2
+    {
+        /// <summary>
+        /// Gets or sets the id for this test run
+        /// </summary>
+        /// <value>The identifier.</value>
+        [JsonProperty(PropertyName = "id2", Required = Required.Always)]
+        public string Id2 { get; set; }
+
+        /// <summary>
+        /// Gets or sets the tag to indicate who is the last one to update the entity
+        /// </summary>
+        [JsonProperty(PropertyName = "name2", Required = Required.Always)]
+        public string Name2 { get; set; }
     }
 }
