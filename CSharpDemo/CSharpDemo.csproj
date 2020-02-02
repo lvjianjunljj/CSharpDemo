@@ -168,6 +168,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AttributesDemo.cs" />
+    <Compile Include="Azure\AADTokenHttpRequestDemo.cs" />
     <Compile Include="Azure\AzureActiveDirectoryToken.cs" />
     <Compile Include="Azure\AzureCosmosDB.cs" />
     <Compile Include="Azure\CosmosDB\AzureCosmosDBClient.cs" />

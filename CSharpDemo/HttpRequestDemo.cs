@@ -1,6 +1,5 @@
 ﻿namespace CSharpDemo
 {
-    using Microsoft.IdentityModel.Clients.ActiveDirectory;
     using Newtonsoft.Json.Linq;
     using System;
     using System.Collections.Generic;
@@ -11,90 +10,55 @@
     using System.Net.Http.Headers;
     using System.Text;
 
-    // Doc link: https://stackoverflow.com/questions/4015324/how-to-make-http-post-web-request
-    // OneNote link: https://microsoftapc-my.sharepoint.com/personal/jianjlv_microsoft_com/_layouts/OneNote.aspx?id=%2Fpersonal%2Fjianjlv_microsoft_com%2FDocuments%2FJianjun%20%40%20Microsoft&wd=target%28Develop%20Lang.one%7C5B97F099-2C06-420B-BE08-9DDC5BC0F237%2FWebClient%20vs%20HttpClient%20vs%20HttpWebRequest%7CF9FAC99F-2F78-4A46-B12E-A797E52FBA9C%2F%29
-    // Here we use getting token from AAD as sample.
     class HttpRequestDemo
     {
         public static void MainMethod()
         {
-            GetTokenByAADLib();
-
-            GetTokenByHttpWebRequest();
-
-            GetTokenByHttpClientKeyValueBody();
-            GetTokenByHttpClientStringBody();
-
-            GetTokenByWebClientKeyValueBody();
+            //SendHttpWebRequest();
         }
 
-        // We don't need this property when we get token by AAD lib.
-        private static string grant_type = @"client_credentials";
-
-        // This is the tenant id for Microsoft
-        private static string microsoftTenantId = @"";
-        private static string client_id = @"";
-        private static string client_secret = @"";
-        private static string resource = @"";
-        private static string tokenUrl = $"https://login.microsoftonline.com/{microsoftTenantId}/oauth2/token";
-
-        public static void GetTokenByAADLib()
+        public static void SendHttpWebRequest()
         {
-            var authenticationContext = new AuthenticationContext($"https://login.microsoftonline.com/{microsoftTenantId}", TokenCache.DefaultShared);
-
-            ClientCredential clientCred = new ClientCredential(client_id, client_secret);
-            // Function AcquireTokenAsync() has multiple overloads
-            var authenticationResult = authenticationContext.AcquireTokenAsync(resource, clientCred).Result;
-
-            Console.WriteLine(authenticationResult.AccessToken);
-        }
-
-
-        public static void GetTokenByHttpWebRequest()
-        {
-            var postData = "grant_type=" + Uri.EscapeDataString(grant_type);
-            postData += "&client_id=" + Uri.EscapeDataString(client_id);
-            postData += "&client_secret=" + Uri.EscapeDataString(client_secret);
-            postData += "&resource=" + Uri.EscapeDataString(resource);
-
-            HttpWebRequest req = WebRequest.CreateHttp(tokenUrl);
-            req.Method = "POST";
+            string url = @"http://www.sdubbs.cn/showbbs.asp?id=54682&totable=1";
+            HttpWebRequest req = WebRequest.CreateHttp(url);
+            req.Method = "GET";
 
             req.ContentType = "application/x-www-form-urlencoded";
 
-            byte[] buffer = Encoding.ASCII.GetBytes(postData);
+            //byte[] buffer = Encoding.ASCII.GetBytes(postData);
 
-            req.ContentLength = buffer.Length;
-            Stream reqStream = req.GetRequestStream();
-            reqStream.Write(buffer, 0, buffer.Length);
-            reqStream.Close();
+            //req.ContentLength = buffer.Length;
+            //Stream reqStream = req.GetRequestStream();
+            //reqStream.Write(buffer, 0, buffer.Length);
+            //reqStream.Close();
+            Console.WriteLine("Start...");
             using (HttpWebResponse resp = (HttpWebResponse)req.GetResponse())
             {
+                Console.WriteLine(resp.StatusCode);
                 using (Stream data = resp.GetResponseStream())
                 {
                     if (data != null)
                     {
                         TextReader tr = new StreamReader(data);
                         string respString = tr.ReadToEnd();
-                        JObject j = JObject.Parse(respString);
-                        Console.WriteLine(j["access_token"]);
+                        //JObject j = JObject.Parse(respString);
+                        //Console.WriteLine(j["access_token"]);
+                        Console.WriteLine(respString);
                     }
                 }
             }
         }
 
-        public static void GetTokenByHttpClientKeyValueBody()
+        public static void SendHttpClientRequestWithDictBody()
         {
+            string url = "";
             HttpClient client = new HttpClient();
             var values = new Dictionary<string, string>
             {
-                { "grant_type", grant_type },
-                { "client_id", client_id},
-                { "client_secret", client_secret },
-                { "resource", resource }
+                { "foo","foo"}
             };
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, tokenUrl);
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, url);
 
             request.Content = new FormUrlEncodedContent(values);
             var response = client.SendAsync(request).Result;
@@ -104,15 +68,13 @@
             Console.WriteLine(j["access_token"]);
         }
 
-        public static void GetTokenByHttpClientStringBody()
+        public static void SendHttpClientRequestWithStringBody()
         {
+            string url = "";
             HttpClient client = new HttpClient();
-            var postData = "grant_type=" + Uri.EscapeDataString(grant_type);
-            postData += "&client_id=" + Uri.EscapeDataString(client_id);
-            postData += "&client_secret=" + Uri.EscapeDataString(client_secret);
-            postData += "&resource=" + Uri.EscapeDataString(resource);
+            var postData = "foo=" + Uri.EscapeDataString("foo");
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, tokenUrl);
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, url);
 
             request.Content = new StringContent(postData,
                                     Encoding.UTF8,
@@ -124,17 +86,15 @@
             Console.WriteLine(j["access_token"]);
         }
 
-        public static void GetTokenByWebClientKeyValueBody()
+        public static void SendWebClientRequest()
         {
+            string url = "";
             using (var client = new WebClient())
             {
                 var values = new NameValueCollection();
-                values["grant_type"] = grant_type;
-                values["client_id"] = client_id;
-                values["client_secret"] = client_secret;
-                values["resource"] = resource;
+                values["foo"] = "foo";
 
-                var response = client.UploadValues(tokenUrl, values);
+                var response = client.UploadValues(url, values);
 
                 var responseString = Encoding.Default.GetString(response);
                 Console.WriteLine(responseString);

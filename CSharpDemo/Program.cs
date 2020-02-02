@@ -50,9 +50,6 @@ namespace CSharpDemo
             //DatasetJsonFileOperation.MainMethod();
             //AzureActiveDirectoryToken.MainMethod();
 
-            //JsonCovertDemo.MainMethod();
-            //JTokenTestDemo.MainMethod();
-
             Console.ReadKey();
         }
     }
