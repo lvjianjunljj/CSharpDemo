@@ -52,6 +52,8 @@ namespace AdlsDemo
 
         public static void InsertAdlsFileDemo()
         {
+            Console.WriteLine("Insert Adls File...");
+
             ISecretProvider secretProvider = KeyVaultSecretProvider.Instance;
 
             string clientId = secretProvider.GetSecretAsync("datacopdev", "AdlsAadAuthAppId").Result;
