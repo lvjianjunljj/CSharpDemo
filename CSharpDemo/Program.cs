@@ -50,7 +50,14 @@ namespace CSharpDemo
             //DatasetJsonFileOperation.MainMethod();
             //AzureActiveDirectoryToken.MainMethod();
 
+            var fileList = ReadFile.GetAllFile(@"D:\IDEAs\Ibiza\Source\DataCopMonitors\PROD");
+            //var fileList = ReadFile.GetFolderSubPaths(@"D:\IDEAs\Ibiza\Source\DataCopMonitors\PROD", ReadType.Directory, PathType.Absolute);
 
+
+            foreach (var item in fileList)
+            {
+                Console.WriteLine(item);
+            }
             Console.ReadKey();
         }
     }

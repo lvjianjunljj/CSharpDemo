@@ -15,7 +15,7 @@
     public class AzureCosmosDBClientOperation
     {
         // "datacopdev","ideasdatacopppe" or "datacopprod"
-        static readonly string KeyVaultName = "ideasdatacopppe";
+        static readonly string KeyVaultName = "datacopprod";
 
         public static void MainMethod()
         {
@@ -40,7 +40,7 @@
             //QueryDataSetDemo();
             //QueryTestRunTestContentDemo();
             //QueryMonitroReportDemo();
-            QueryServiceMonitorDemo();
+            //QueryServiceMonitorDemo();
             //QueryTestRunCount();
 
             //DeleteTestRunById();
@@ -59,6 +59,8 @@
             //CheckDuplicatedEnabledDatasetTest();
 
             //SetOutdatedForDuplicatedDatasetTest();
+
+            UpdateAlertSettingToGitFolder();
         }
 
         public static void SetOutdatedForDuplicatedDatasetTest()
@@ -1080,6 +1082,111 @@
                 }
                 alerts = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT top 1000 * FROM c WHERE not is_defined(c.incidentId)")).Result;
             }
+        }
+
+        public static void UpdateAlertSettingToGitFolder()
+        {
+            string gitFolderPath = @"C:\Users\jianjlv\source\repos\Ibiza\Source\DataCopMonitors\PROD\AlertSettings\";
+            AzureCosmosDBClient alertSettingsCosmosDBClient = new AzureCosmosDBClient("DataCop", "AlertSettings");
+
+            // Collation: asc and desc is ascending and descending
+            IList<JObject> alertSettingJObjects = alertSettingsCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c")).Result;
+            var alertSettingDict = ClusterAlertSettings(alertSettingJObjects);
+            Console.WriteLine(alertSettingJObjects.Count);
+            Console.WriteLine(alertSettingDict.Count);
+            foreach (var item in alertSettingDict.Keys)
+            {
+                Console.WriteLine(item);
+            }
+            Console.WriteLine("...............");
+
+            foreach (JObject alertSettingJObject in alertSettingJObjects)
+            {
+                string id = alertSettingJObject["id"].ToString();
+                if (!ContainsNumber(id))
+                {
+                    Console.WriteLine(id);
+                    var serviceCustomFieldNames = JArray.Parse(alertSettingJObject["serviceCustomFieldNames"].ToString());
+                    serviceCustomFieldNames.Add("ScenarioIds");
+                    alertSettingJObject["serviceCustomFieldNames"] = serviceCustomFieldNames;
+                    alertSettingJObject.Remove("_rid");
+                    alertSettingJObject.Remove("_self");
+                    alertSettingJObject.Remove("_etag");
+                    alertSettingJObject.Remove("_attachments");
+                    alertSettingJObject.Remove("_ts");
+                    string gitFilePath = gitFolderPath + id + ".json";
+                    //SaveFile.FirstMethod(gitFilePath, alertSettingJObject.ToString());
+                }
+            }
+
+            AzureCosmosDBClient datasetTestCosmosDBClient = new AzureCosmosDBClient("DataCop", "DatasetTest");
+            IList<JObject> datasetTestJObjects = datasetTestCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT distinct c.alertSettingId FROM c where c.status = 'Enabled' and is_defined(c.alertSettingId)")).Result;
+            HashSet<string> alertSettingIdsSet = new HashSet<string>();
+            foreach (JObject datasetTestJObject in datasetTestJObjects)
+            {
+                string alertSettingId = datasetTestJObject["alertSettingId"].ToString();
+                alertSettingIdsSet.Add(alertSettingId);
+            }
+            foreach (var alertSettingId in alertSettingIdsSet)
+            {
+                Console.WriteLine(alertSettingId);
+            }
+            Console.WriteLine(alertSettingIdsSet.Count);
+        }
+
+        private static Dictionary<string, IList<JObject>> ClusterAlertSettings(IList<JObject> alertSettingJObjects)
+        {
+            Dictionary<string, IList<JObject>> alertSettingDict = new Dictionary<string, IList<JObject>>();
+
+
+            foreach (JObject alertSettingJObject in alertSettingJObjects)
+            {
+                string id = alertSettingJObject["id"].ToString();
+                var serviceCustomFieldNames = JArray.Parse(alertSettingJObject["serviceCustomFieldNames"].ToString());
+                serviceCustomFieldNames.Add("ScenarioIds");
+                alertSettingJObject["serviceCustomFieldNames"] = serviceCustomFieldNames;
+                alertSettingJObject.Remove("_rid");
+                alertSettingJObject.Remove("_self");
+                alertSettingJObject.Remove("_etag");
+                alertSettingJObject.Remove("_attachments");
+                alertSettingJObject.Remove("_ts");
+                alertSettingJObject.Remove("id");
+                string alertSettingStr = alertSettingJObject.ToString();
+                if (alertSettingDict.ContainsKey(alertSettingStr))
+                {
+                    alertSettingDict[alertSettingStr].Add(alertSettingJObject);
+                }
+                else
+                {
+                    alertSettingDict[alertSettingStr] = new List<JObject>() { alertSettingJObject };
+                    Console.WriteLine(id);
+                }
+                alertSettingJObject["id"] = id;
+            }
+
+            return alertSettingDict;
+        }
+
+        private static bool ContainsLetter(string word)
+        {
+            for (var letter = 'a'; letter <= 'z'; letter++)
+            {
+                if (word.Contains(letter.ToString())) return true;
+            }
+            for (var letter = 'A'; letter <= 'Z'; letter++)
+            {
+                if (word.Contains(letter.ToString())) return true;
+            }
+            return false;
+        }
+
+        private static bool ContainsNumber(string word)
+        {
+            for (var letter = '0'; letter <= '9'; letter++)
+            {
+                if (word.Contains(letter.ToString())) return true;
+            }
+            return false;
         }
 
         private static string GetDocumentLink(

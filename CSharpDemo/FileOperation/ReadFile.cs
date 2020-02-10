@@ -133,8 +133,37 @@ namespace CSharpDemo.FileOperation
             }
             return fileAbsolutePaths;
         }
-    }
 
+        public static List<string> GetAllFile(string folderAbsolutePath)
+        {
+            return GetAllFileBFS(new List<string>() { folderAbsolutePath });
+        }
+
+
+        private static List<string> GetAllFileBFS(List<string> folderAbsolutePaths)
+        {
+            var folderList = new List<string>();
+            var fileList = new List<string>();
+            if (folderAbsolutePaths.Count == 0)
+            {
+                return fileList;
+            }
+            foreach (var folderAbsolutePath in folderAbsolutePaths)
+            {
+                folderList.AddRange(GetFolderSubPaths(folderAbsolutePath, ReadType.Directory, PathType.Absolute));
+                var subFileList = GetFolderSubPaths(folderAbsolutePath, ReadType.File, PathType.Absolute);
+                foreach (var subFile in subFileList)
+                {
+                    if (subFile.ToLower().Contains("alertsetting"))
+                    {
+                        fileList.Add(subFile);
+                    }
+                }
+            }
+            fileList.AddRange(GetAllFileBFS(folderList));
+            return fileList;
+        }
+    }
     public enum ReadType
     {
         File = 1,
