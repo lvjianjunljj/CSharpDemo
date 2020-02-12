@@ -1086,52 +1086,110 @@
 
         public static void UpdateAlertSettingToGitFolder()
         {
-            string gitFolderPath = @"C:\Users\jianjlv\source\repos\Ibiza\Source\DataCopMonitors\PROD\AlertSettings\";
             AzureCosmosDBClient alertSettingsCosmosDBClient = new AzureCosmosDBClient("DataCop", "AlertSettings");
 
-            // Collation: asc and desc is ascending and descending
+            // Filter out duplicates alertSettings
             IList<JObject> alertSettingJObjects = alertSettingsCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c")).Result;
-            var alertSettingDict = ClusterAlertSettings(alertSettingJObjects);
-            Console.WriteLine(alertSettingJObjects.Count);
-            Console.WriteLine(alertSettingDict.Count);
-            foreach (var item in alertSettingDict.Keys)
+            //var alertSettingDict = ClusterAlertSettings(alertSettingJObjects);
+            //Console.WriteLine(alertSettingJObjects.Count);
+            //Console.WriteLine(alertSettingDict.Count);
+            //foreach (var item in alertSettingDict.Keys)
+            //{
+            //    Console.WriteLine(item);
+            //}
+
+            //// Filter out alertSetting identifier used by datasetTest
+            //AzureCosmosDBClient datasetTestCosmosDBClient = new AzureCosmosDBClient("DataCop", "DatasetTest");
+            //IList<JObject> datasetTestJObjects = datasetTestCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT distinct c.alertSettingId FROM c where c.status = 'Enabled' and is_defined(c.alertSettingId)")).Result;
+            //HashSet<string> alertSettingIdsSet = new HashSet<string>();
+            //foreach (JObject datasetTestJObject in datasetTestJObjects)
+            //{
+            //    string alertSettingId = datasetTestJObject["alertSettingId"].ToString();
+            //    alertSettingIdsSet.Add(alertSettingId);
+            //}
+            //foreach (var alertSettingId in alertSettingIdsSet)
+            //{
+            //    Console.WriteLine(alertSettingId);
+            //}
+            //Console.WriteLine(alertSettingIdsSet.Count);
+
+            //Console.WriteLine("...............");
+
+
+            var filePaths = ReadFile.GetAllFile(@"C:\Users\jianjlv\source\repos\Ibiza\Source\DataCopMonitors\PROD");
+
+            Dictionary<string, Tuple<string, JObject>> gitAlertSettingDict = new Dictionary<string, Tuple<string, JObject>>();
+            foreach (var filePath in filePaths)
             {
-                Console.WriteLine(item);
+                if (filePath.ToLower().Contains("alertsetting"))
+                {
+                    Console.WriteLine(filePath);
+                    string fileContent = ReadFile.ThirdMethod(filePath);
+                    JObject gitAlertSettingJObject = JObject.Parse(fileContent);
+                    gitAlertSettingDict.Add(gitAlertSettingJObject["id"].ToString(), new Tuple<string, JObject>(filePath, gitAlertSettingJObject));
+                }
             }
-            Console.WriteLine("...............");
 
             foreach (JObject alertSettingJObject in alertSettingJObjects)
             {
                 string id = alertSettingJObject["id"].ToString();
-                if (!ContainsNumber(id))
+                string owningTeamId = alertSettingJObject["owningTeamId"].ToString();
+                var environment = alertSettingJObject["environment"];
+                var onCallPlaybookLink = alertSettingJObject["onCallPlaybookLink"];
+                var dataCopPortalLink = alertSettingJObject["dataCopPortalLink"];
+                alertSettingJObject.Remove("environment");
+                alertSettingJObject.Remove("onCallPlaybookLink");
+                alertSettingJObject.Remove("dataCopPortalLink");
+                alertSettingJObject["environment"] = environment == null ? "Prod" : environment;
+                alertSettingJObject["onCallPlaybookLink"] = onCallPlaybookLink;
+                alertSettingJObject["dataCopPortalLink"] = dataCopPortalLink;
+                if (gitAlertSettingDict.ContainsKey(id))
                 {
                     Console.WriteLine(id);
-                    var serviceCustomFieldNames = JArray.Parse(alertSettingJObject["serviceCustomFieldNames"].ToString());
-                    serviceCustomFieldNames.Add("ScenarioIds");
-                    alertSettingJObject["serviceCustomFieldNames"] = serviceCustomFieldNames;
+                    if (!string.IsNullOrEmpty(alertSettingJObject["serviceCustomFieldNames"].ToString()) && owningTeamId.StartsWith("IDEAS"))
+                    {
+                        var serviceCustomFieldNames = new JArray() {
+                            "DatasetId",
+                            "AlertType",
+                            "DisplayInSurface",
+                            "BusinessOwner",
+                            "ScenarioIds"
+                        };
+                        alertSettingJObject["serviceCustomFieldNames"] = serviceCustomFieldNames;
+                    }
+
+                    alertSettingJObject.Remove("ttl");
                     alertSettingJObject.Remove("_rid");
                     alertSettingJObject.Remove("_self");
                     alertSettingJObject.Remove("_etag");
                     alertSettingJObject.Remove("_attachments");
                     alertSettingJObject.Remove("_ts");
+                    SaveFile.FirstMethod(gitAlertSettingDict[id].Item1, alertSettingJObject.ToString());
+                }
+                else if (!ContainsNumber(id) && owningTeamId.StartsWith("IDEAS"))
+                {
+                    string gitFolderPath = @"C:\Users\jianjlv\source\repos\Ibiza\Source\DataCopMonitors\PROD\AlertSettings\";
                     string gitFilePath = gitFolderPath + id + ".json";
-                    //SaveFile.FirstMethod(gitFilePath, alertSettingJObject.ToString());
+                    if (!string.IsNullOrEmpty(alertSettingJObject["serviceCustomFieldNames"].ToString()) && owningTeamId.StartsWith("IDEAS"))
+                    {
+                        var serviceCustomFieldNames = new JArray() {
+                            "DatasetId",
+                            "AlertType",
+                            "DisplayInSurface",
+                            "BusinessOwner",
+                            "ScenarioIds"
+                        };
+                        alertSettingJObject["serviceCustomFieldNames"] = serviceCustomFieldNames;
+                    }
+                    alertSettingJObject.Remove("ttl");
+                    alertSettingJObject.Remove("_rid");
+                    alertSettingJObject.Remove("_self");
+                    alertSettingJObject.Remove("_etag");
+                    alertSettingJObject.Remove("_attachments");
+                    alertSettingJObject.Remove("_ts");
+                    SaveFile.FirstMethod(gitFilePath, alertSettingJObject.ToString());
                 }
             }
-
-            AzureCosmosDBClient datasetTestCosmosDBClient = new AzureCosmosDBClient("DataCop", "DatasetTest");
-            IList<JObject> datasetTestJObjects = datasetTestCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT distinct c.alertSettingId FROM c where c.status = 'Enabled' and is_defined(c.alertSettingId)")).Result;
-            HashSet<string> alertSettingIdsSet = new HashSet<string>();
-            foreach (JObject datasetTestJObject in datasetTestJObjects)
-            {
-                string alertSettingId = datasetTestJObject["alertSettingId"].ToString();
-                alertSettingIdsSet.Add(alertSettingId);
-            }
-            foreach (var alertSettingId in alertSettingIdsSet)
-            {
-                Console.WriteLine(alertSettingId);
-            }
-            Console.WriteLine(alertSettingIdsSet.Count);
         }
 
         private static Dictionary<string, IList<JObject>> ClusterAlertSettings(IList<JObject> alertSettingJObjects)

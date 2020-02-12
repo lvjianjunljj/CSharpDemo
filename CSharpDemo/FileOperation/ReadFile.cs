@@ -154,10 +154,7 @@ namespace CSharpDemo.FileOperation
                 var subFileList = GetFolderSubPaths(folderAbsolutePath, ReadType.File, PathType.Absolute);
                 foreach (var subFile in subFileList)
                 {
-                    if (subFile.ToLower().Contains("alertsetting"))
-                    {
-                        fileList.Add(subFile);
-                    }
+                    fileList.Add(subFile);
                 }
             }
             fileList.AddRange(GetAllFileBFS(folderList));
