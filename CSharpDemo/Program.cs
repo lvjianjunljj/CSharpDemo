@@ -50,17 +50,9 @@ namespace CSharpDemo
             //DatasetJsonFileOperation.MainMethod();
             //AzureActiveDirectoryToken.MainMethod();
 
-            AAA a = new AAA();
-            Console.WriteLine(a.aaa);
-            Console.WriteLine(a.aaa == null);
-            Console.WriteLine(a.aaa ?? 1234);
-            Console.WriteLine(a.bbb);
+            Console.WriteLine(args[0]);
+
             Console.ReadKey();
         }
-    }
-    class AAA
-    {
-        public int? aaa;
-        public int bbb;
     }
 }

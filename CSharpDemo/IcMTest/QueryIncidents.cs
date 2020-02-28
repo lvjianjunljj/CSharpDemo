@@ -40,7 +40,7 @@ namespace CSharpDemo.IcMTest
             //EditIncidentInfo();
 
 
-            GetIncidentTeamCustomField(162426570);
+            //GetIncidentTeamCustomField(162426570);
 
 
             //ResloveDevActiveAlert();
@@ -48,7 +48,7 @@ namespace CSharpDemo.IcMTest
 
             //CompareTeamAlertBaseCreated();
 
-            //GetIncident();
+            GetIncident();
             //GetCFRIncident();
             //GetCurrentOnCallDemo();
 
@@ -692,7 +692,7 @@ namespace CSharpDemo.IcMTest
             // "icm.ad.msft.net" is the OdataServiceBaseUri
             //url = string.Format("https://{0}/api/cert/incidents({1})", "icm.ad.msoppe.msft.net", id);
 
-            url = @"https://icm.ad.msft.net/api/cert/incidents?$filter=OwningTeamId eq 'IDEAS\IDEAsDataCopTest' and Id eq 158751867";
+            url = @"https://icm.ad.msft.net/api/cert/incidents?$filter=OwningTeamId eq 'IDEAS\IDEAsDataCopTest' and Id eq 175353420";
 
             // an error query
             //url = @"https://icm.ad.msft.net/api/cert/incidents?&$filter=OwningTeamId eq '<The SQL oncall team>' and ModifiedDate ge datetime'2019-04-11T15:24:41'";
@@ -716,6 +716,7 @@ namespace CSharpDemo.IcMTest
                 Console.WriteLine(incident["Id"]);
                 Console.WriteLine(incident["Title"]);
                 Console.WriteLine(incident["Status"]);
+                Console.WriteLine(incident);
             }
             Console.WriteLine($"count: {count}");
         }

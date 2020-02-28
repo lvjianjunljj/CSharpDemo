@@ -15,7 +15,7 @@
     public class AzureCosmosDBClientOperation
     {
         // "datacopdev","ideasdatacopppe" or "datacopprod"
-        static readonly string KeyVaultName = "datacopprod";
+        static readonly string KeyVaultName = "ideasdatacopppe";
 
         public static void MainMethod()
         {
@@ -38,7 +38,7 @@
 
             //QueryAlertSettingDemo();
             //QueryDataSetDemo();
-            //QueryTestRunTestContentDemo();
+            QueryTestRunTestContentDemo();
             //QueryMonitroReportDemo();
             //QueryServiceMonitorDemo();
             //QueryTestRunCount();
@@ -60,7 +60,7 @@
 
             //SetOutdatedForDuplicatedDatasetTest();
 
-            UpdateAlertSettingToGitFolder();
+            //UpdateAlertSettingToGitFolder();
         }
 
         public static void SetOutdatedForDuplicatedDatasetTest()
@@ -917,7 +917,7 @@
         {
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "PartitionedTestRun");
             // Collation: asc and desc is ascending and descending
-            IList<JObject> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c where c.id = '041a25cb-2921-4c94-87b8-6729460171fb'")).Result;
+            IList<JObject> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c where c.id = 'ba51c2ee-de0b-4b36-9793-3eca1a893af1'")).Result;
             foreach (JObject jObject in list)
             {
                 Console.WriteLine(jObject["testContent"].ToString());
