@@ -259,6 +259,7 @@
     <Compile Include="FileOperation\WriteFile.cs" />
     <Compile Include="FileOperation\TaskFriend.cs" />
     <Compile Include="Parallel\TestThreadPool.cs" />
+    <Compile Include="WriteLineDemo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace CSharpDemo.FileOperation
+﻿namespace CSharpDemo.FileOperation
 {
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Text;
+
     class ReadFile
     {
         static byte[] byData = new byte[100];

@@ -50,9 +50,17 @@ namespace CSharpDemo
             //DatasetJsonFileOperation.MainMethod();
             //AzureActiveDirectoryToken.MainMethod();
 
-            Console.WriteLine(args[0]);
+
+            KenshoDataSourceTypeId? a = KenshoDataSourceTypeId.iScope;
+            Console.WriteLine(JsonConvert.SerializeObject(a));
 
             Console.ReadKey();
         }
+    }
+    public enum KenshoDataSourceTypeId
+    {
+        Cosmos = 1,
+        SQLServer = 2,
+        iScope = 3,
     }
 }

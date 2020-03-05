@@ -1,22 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Net;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Web.Script.Serialization; //lib name in Assemblies: System.Web.Extensions.
-using CSharpDemo.FileOperation;
-using Microsoft.AzureAd.Icm.Types;
-using Microsoft.AzureAd.Icm.Types.Api;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-
 namespace CSharpDemo.IcMTest
 {
+    using System.Net;
+    using System.Net.Http;
+    using System.Net.Http.Headers;
+    using System.Security.Cryptography.X509Certificates;
+    using System.Text;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using System.Web.Script.Serialization; //lib name in Assemblies: System.Web.Extensions.
+    using CSharpDemo.FileOperation;
+    using Microsoft.AzureAd.Icm.Types;
+    using Microsoft.AzureAd.Icm.Types.Api;
+    using Newtonsoft.Json;
+    using Newtonsoft.Json.Linq;
+
     // The doc link: https://icmdocs.azurewebsites.net/
     class QueryIncidents
     {
