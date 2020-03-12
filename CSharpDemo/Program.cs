@@ -1,46 +1,45 @@
-﻿using AzureLib.KeyVault;
-using CSharpDemo.Application;
-using CSharpDemo.Azure;
-using CSharpDemo.Azure.CosmosDB;
-using CSharpDemo.CSharpInDepth.Part1;
-using CSharpDemo.CSharpInDepth.Part2.CSharp2;
-using CSharpDemo.FileOperation;
-using CSharpDemo.IcMTest;
-using CSharpDemo.IDEAs;
-using CSharpDemo.Json;
-using CSharpDemo.LINQ;
-using CSharpDemo.Parallel;
-using CSharpDemo.ReflectionDemo;
-using CSharpDemo.RetrierDir;
-using CSharpDemoAux;
-using Microsoft.Azure.Documents;
-using Microsoft.Azure.ServiceBus;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-using Newtonsoft.Json.Linq;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Reflection;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
-
-
-namespace CSharpDemo
+﻿namespace CSharpDemo
 {
+    using AzureLib.KeyVault;
+    using CSharpDemo.Application;
+    using CSharpDemo.Azure;
+    using CSharpDemo.Azure.CosmosDB;
+    using CSharpDemo.CSharpInDepth.Part1;
+    using CSharpDemo.CSharpInDepth.Part2.CSharp2;
+    using CSharpDemo.FileOperation;
+    using CSharpDemo.IcMTest;
+    using CSharpDemo.IDEAs;
+    using CSharpDemo.Json;
+    using CSharpDemo.LINQ;
+    using CSharpDemo.Parallel;
+    using CSharpDemo.ReflectionDemo;
+    using CSharpDemo.RetrierDir;
+    using CSharpDemoAux;
+    using Microsoft.Azure.Documents;
+    using Microsoft.Azure.ServiceBus;
+    using Newtonsoft.Json;
+    using Newtonsoft.Json.Converters;
+    using Newtonsoft.Json.Linq;
+    using System;
+    using System.Collections.Generic;
+    using System.ComponentModel;
+    using System.Diagnostics;
+    using System.IO;
+    using System.Linq;
+    using System.Net;
+    using System.Net.Http;
+    using System.Reflection;
+    using System.Security.Cryptography.X509Certificates;
+    using System.Text;
+    using System.Text.RegularExpressions;
+    using System.Threading;
+    using System.Threading.Tasks;
+
     class Program
     {
         static void Main(string[] args)
         {
-            //AzureCosmosDBClientOperation.MainMethod();
+            AzureCosmosDBClientOperation.MainMethod();
             //AzureServiceBus.MainMethod();
             //AzureCosmosDB.MainMethod();
 
@@ -50,17 +49,7 @@ namespace CSharpDemo
             //DatasetJsonFileOperation.MainMethod();
             //AzureActiveDirectoryToken.MainMethod();
 
-
-            KenshoDataSourceTypeId? a = KenshoDataSourceTypeId.iScope;
-            Console.WriteLine(JsonConvert.SerializeObject(a));
-
             Console.ReadKey();
         }
-    }
-    public enum KenshoDataSourceTypeId
-    {
-        Cosmos = 1,
-        SQLServer = 2,
-        iScope = 3,
     }
 }

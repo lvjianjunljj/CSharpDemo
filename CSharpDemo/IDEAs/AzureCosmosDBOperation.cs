@@ -11,11 +11,12 @@
     using AzureLib.KeyVault;
     using System.Text.RegularExpressions;
     using CSharpDemo.FileOperation;
+    using System.Linq;
 
     public class AzureCosmosDBClientOperation
     {
         // "datacopdev","ideasdatacopppe" or "datacopprod"
-        static readonly string KeyVaultName = "ideasdatacopppe";
+        static readonly string KeyVaultName = "datacopprod";
 
         public static void MainMethod()
         {
@@ -27,8 +28,11 @@
             //UpdateAllDatasetTestForMerging();
             //UpdateAllCosmosTestResultExpirePeriod();
             //UpdateAllCosmosTestCreateTime();
+            //UpdateAlertSettingToGitFolder();
             //UpsertServiceMonitorDemo();
 
+            //DisableAllCFRMonitor();
+            InsertCFRMonitorConfig();
 
             //DisableAllDataset();
             //EnableDataset();
@@ -38,7 +42,7 @@
 
             //QueryAlertSettingDemo();
             //QueryDataSetDemo();
-            QueryTestRunTestContentDemo();
+            //QueryTestRunTestContentDemo();
             //QueryMonitroReportDemo();
             //QueryServiceMonitorDemo();
             //QueryTestRunCount();
@@ -59,8 +63,111 @@
             //CheckDuplicatedEnabledDatasetTest();
 
             //SetOutdatedForDuplicatedDatasetTest();
+        }
 
-            //UpdateAlertSettingToGitFolder();
+        // Disable all the CFR monitor dataset and datasetTest
+        public static void DisableAllCFRMonitor()
+        {
+            AzureCosmosDBClient datasetCosmosDBClient = new AzureCosmosDBClient("DataCop", "Dataset");
+            // Collation: asc and desc is ascending and descending
+            IList<JObject> azureDatasets = datasetCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c WHERE contains(c.id, 'CFR')")).Result;
+            foreach (JObject azureDataset in azureDatasets)
+            {
+                string id = azureDataset["id"].ToString();
+                Console.WriteLine(id);
+                azureDataset["isEnabled"] = false;
+                datasetCosmosDBClient.UpsertDocumentAsync(azureDataset).Wait();
+            }
+            Console.WriteLine(azureDatasets.Count);
+
+            var datasetIdsStr = string.Join(",", azureDatasets.Select(d => $"'{d["id"]}'"));
+            Console.WriteLine(datasetIdsStr);
+
+            AzureCosmosDBClient datasetTestCosmosDBClient = new AzureCosmosDBClient("DataCop", "DatasetTest");
+            IList<JObject> azureDatasetTests = datasetTestCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec($@"SELECT * FROM c WHERE c.datasetId in ({datasetIdsStr}) and c.status = 'Enabled'")).Result;
+            foreach (JObject azureDatasetTest in azureDatasetTests)
+            {
+                string id = azureDatasetTest["id"].ToString();
+                Console.WriteLine(id);
+                azureDatasetTest["status"] = "Disabled";
+                datasetTestCosmosDBClient.UpsertDocumentAsync(azureDatasetTest).Wait();
+            }
+            Console.WriteLine(azureDatasetTests.Count);
+        }
+
+        // Insert all the CFR monitor dataset and datasetTest in repo
+        public static void InsertCFRMonitorConfig()
+        {
+            AzureCosmosDBClient datasetCosmosDBClient = new AzureCosmosDBClient("DataCop", "Dataset");
+            AzureCosmosDBClient datasetTestCosmosDBClient = new AzureCosmosDBClient("DataCop", "DatasetTest");
+            IList<JObject> azureDatasets = datasetCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c WHERE contains(c.id, 'CFR')")).Result;
+            var datasetIdsStr = string.Join(",", azureDatasets.Select(d => $"'{d["id"]}'"));
+            IList<JObject> azureDatasetTests = datasetTestCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec($@"SELECT * FROM c WHERE c.datasetId in ({datasetIdsStr}) and c.status = 'Enabled'")).Result;
+            var azureDatasetDict = new Dictionary<string, JObject>();
+            var azureDatasetTestDict = new Dictionary<string, JObject>();
+
+            foreach (var azureDataset in azureDatasets)
+            {
+                azureDatasetDict.Add(azureDataset["id"].ToString(), azureDataset);
+            }
+            foreach (var azureDatasetTest in azureDatasetTests)
+            {
+                azureDatasetTestDict.Add(azureDatasetTest["id"].ToString(), azureDatasetTest);
+            }
+
+            string folderPath = @"D:\IDEAs\Ibiza\Source\DataCopMonitors\PROD\CFR";
+            var filePaths = ReadFile.GetAllFile(folderPath);
+            var updatedDatasets = new List<JObject>();
+            var updatedDatasetTests = new List<JObject>();
+            foreach (var filePath in filePaths)
+            {
+                var newFilePath = filePath.Substring(folderPath.Length);
+                var jObject = JObject.Parse(ReadFile.ThirdMethod(filePath));
+                if (newFilePath.Contains("Datasets"))
+                {
+                    if ((bool)jObject["isEnabled"])
+                    {
+                        string id = jObject["id"].ToString();
+                        if (azureDatasetDict.ContainsKey(id))
+                        {
+                            jObject = azureDatasetDict[id];
+                            jObject["isEnabled"] = true;
+                        }
+                        updatedDatasets.Add(jObject);
+                    }
+                }
+                else if (newFilePath.Contains("Monitors"))
+                {
+                    if (jObject["status"].ToString().Equals("Enabled"))
+                    {
+                        string id = jObject["id"].ToString();
+                        if (azureDatasetDict.ContainsKey(id))
+                        {
+                            jObject = azureDatasetDict[id];
+                            jObject["status"] = "Enabled";
+                        }
+                        updatedDatasetTests.Add(jObject);
+                    }
+                }
+            }
+
+            foreach (JObject updatedDataset in updatedDatasets)
+            {
+                string id = updatedDataset["id"].ToString();
+                Console.WriteLine(id);
+                //Console.WriteLine(updatedDataset);
+                datasetCosmosDBClient.UpsertDocumentAsync(updatedDataset).Wait();
+            }
+            Console.WriteLine(updatedDatasets.Count);
+
+            foreach (JObject updatedDatasetTest in updatedDatasetTests)
+            {
+                string id = updatedDatasetTest["id"].ToString();
+                Console.WriteLine(id);
+                //Console.WriteLine(updatedDatasetTest);
+                datasetTestCosmosDBClient.UpsertDocumentAsync(updatedDatasetTest).Wait();
+            }
+            Console.WriteLine(updatedDatasetTests.Count);
         }
 
         public static void SetOutdatedForDuplicatedDatasetTest()
