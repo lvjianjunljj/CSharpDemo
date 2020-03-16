@@ -241,6 +241,7 @@
     <Compile Include="IcMTest\QueryIncidents.cs" />
     <Compile Include="FileOperation\ReadFile.cs" />
     <Compile Include="Azure\AzureStorageAccount.cs" />
+    <Compile Include="ReflectionDemo\ActionDemo.cs" />
     <Compile Include="ReflectionDemo\ReflectionGetValue.cs" />
     <Compile Include="ReflectionDemo\ReflectionSetValue.cs" />
     <Compile Include="ReflectionDemo\ToStringGetPropertiesDemo.cs" />
