@@ -32,7 +32,7 @@
             //UpsertServiceMonitorDemo();
 
             //DisableAllCFRMonitor();
-            InsertCFRMonitorConfig();
+            //InsertCFRMonitorConfig();
 
             //DisableAllDataset();
             //EnableDataset();

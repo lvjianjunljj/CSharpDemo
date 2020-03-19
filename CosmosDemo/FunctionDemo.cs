@@ -9,7 +9,7 @@
         public static void MainMethod()
         {
             //CheckStreamExists();
-            //CheckRowCount();
+            CheckRowCount();
             //CheckDirectoryExists();
 
             //GetRowCountIteratively("2019-07-10T00:00:00.0000000Z");

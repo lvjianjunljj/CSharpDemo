@@ -14,6 +14,26 @@ namespace CSharpDemo
             ThrowKeyWordDemo();
         }
 
+        static void CatchDemo()
+        {
+            try
+            {
+                int i = 0;
+                int b = 1 / i;
+            }
+            catch (DivideByZeroException dze)
+            {
+                Console.WriteLine(dze.Message);
+                // Next catch block won't catch the exception thrown here.
+                throw;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.GetType());
+                Console.WriteLine(e.Message);
+            }
+        }
+
         static void ThrowKeyWordDemo()
         {
             try

@@ -39,7 +39,7 @@
     {
         static void Main(string[] args)
         {
-            //AzureCosmosDBClientOperation.MainMethod();
+            AzureCosmosDBClientOperation.MainMethod();
             //AzureServiceBus.MainMethod();
             //AzureCosmosDB.MainMethod();
 
@@ -48,66 +48,28 @@
 
             //DatasetJsonFileOperation.MainMethod();
             //AzureActiveDirectoryToken.MainMethod();
+            //TaskDemo.MainMethod();
 
-            ISecretProvider secretProvider = KeyVaultSecretProvider.Instance;
+            //ISecretProvider secretProvider = KeyVaultSecretProvider.Instance;
 
-            string clientId = secretProvider.GetSecretAsync("datacopdev", "AdlsAadAuthAppId").Result;
-            string clientKey = secretProvider.GetSecretAsync("datacopdev", "AdlsAadAuthAppSecret").Result;
-            Console.WriteLine(clientId);
-            Console.WriteLine(clientKey);
+            //// I cannot get the secret in project AdlsDemo.
+            //string clientId = secretProvider.GetSecretAsync("datacopdev", "AdlsAadAuthAppId").Result;
+            //string clientKey = secretProvider.GetSecretAsync("datacopdev", "AdlsAadAuthAppSecret").Result;
+            //Console.WriteLine(clientId);
+            //Console.WriteLine(clientKey);
 
-            Program p = new Program();
-            Task task = p.AsyncFunction();
-            Console.WriteLine("Main therad start...");
-            task.Wait();
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine("1234");
+            sb.AppendLine("1234");
+            sb.AppendLine("1234");
+            Console.WriteLine(sb.ToString());
+            DateTime date = new DateTime(1584477355);
+            Console.WriteLine(date);
 
-            Task task2 = new Task(async () =>
-            {
-                Console.WriteLine("Task start...");
-                await Task.Delay(TimeSpan.FromSeconds(2));
-                Console.WriteLine("Task end...");
-            });
-
-            // Make sure why it does not work like we think.
-            // We can see the difference through running the build result in CMD.
-            task2.Start();
-            task2.Wait();
-            Console.WriteLine("Main therad end...");
-
-            /*Output:
-             * Task start...
-             * Main therad start...
-             * Task end...
-             * Task start...
-             * Main therad end...
-             */
-
-
-            try
-            {
-                int i = 0;
-                int b = 1 / i;
-            }
-            catch (DivideByZeroException dze)
-            {
-                Console.WriteLine(dze.Message);
-                throw;
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.GetType());
-                Console.WriteLine(e.Message);
-            }
 
             Console.ReadKey();
         }
 
-        public async Task AsyncFunction()
-        {
-            Console.WriteLine("Task start...");
-            await Task.Delay(TimeSpan.FromSeconds(2));
-            Console.WriteLine("Task end...");
-        }
         static int[][] GenerateAllArrays()
         {
             int[][] result = new int[120][];

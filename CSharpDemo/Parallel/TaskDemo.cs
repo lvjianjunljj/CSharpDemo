@@ -11,7 +11,8 @@ namespace CSharpDemo.Parallel
     {
         public static void MainMethod()
         {
-            TestTaskFunctionWithoutAwait1();
+            //TestTaskFunctionWithoutAwait1();
+            NewTaskDemo();
         }
 
         public static void TestTaskFunctionWithoutAwait1()
@@ -31,6 +32,35 @@ namespace CSharpDemo.Parallel
             Console.WriteLine(10);
         }
 
+        public static void NewTaskDemo()
+        {
+            TaskDemo instance = new TaskDemo();
+            Task task = instance.NewTaskAsyncFunction();
+            Console.WriteLine("Main therad start...");
+            task.Wait();
+
+            Task task2 = new Task(async () =>
+            {
+                Console.WriteLine("Task start...");
+                await Task.Delay(TimeSpan.FromSeconds(2));
+                Console.WriteLine("Task end...");
+            });
+
+            // Make sure why it does not work like we think.
+            // We can see the difference through running the build result in CMD.
+            task2.Start();
+            task2.Wait();
+            Console.WriteLine("Main therad end...");
+
+            /*Output:
+             * Task start...
+             * Main therad start...
+             * Task end...
+             * Task start...
+             * Main therad end...
+             * Task end...
+             */
+        }
 
         // The several Test1 functions is running in serial(They have the same Current Thread ID) 
         // and several Test2 functions is running in parallel(They have different Current Thread ID).
@@ -82,6 +112,13 @@ namespace CSharpDemo.Parallel
         {
             Console.WriteLine(3333);
             Console.WriteLine(Thread.CurrentThread.ManagedThreadId.ToString());
+        }
+
+        public async Task NewTaskAsyncFunction()
+        {
+            Console.WriteLine("Task start...");
+            await Task.Delay(TimeSpan.FromSeconds(2));
+            Console.WriteLine("Task end...");
         }
     }
 }

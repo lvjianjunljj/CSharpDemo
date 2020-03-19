@@ -14,9 +14,14 @@ namespace CSharpDemo
     {
         public static void MainMethod()
         {
-            //QueryIncidents.MainMethod();
-            //AzureCosmosDB.MainMethod();
+            EnumParseDemo();
+            TypeDescriptorDemo();
+            TraverseDemo();
+            EceptionDemo();
+        }
 
+        static void EnumParseDemo()
+        {
             TestClass t = new TestClass();
             t.EN1 = En.ONE;
             t.EN2 = En.two;
@@ -25,15 +30,22 @@ namespace CSharpDemo
             Console.WriteLine(j.ToString());
 
             string str = "One";
-            Console.WriteLine((En)Enum.Parse(typeof(En), str));
-            Console.WriteLine((En)Enum.Parse(typeof(En), "12"));
-            Console.WriteLine((En)Enum.Parse(typeof(En), "1"));
+            Console.WriteLine((En)Enum.Parse(typeof(En), str)); // One
+            Console.WriteLine((En)Enum.Parse(typeof(En), "12")); // 12
+            Console.WriteLine((En)Enum.Parse(typeof(En), "1")); //One
+        }
 
+        // Compare with EnumParseDemo
+        static void TypeDescriptorDemo()
+        {
+            string str = "One";
             // We cant convert string to enum using Convert.ChangeType function but can use TypeDescriptor.GetConverter function.
             //Console.WriteLine(Convert.ChangeType(str, typeof(En)));
             Console.WriteLine((En)TypeDescriptor.GetConverter(typeof(En)).ConvertFromString(str));
+        }
 
-
+        static void TraverseDemo()
+        {
             // It is the reason of setting int 1, 2, 4, 8... for an enum: 
             // We can combine multiple states with the "|" operator
             EnumTest three = EnumTest.One | EnumTest.One | EnumTest.Two;
@@ -48,7 +60,21 @@ namespace CSharpDemo
                 }
             }
         }
+
+        static void EceptionDemo()
+        {
+            try
+            {
+                // If the value is a integer string, it won't throw exception
+                Console.WriteLine((EnumTest)Enum.Parse(typeof(EnumTest), "test"));
+            }
+            catch (ArgumentException ae)
+            {
+                Console.WriteLine($"Throw exception mesage: {ae.Message}");
+            }
+        }
     }
+
     public class TestClass
     {
         [JsonConverter(typeof(StringEnumConverter))]
