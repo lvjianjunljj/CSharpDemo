@@ -63,9 +63,6 @@
             sb.AppendLine("1234");
             sb.AppendLine("1234");
             Console.WriteLine(sb.ToString());
-            DateTime date = new DateTime(1584477355);
-            Console.WriteLine(date);
-
 
             Console.ReadKey();
         }
