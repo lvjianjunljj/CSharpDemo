@@ -50,13 +50,13 @@
             //AzureActiveDirectoryToken.MainMethod();
             //TaskDemo.MainMethod();
 
-            //ISecretProvider secretProvider = KeyVaultSecretProvider.Instance;
+            ISecretProvider secretProvider = KeyVaultSecretProvider.Instance;
 
-            //// I cannot get the secret in project AdlsDemo.
-            //string clientId = secretProvider.GetSecretAsync("datacopdev", "AdlsAadAuthAppId").Result;
-            //string clientKey = secretProvider.GetSecretAsync("datacopdev", "AdlsAadAuthAppSecret").Result;
-            //Console.WriteLine(clientId);
-            //Console.WriteLine(clientKey);
+            // I cannot get the secret in project AdlsDemo.
+            string clientId = secretProvider.GetSecretAsync("csharpmvcwebapikeyvault", "CosmosDBEndPoint").Result;
+            string clientKey = secretProvider.GetSecretAsync("datacopdev", "AdlsAadAuthAppSecret").Result;
+            Console.WriteLine(clientId);
+            Console.WriteLine(clientKey);
 
             StringBuilder sb = new StringBuilder();
             sb.AppendLine("1234");
