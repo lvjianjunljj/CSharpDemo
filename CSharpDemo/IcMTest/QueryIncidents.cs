@@ -80,7 +80,6 @@ namespace CSharpDemo.IcMTest
             // Must set the certificate in current machine.
             X509Certificate2 certificate = GetCert("87a1331eac328ec321578c10ebc8cc4c356b005f");
 
-            //string url = "http://localhost:8771/api/productss/all/patch/1234";
             string url = "https://icm.ad.msft.net/api/cert/incidents(116786922)";
 
             HttpWebRequest req = WebRequest.CreateHttp(url);
@@ -708,6 +707,8 @@ namespace CSharpDemo.IcMTest
             //    (cf:cf/Name eq 'DatasetId' and cf/Type eq 'ShortString' and cf/Value eq 'Test')
             //    ) and  Status eq 'RESOLVED'";
 
+
+            url = @"https://prod.microsofticm.com/api/cert/incidents?$filter=OwningTeamId eq 'IDEAS\IDEAsDataCopTest' and Id eq 175353420";
             IEnumerable<JToken> incidents = GetIncidentListStatic<JToken>(url);
             int count = 0;
             foreach (var incident in incidents)
