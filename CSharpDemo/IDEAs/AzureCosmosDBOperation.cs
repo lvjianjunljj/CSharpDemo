@@ -52,7 +52,7 @@
             // We can use this function to delete instance without any limitation.
             //DeleteAlertsWithoutIncidentId();
 
-            //MigrateData("DatasetTest");
+            MigrateData("ServiceMonitorReport", "datacopprod", "ideasdatacopppe");
 
             //AddCompletenessMonitors4ADLS();
 
@@ -499,14 +499,14 @@
             }
         }
 
-        public static void MigrateData(string collectionId)
+        public static void MigrateData(string collectionId, string fromKeyVaultName, string toKeyVaultName)
         {
-            AzureCosmosDBClient.KeyVaultName = "datacopprod";
+            AzureCosmosDBClient.KeyVaultName = fromKeyVaultName;
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", collectionId);
-            IList<JObject> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c")).Result;
+            IList<JObject> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c where c.level = 'DataCop' and c.reportStartTimeStamp > '2020-02-22T15:00:00'")).Result;
 
             // This is a funny thing. azureCosmosDBClient has not been changed.
-            AzureCosmosDBClient.KeyVaultName = "datacopdev";
+            AzureCosmosDBClient.KeyVaultName = toKeyVaultName;
             azureCosmosDBClient = new AzureCosmosDBClient("DataCop", collectionId, CosmosDBDocumentClientMode.NoSingle);
             int count = 0;
             foreach (JObject json in list)

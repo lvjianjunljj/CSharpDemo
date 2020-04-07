@@ -37,7 +37,16 @@ namespace CSharpDemo.Parallel
             TaskDemo instance = new TaskDemo();
             Task task = instance.NewTaskAsyncFunction();
             Console.WriteLine("Main therad start...");
-            task.Wait();
+            task.Wait(); // Start may not be called on a promise-style task.
+            Console.WriteLine("Main therad end...");
+            /*Output:
+             * Main therad start...
+             * Task start...
+             * Task end...
+             * Main therad end...
+             */
+
+            Console.WriteLine("====================");
 
             Task task2 = new Task(async () =>
             {
@@ -46,6 +55,7 @@ namespace CSharpDemo.Parallel
                 Console.WriteLine("Task end...");
             });
 
+            Console.WriteLine("Main therad start...");
             // Make sure why it does not work like we think.
             // We can see the difference through running the build result in CMD.
             task2.Start();
@@ -53,13 +63,30 @@ namespace CSharpDemo.Parallel
             Console.WriteLine("Main therad end...");
 
             /*Output:
-             * Task start...
              * Main therad start...
-             * Task end...
              * Task start...
              * Main therad end...
              * Task end...
              */
+            Console.WriteLine("====================");
+
+            // This is what we want.
+            Console.WriteLine("Main therad start...");
+            Func<Task> task3 = async () =>
+            {
+                Console.WriteLine("Task start...");
+                await Task.Delay(TimeSpan.FromSeconds(2));
+                Console.WriteLine("Task end...");
+            };
+            task3().Wait();
+            Console.WriteLine("Main therad end...");
+            /*Output:
+             * Main therad start...
+             * Task start...
+             * Task end...
+             * Main therad end...
+             */
+
         }
 
         // The several Test1 functions is running in serial(They have the same Current Thread ID) 
