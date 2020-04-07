@@ -39,7 +39,7 @@
     {
         static void Main(string[] args)
         {
-            AzureCosmosDBClientOperation.MainMethod();
+            //AzureCosmosDBClientOperation.MainMethod();
             //AzureServiceBus.MainMethod();
             //AzureCosmosDB.MainMethod();
 
@@ -63,6 +63,16 @@
             sb.AppendLine("1234");
             sb.AppendLine("1234");
             Console.WriteLine(sb.ToString());
+
+            IList<string> list = new List<string>();
+            list.Add("11");
+            list.Add("22");
+            list.Add("33");
+            var dict = list.ToDictionary(l => l.Substring(0, 1));
+            foreach (var item in dict)
+            {
+                Console.WriteLine($"{item.Key}\t{item.Value}");
+            }
 
             Console.ReadKey();
         }
