@@ -47,8 +47,9 @@
             //QueryServiceMonitorDemo();
             //QueryTestRunCount();
 
+            DeleteTestRunDemo();
             //DeleteTestRunById();
-            DeleteWaitingOnDemandTestRuns();
+            //DeleteWaitingOnDemandTestRuns();
             //DeleteCosmosTestRunByResultExpirePeriod();
             // We can use this function to delete instance without any limitation.
             //DeleteAlertsWithoutIncidentId();
@@ -1144,6 +1145,17 @@
             public double FileRowCountMaxLimit { get; set; }
         }
 
+        public static void DeleteTestRunDemo()
+        {
+            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "PartitionedTestRun");
+            string id = "900c3f79-79e1-45e1-82ff-17f308a62179";
+            string partitionKey = "2020-04-03T00:00:00Z";
+            string documentLink = UriFactory.CreateDocumentUri("DataCop", "PartitionedTestRun", id).ToString();
+            var reqOptions = new RequestOptions { PartitionKey = new PartitionKey(partitionKey) };
+            ResourceResponse<Document> resource = azureCosmosDBClient.DeleteDocumentAsync(documentLink, reqOptions).Result;
+            Console.WriteLine(resource);
+        }
+
         public static void DeleteTestRunById()
         {
             var datasetIds = new string[]
@@ -1176,7 +1188,7 @@
         {
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "PartitionedTestRun");
             // Collation: asc and desc is ascending and descending
-            IList<JObject> testRuns = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT top 1200 * FROM c WHERE c.status = 'Waiting' and not contains(c.partitionKey, 'T00:00:00Z') order by c.createTime desc")).Result;
+            IList<JObject> testRuns = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT top 1000 * FROM c WHERE c.status = 'Waiting' and not contains(c.partitionKey, 'T00:00:00Z') order by c.createTime desc")).Result;
             while (testRuns.Count > 0)
             {
                 foreach (JObject testRun in testRuns)
@@ -1195,7 +1207,7 @@
                         Console.WriteLine(e.Message);
                     }
                 }
-                testRuns = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT top 1200 * FROM c WHERE c.status = 'Waiting' and not contains(c.partitionKey, 'T00:00:00Z') order by c.createTime desc")).Result;
+                testRuns = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT top 1000 * FROM c WHERE c.status = 'Waiting' and not contains(c.partitionKey, 'T00:00:00Z') order by c.createTime desc")).Result;
             }
         }
 
