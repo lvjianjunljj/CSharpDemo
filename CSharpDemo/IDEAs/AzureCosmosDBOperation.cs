@@ -1176,7 +1176,7 @@
         {
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "PartitionedTestRun");
             // Collation: asc and desc is ascending and descending
-            IList<JObject> testRuns = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT top 1200 * FROM c WHERE c.status = 'Waiting' and not contains(c.partitionKey, 'T00:00:00Z') order by c.createTime desc")).Result;
+            IList<JObject> testRuns = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT top 1000 * FROM c WHERE c.status = 'Waiting' and not contains(c.partitionKey, 'T00:00:00Z') order by c.createTime desc")).Result;
             while (testRuns.Count > 0)
             {
                 foreach (JObject testRun in testRuns)
@@ -1195,7 +1195,7 @@
                         Console.WriteLine(e.Message);
                     }
                 }
-                testRuns = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT top 1200 * FROM c WHERE c.status = 'Waiting' and not contains(c.partitionKey, 'T00:00:00Z') order by c.createTime desc")).Result;
+                testRuns = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT top 1000 * FROM c WHERE c.status = 'Waiting' and not contains(c.partitionKey, 'T00:00:00Z') order by c.createTime desc")).Result;
             }
         }
 
