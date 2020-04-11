@@ -48,8 +48,8 @@
             //QueryTestRunCount();
 
             //DeleteTestRunDemo();
-            DeleteWaitingOnDemandTestRuns();
-            DeleteWaitingOrchestrateTestRuns();
+            //DeleteWaitingOnDemandTestRuns();
+            //DeleteWaitingOrchestrateTestRuns();
             //DeleteCosmosTestRunByResultExpirePeriod();
             // We can use this function to delete instance without any limitation.
             //DeleteAlertsWithoutIncidentId();

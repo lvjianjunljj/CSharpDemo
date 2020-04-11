@@ -39,7 +39,7 @@
     {
         static void Main(string[] args)
         {
-            AzureCosmosDBClientOperation.MainMethod();
+            //AzureCosmosDBClientOperation.MainMethod();
             //AzureServiceBus.MainMethod();
             //AzureCosmosDB.MainMethod();
 
@@ -48,27 +48,7 @@
 
             //DatasetJsonFileOperation.MainMethod();
             //AzureActiveDirectoryToken.MainMethod();
-            ISecretProvider secretProvider = KeyVaultSecretProvider.Instance;
 
-            IList<string> list = new List<string>();
-            list.Add("11");
-            list.Add("22");
-            list.Add("33");
-            var dict = list.ToDictionary(l => l.Substring(0, 1));
-            foreach (var item in dict)
-            {
-                Console.WriteLine($"{item.Key}\t{item.Value}");
-            }
-
-            Console.WriteLine(dict.TryGetValue("12", out string ss));
-            Console.WriteLine(ss);
-            HashSet<string> has = new HashSet<string>(new string[] { "1", "3" });
-            has.UnionWith(new HashSet<string>(new string[] { "1", "2" }));
-
-            foreach (var item in has)
-            {
-                Console.WriteLine(item);
-            }
             Console.ReadKey();
         }
     }

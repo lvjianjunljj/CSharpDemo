@@ -212,6 +212,7 @@
     <Compile Include="DIStudy\ThreeLayers\Demo3.cs" />
     <Compile Include="DynamicDemo.cs" />
     <Compile Include="EnumDemo.cs" />
+    <Compile Include="EnumerableDemo.cs" />
     <Compile Include="ExceptionDemo.cs" />
     <Compile Include="ExplicitOperatorDemo.cs" />
     <Compile Include="FileOperation\ExcelOperation.cs" />
@@ -230,6 +231,7 @@
     <Compile Include="Application\Logger.cs" />
     <Compile Include="LINQ\SingleDemo.cs" />
     <Compile Include="LINQ\TestClassForLINQ.cs" />
+    <Compile Include="LINQ\ToIEnumerableDemo.cs" />
     <Compile Include="NumberDemo.cs" />
     <Compile Include="Parallel\AutoResetEventDemo.cs" />
     <Compile Include="Parallel\TaskDemo.cs" />
