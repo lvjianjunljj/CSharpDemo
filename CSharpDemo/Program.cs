@@ -50,11 +50,6 @@
             //AzureActiveDirectoryToken.MainMethod();
             ISecretProvider secretProvider = KeyVaultSecretProvider.Instance;
 
-            string endpoint = secretProvider.GetSecretAsync("datacopdev", "CosmosDBEndPoint").Result;
-            string key = secretProvider.GetSecretAsync("datacopdev", "CosmosDBAuthKey").Result;
-            Console.WriteLine(endpoint);
-            Console.WriteLine(key);
-
 
             IList<string> list = new List<string>();
             list.Add("11");
@@ -66,6 +61,15 @@
                 Console.WriteLine($"{item.Key}\t{item.Value}");
             }
 
+            Console.WriteLine(dict.TryGetValue("12", out string ss));
+            Console.WriteLine(ss);
+            HashSet<string> has = new HashSet<string>(new string[] { "1", "3" });
+            has.UnionWith(new HashSet<string>(new string[] { "1", "2" }));
+
+            foreach (var item in has)
+            {
+                Console.WriteLine(item);
+            }
             Console.ReadKey();
         }
     }
