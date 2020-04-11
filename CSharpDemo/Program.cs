@@ -39,7 +39,7 @@
     {
         static void Main(string[] args)
         {
-            //AzureCosmosDBClientOperation.MainMethod();
+            AzureCosmosDBClientOperation.MainMethod();
             //AzureServiceBus.MainMethod();
             //AzureCosmosDB.MainMethod();
 
@@ -49,7 +49,6 @@
             //DatasetJsonFileOperation.MainMethod();
             //AzureActiveDirectoryToken.MainMethod();
             ISecretProvider secretProvider = KeyVaultSecretProvider.Instance;
-
 
             IList<string> list = new List<string>();
             list.Add("11");

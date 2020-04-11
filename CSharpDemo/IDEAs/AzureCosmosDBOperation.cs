@@ -16,7 +16,7 @@
     public class AzureCosmosDBClientOperation
     {
         // "datacopdev","ideasdatacopppe" or "datacopprod"
-        static readonly string KeyVaultName = "datacopprod";
+        static readonly string KeyVaultName = "ideasdatacopppe";
 
         public static void MainMethod()
         {
@@ -47,12 +47,14 @@
             //QueryServiceMonitorDemo();
             //QueryTestRunCount();
 
+            DeleteTestRunDemo();
             //DeleteTestRunById();
+            //DeleteWaitingOnDemandTestRuns();
             //DeleteCosmosTestRunByResultExpirePeriod();
             // We can use this function to delete instance without any limitation.
             //DeleteAlertsWithoutIncidentId();
 
-            MigrateData("ServiceMonitorReport", "datacopprod", "ideasdatacopppe");
+            //MigrateData("ServiceMonitorReport", "datacopprod", "ideasdatacopppe");
 
             //AddCompletenessMonitors4ADLS();
 
@@ -1143,6 +1145,17 @@
             public double FileRowCountMaxLimit { get; set; }
         }
 
+        public static void DeleteTestRunDemo()
+        {
+            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "PartitionedTestRun");
+            string id = "900c3f79-79e1-45e1-82ff-17f308a62179";
+            string partitionKey = "2020-04-03T00:00:00Z";
+            string documentLink = UriFactory.CreateDocumentUri("DataCop", "PartitionedTestRun", id).ToString();
+            var reqOptions = new RequestOptions { PartitionKey = new PartitionKey(partitionKey) };
+            ResourceResponse<Document> resource = azureCosmosDBClient.DeleteDocumentAsync(documentLink, reqOptions).Result;
+            Console.WriteLine(resource);
+        }
+
         public static void DeleteTestRunById()
         {
             var datasetIds = new string[]
@@ -1168,6 +1181,33 @@
                     ResourceResponse<Document> resource = azureCosmosDBClient.DeleteDocumentAsync(documentLink, reqOptions).Result;
                     Console.WriteLine(resource);
                 }
+            }
+        }
+
+        public static void DeleteWaitingOnDemandTestRuns()
+        {
+            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "PartitionedTestRun");
+            // Collation: asc and desc is ascending and descending
+            IList<JObject> testRuns = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT top 1000 * FROM c WHERE c.status = 'Waiting' and not contains(c.partitionKey, 'T00:00:00Z') order by c.createTime desc")).Result;
+            while (testRuns.Count > 0)
+            {
+                foreach (JObject testRun in testRuns)
+                {
+                    try
+                    {
+                        string id = testRun["id"].ToString();
+                        string partitionKey = testRun["partitionKey"].ToString();
+                        string documentLink = UriFactory.CreateDocumentUri("DataCop", "PartitionedTestRun", id).ToString();
+                        var reqOptions = new RequestOptions { PartitionKey = new PartitionKey(partitionKey) };
+                        ResourceResponse<Document> resource = azureCosmosDBClient.DeleteDocumentAsync(documentLink, reqOptions).Result;
+                        Console.WriteLine(resource);
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e.Message);
+                    }
+                }
+                testRuns = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT top 1000 * FROM c WHERE c.status = 'Waiting' and not contains(c.partitionKey, 'T00:00:00Z') order by c.createTime desc")).Result;
             }
         }
 
