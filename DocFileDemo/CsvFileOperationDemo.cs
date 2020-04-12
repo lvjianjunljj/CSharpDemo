@@ -10,6 +10,12 @@
     {
         public static void MainMethod()
         {
+            AddDisplayName();
+            Console.ReadKey();
+        }
+
+        private static void AddDisplayName()
+        {
             string readPath = @"D:\IDEAs\Ibiza\Source\DataCompliance\CreateAssetMapping\AssetReference2.tsv";
             string writePath = @"D:\IDEAs\Ibiza\Source\DataCompliance\CreateAssetMapping\AssetReference.tsv";
             Configuration cf = new Configuration()
@@ -25,16 +31,41 @@
             {
                 string ai = row.AssetIdentity?.Trim();
                 string af = row.AssetFabric?.Trim();
-                string aa = row.AssetAliases?.Trim();
+                string ag = row.AssetSecurityGroup?.Trim();
+                string ad = row.AssetDependencies?.Trim();
+                Console.WriteLine(ai);
+
+                sw.WriteLine($"\"{ai}\"\t\"{ai}\"\t\"{af}\"\t\"{ag}\"\t\"{ad}\"");
+            }
+            sw.Flush();
+        }
+
+
+        private static void AddCategoryColumn()
+        {
+            string readPath = @"D:\IDEAs\Ibiza\Source\DataCompliance\CreateAssetMapping\AssetReference2.tsv";
+            string writePath = @"D:\IDEAs\Ibiza\Source\DataCompliance\CreateAssetMapping\AssetReference.tsv";
+            Configuration cf = new Configuration()
+            {
+                Delimiter = "\t",
+                HeaderValidated = null,
+                HasHeaderRecord = false
+            };
+            StreamReader sr = new StreamReader(readPath);
+            CsvReader csv = new CsvReader(sr, cf);
+            StreamWriter sw = new StreamWriter(writePath);
+            foreach (Row row in csv.GetRecords<Row>())
+            {
+                string ai = row.AssetIdentity?.Trim();
+                string af = row.AssetFabric?.Trim();
                 string ag = row.AssetSecurityGroup?.Trim();
                 string ad = row.AssetDependencies?.Trim();
                 Console.WriteLine(ai);
                 string category = GetCategory(ai);
 
-                sw.WriteLine($"\"{ai}\"\t\"{af}\"\t\"{aa}\"\t\"{ag}\"\t\"{ad}\"\t\"{category}\"");
+                sw.WriteLine($"\"{ai}\"\t\"{af}\"\t\"{ag}\"\t\"{ad}\"\t\"{category}\"");
             }
             sw.Flush();
-            Console.ReadKey();
         }
 
         private static string GetCategory(string assetIdentity)
@@ -96,18 +127,12 @@
             /// Zero or more aliases referring to the same asset
             /// </summary>
             [Index(2)]
-            public string AssetAliases { get; set; }
-
-            /// <summary>
-            /// Zero or more aliases referring to the same asset
-            /// </summary>
-            [Index(3)]
             public string AssetSecurityGroup { get; set; }
 
             /// <summary>
             /// Zero or more aliases referring to the same asset
             /// </summary>
-            [Index(4)]
+            [Index(3)]
             public string AssetDependencies { get; set; }
         }
     }
