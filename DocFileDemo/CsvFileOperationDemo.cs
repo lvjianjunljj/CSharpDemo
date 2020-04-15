@@ -1,6 +1,7 @@
 ﻿namespace DocFileDemo
 {
     using System;
+    using System.Collections.Generic;
     using System.IO;
     using CsvHelper;
     using CsvHelper.Configuration;
@@ -10,9 +11,45 @@
     {
         public static void MainMethod()
         {
-            AddDisplayName();
+            SortRowByAssetId();
+            //AddDisplayName();
             Console.ReadKey();
         }
+
+        private static void SortRowByAssetId()
+        {
+            Dictionary<string, string> dict = new Dictionary<string, string>();
+            string readPath = @"D:\data\company_work\M365\IDEAs\accesscontrol\output\AssetReference.tsv";
+            string writePath = @"D:\data\company_work\M365\IDEAs\accesscontrol\output\AssetReference2.tsv";
+            Configuration cf = new Configuration()
+            {
+                Delimiter = "\t",
+                HeaderValidated = null,
+                HasHeaderRecord = false
+            };
+            StreamReader sr = new StreamReader(readPath);
+            CsvReader csv = new CsvReader(sr, cf);
+            StreamWriter sw = new StreamWriter(writePath);
+            foreach (Row row in csv.GetRecords<Row>())
+            {
+                string ai = row.AssetIdentity?.Trim();
+                string an = row.AssetDisplayName?.Trim();
+                string af = row.AssetFabric?.Trim();
+                string ag = row.AssetSecurityGroup?.Trim();
+                string ad = row.AssetDependencies?.Trim();
+                dict.Add(ai, $"\"{ai}\"\t\"{an}\"\t\"{af}\"\t\"{ag}\"\t\"{ad}\"");
+
+            }
+            List<string> ais = new List<string>(dict.Keys);
+            ais.Sort();
+            foreach (var ai in ais)
+            {
+                Console.WriteLine(ai);
+                sw.WriteLine(dict[ai]);
+            }
+            sw.Flush();
+        }
+
 
         private static void AddDisplayName()
         {
@@ -109,7 +146,7 @@
             return "None";
         }
 
-        class Row
+        private class Row
         {
             /// <summary>
             /// A distinct asset identifier
@@ -118,21 +155,27 @@
             public string AssetIdentity { get; set; }
 
             /// <summary>
-            /// Indication of Cosmos, SQL, etc.
+            /// The asset display name
             /// </summary>
             [Index(1)]
+            public string AssetDisplayName { get; set; }
+
+            /// <summary>
+            /// Indication of Cosmos, SQL, etc.
+            /// </summary>
+            [Index(2)]
             public string AssetFabric { get; set; }
 
             /// <summary>
-            /// Zero or more aliases referring to the same asset
+            /// The asset security group name
             /// </summary>
-            [Index(2)]
+            [Index(3)]
             public string AssetSecurityGroup { get; set; }
 
             /// <summary>
-            /// Zero or more aliases referring to the same asset
+            /// Zero or more dependencies to the same asset
             /// </summary>
-            [Index(3)]
+            [Index(4)]
             public string AssetDependencies { get; set; }
         }
     }

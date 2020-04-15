@@ -9,7 +9,7 @@
         public static void MainMethod()
         {
             //CheckStreamExists();
-            CheckRowCount();
+            //CheckRowCount();
             //CheckDirectoryExists();
 
             //GetRowCountIteratively("2019-07-10T00:00:00.0000000Z");
@@ -37,7 +37,8 @@
 
         public static void CheckRowCount()
         {
-            string stream = "https://cosmos14.osdinfra.net/cosmos/IDEAs.Prod/users/jianjlv/datacop_service_monitor_test_2019_12_01.ss";
+            //string stream = "https://cosmos14.osdinfra.net/cosmos/IDEAs.Prod/users/jianjlv/datacop_service_monitor_test_2019_12_01.ss";
+            string stream = @"https://cosmos14.osdinfra.net/cosmos/IDEAs.Prod/shares/IDEAs.Prod.Data/Publish/Profiles/Tenant/Commercial/ExoAdTenantConfigUnitGallatin/TenantConfigUnitRaw/Streams/v1/2020/04/TenantConfigUnitRaw_2020_04_10.ss";
             long? rowCount = CosmosClient.GetRowCount(stream);
             Console.WriteLine($"rowCount: {rowCount}");
         }
