@@ -14,10 +14,11 @@ namespace CSharpDemo
     {
         public static void MainMethod()
         {
-            EnumParseDemo();
-            TypeDescriptorDemo();
+            //EnumParseDemo();
+            //TypeDescriptorDemo();
             TraverseDemo();
-            EceptionDemo();
+            TraverseAllValueDemo();
+            //ExceptionDemo();
         }
 
         static void EnumParseDemo()
@@ -61,7 +62,21 @@ namespace CSharpDemo
             }
         }
 
-        static void EceptionDemo()
+        static void TraverseAllValueDemo()
+        {
+            foreach (EnumTest e in Enum.GetValues(typeof(EnumTest)))
+            {
+                Console.WriteLine(e);
+            }
+
+            EnumTest three = EnumTest.One | EnumTest.One | EnumTest.Two;
+            foreach (EnumTest e in Enum.GetValues(three.GetType()))
+            {
+                Console.WriteLine(e);
+            }
+        }
+
+        static void ExceptionDemo()
         {
             try
             {

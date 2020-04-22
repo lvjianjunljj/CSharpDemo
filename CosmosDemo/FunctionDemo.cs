@@ -9,7 +9,7 @@
         public static void MainMethod()
         {
             //CheckStreamExists();
-            //CheckRowCount();
+            CheckRowCount();
             //CheckDirectoryExists();
 
             //GetRowCountIteratively("2019-07-10T00:00:00.0000000Z");
@@ -37,8 +37,11 @@
 
         public static void CheckRowCount()
         {
-            //string stream = "https://cosmos14.osdinfra.net/cosmos/IDEAs.Prod/users/jianjlv/datacop_service_monitor_test_2019_12_01.ss";
-            string stream = @"https://cosmos14.osdinfra.net/cosmos/IDEAs.Prod/shares/IDEAs.Prod.Data/Publish/Profiles/Tenant/Commercial/ExoAdTenantConfigUnitGallatin/TenantConfigUnitRaw/Streams/v1/2020/04/TenantConfigUnitRaw_2020_04_10.ss";
+            string stream = "https://cosmos14.osdinfra.net/cosmos/IDEAs.Prod/users/jianjlv/datacop_service_monitor_test_2019_12_01.ss";
+            //string stream = @"https://cosmos14.osdinfra.net/cosmos/IDEAs.Prod/shares/IDEAs.Prod.Data/Publish/Profiles/Tenant/Commercial/ExoAdTenantConfigUnitGallatin/TenantConfigUnitRaw/Streams/v1/2020/04/TenantConfigUnitRaw_2020_04_10.ss";
+            //stream = @"https://cosmos14.osdinfra.net/cosmos/IDEAs.Prod//shares/IDEAs.Prod.Data/Publish/Profiles/User/Commercial/ExoAdUserWorldwide/TenantUserSnapshot/Streams/v1/2020/04/TenantUserSnapshot_2020_04_14.ss";
+            stream = @"https://cosmos14.osdinfra.net/cosmos/IDEAs.Prod/shares/IDEAs.Prod.Data/local/Publish/Acquisitions/User/Neutral/Clickstream/Raw/Streams/v1/2020/01/RawClickstream_2020_01_25.ss";
+
             long? rowCount = CosmosClient.GetRowCount(stream);
             Console.WriteLine($"rowCount: {rowCount}");
         }

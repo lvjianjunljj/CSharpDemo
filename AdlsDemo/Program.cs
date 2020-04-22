@@ -15,9 +15,9 @@ namespace AdlsDemo
         // We need the package from nuget Microsoft.Rest.ClientRuntime.Azure.Authentication and Microsoft.Azure.DataLake.Store
         static void Main(string[] args)
         {
-            //CheckAdlsFileExistsDemo();
+            CheckAdlsFileExistsDemo();
             //GetAdlsFileSizeDemo();
-            InsertAdlsFileDemo();
+            //InsertAdlsFileDemo();
             //DeleteAdlsFileDemo();
             //GetEnumerateAdlsMetadataEntityDemo();
 
@@ -35,6 +35,8 @@ namespace AdlsDemo
 
             Console.WriteLine(dataLakeClient.CheckExists("ideas-prod-c14.azuredatalakestore.net",
                 "/local/Scheduled/Datasets/Private/Users/DataQuality/ConsumerUserProfile/v1/2019/11/ConsumerUserFABBSProfile_CorrectnessStats_2019_11_25.ss"));
+            // We don't have access to store "ideas-ppe-c14.azuredatalakestore.net".
+            Console.WriteLine(dataLakeClient.CheckExists("ideas-ppe-c14.azuredatalakestore.net", "/local/build/user/dekashet/TeamsMeetingProdAfterTimeZoneFixApril18th/directViewCodeWithAdjustEndDate.csv"));
         }
 
         public static void GetAdlsFileSizeDemo()
