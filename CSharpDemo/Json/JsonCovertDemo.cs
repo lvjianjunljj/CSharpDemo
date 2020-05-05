@@ -4,7 +4,7 @@ using System;
 
 namespace CSharpDemo.Json
 {
-    class JsonCovertDemo
+    public class JsonCovertDemo
     {
         public static void MainMethod()
         {
@@ -12,6 +12,7 @@ namespace CSharpDemo.Json
             //StringDemo();
             //DateTimeDeserializeDemo();
             //DoubleDeserializeDemo();
+            //EnumDeserializeDemo();
             //ParentClassDemo();
 
         }
@@ -93,6 +94,19 @@ namespace CSharpDemo.Json
             Console.WriteLine(doubleConvertDemoClass.Num2);
         }
 
+        public static void EnumDeserializeDemo()
+        {
+            var settings = new JsonSerializerSettings
+            {
+                NullValueHandling = NullValueHandling.Ignore,
+                MissingMemberHandling = MissingMemberHandling.Ignore,
+            };
+
+            string doubleConvertDemoClassStr = "{'EnumTestProperty': 'T1'}";
+            EnumConvertDemoClass doubleConvertDemoClass = JsonConvert.DeserializeObject<EnumConvertDemoClass>(doubleConvertDemoClassStr, settings);
+            Console.WriteLine(doubleConvertDemoClass.EnumTestProperty);
+        }
+
         // It is impossible to deserialize to parent class and then convert it to target class,
         // Right way is to deserialize to JToken then use ToObejct<T> function to convert it to target class.
         public static void ParentClassDemo()
@@ -139,5 +153,14 @@ namespace CSharpDemo.Json
     class TypeConvertDemoClass
     {
         public Type Type1 { get; set; }
+    }
+    class EnumConvertDemoClass
+    {
+        public EnumTest EnumTestProperty { get; set; }
+    }
+    enum EnumTest
+    {
+        T1 = 0,
+        T2 = 1,
     }
 }

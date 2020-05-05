@@ -11,9 +11,9 @@
     {
         public static void MainMethod()
         {
-            SortRowByAssetId();
+            //SortRowByAssetId();
             //AddDisplayName();
-            Console.ReadKey();
+            AddCategoryColumn();
         }
 
         private static void SortRowByAssetId()
@@ -80,8 +80,8 @@
 
         private static void AddCategoryColumn()
         {
-            string readPath = @"D:\IDEAs\Ibiza\Source\DataCompliance\CreateAssetMapping\AssetReference2.tsv";
-            string writePath = @"D:\IDEAs\Ibiza\Source\DataCompliance\CreateAssetMapping\AssetReference.tsv";
+            string readPath = @"D:\IDEAs\repo\Ibiza\Source\DataCompliance\CreateAssetMapping\AssetReference2.tsv";
+            string writePath = @"D:\IDEAs\repo\Ibiza\Source\DataCompliance\CreateAssetMapping\AssetReference.tsv";
             Configuration cf = new Configuration()
             {
                 Delimiter = "\t",
@@ -94,13 +94,14 @@
             foreach (Row row in csv.GetRecords<Row>())
             {
                 string ai = row.AssetIdentity?.Trim();
+                string an = row.AssetDisplayName?.Trim();
                 string af = row.AssetFabric?.Trim();
                 string ag = row.AssetSecurityGroup?.Trim();
                 string ad = row.AssetDependencies?.Trim();
                 Console.WriteLine(ai);
                 string category = GetCategory(ai);
 
-                sw.WriteLine($"\"{ai}\"\t\"{af}\"\t\"{ag}\"\t\"{ad}\"\t\"{category}\"");
+                sw.WriteLine($"\"{ai}\"\t\"{an}\"\t\"{af}\"\t\"{ag}\"\t\"{category}\"\t\"{ad}\"");
             }
             sw.Flush();
         }
@@ -143,7 +144,7 @@
             {
                 return "ConsumerCubes";
             }
-            return "None";
+            return string.Empty;
         }
 
         private class Row

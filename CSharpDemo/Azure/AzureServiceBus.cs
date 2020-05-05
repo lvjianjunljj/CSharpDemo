@@ -13,10 +13,10 @@
             string keyVaultName = "datacopdev";
             //string keyVaultName = "ideasdatacopppe";
             //string keyVaultName = "datacopprod";
-            //string queueName = "cosmostest";
+            string queueName = "cosmostest";
             //string queueName = "alert";
             //string queueName = "onboardingrequest";
-            string queueName = "orchestratortrigger";
+            //string queueName = "orchestratortrigger";
             //string queueName = "onboardingresponse";
             ISecretProvider secretProvider = KeyVaultSecretProvider.Instance;
             string serviceBusConnectionString = secretProvider.GetSecretAsync(keyVaultName, "ServiceBusConnectionString").Result;
@@ -56,24 +56,27 @@
 
 
             //string response = "{\"requestId\":\"c7c864d1-9a5e-4a02-afa4-fb2bf3399273\",\"datasetId\":\"7e118c1e-f2b3-462d-97ce-f45bc7a378f8\",\"status\":200,\"scores\":{\"scoreTime\":\"2019-09-19T08:37:25.1608155Z\",\"score\":100.0,\"measures\":[{\"type\":\"Availability\",\"score\":100.0,\"errors\":[]}]},\"requestor\":\"OnboardRequest\"}";
-            string messageStr = "{\"requestId\":\"136503cc-745f-4c6e-a0f3-ebf4555b1f14\",\"requestType\":\"Adhoc\",\"dataset\":{\"id\":\"f4967631-884d-41a5-92ff-16be925bdf1b\",\"name\":\"SandCOATPRaw\",\"createTime\":\"0001-01-01T00:00:00\",\"lastModifiedTime\":\"0001-01-01T00:00:00\",\"connectionInfo\":{\"cosmosVC\":\"https://cosmos14.osdinfra.net/cosmos/Ideas.prod/\",\"dataLakeStore\":\"\",\"streamPath\":\"shares/ffo.antispam/SafeAttachment/%Y/%m/%d/ATPUsage.ss\"},\"dataFabric\":\"Cosmos\",\"category\":\"None\",\"startDate\":\"2019-05-01T00:00:00Z\",\"rollingWindow\":\"60.00:00:00\",\"grain\":\"Daily\",\"sla\":\"3.0:0:0\",\"isEnabled\":false,\"ttl\":-1}}";
-            for (int i = 0; i < 10; i++)
-            {
-                Message message = new Message(Encoding.UTF8.GetBytes(messageStr));
-                message.MessageId = Guid.NewGuid().ToString();
+            //string messageStr = "{\"requestId\":\"136503cc-745f-4c6e-a0f3-ebf4555b1f14\",\"requestType\":\"Adhoc\",\"dataset\":{\"id\":\"f4967631-884d-41a5-92ff-16be925bdf1b\",\"name\":\"SandCOATPRaw\",\"createTime\":\"0001-01-01T00:00:00\",\"lastModifiedTime\":\"0001-01-01T00:00:00\",\"connectionInfo\":{\"cosmosVC\":\"https://cosmos14.osdinfra.net/cosmos/Ideas.prod/\",\"dataLakeStore\":\"\",\"streamPath\":\"shares/ffo.antispam/SafeAttachment/%Y/%m/%d/ATPUsage.ss\"},\"dataFabric\":\"Cosmos\",\"category\":\"None\",\"startDate\":\"2019-05-01T00:00:00Z\",\"rollingWindow\":\"60.00:00:00\",\"grain\":\"Daily\",\"sla\":\"3.0:0:0\",\"isEnabled\":false,\"ttl\":-1}}";
+            //for (int i = 0; i < 10; i++)
+            //{
+            //    Message message = new Message(Encoding.UTF8.GetBytes(messageStr));
+            //    message.MessageId = Guid.NewGuid().ToString();
 
-                queueClient.SendAsync(message).Wait();
-            }
+            //    queueClient.SendAsync(message).Wait();
+            //}
 
-            Console.WriteLine(datasetId);
-            Console.WriteLine("End...");
+            //Console.WriteLine(datasetId);
+            //Console.WriteLine("End...");
             // Recieve message from the queue
-            //AzureServiceBus serviceBus = new AzureServiceBus();
-            //serviceBus.RegisterOnMessageHandlerAndReceiveMessages(queueClient);
+            AzureServiceBus serviceBus = new AzureServiceBus();
+            serviceBus.QueueClient = queueClient;
+            serviceBus.RegisterOnMessageHandlerAndReceiveMessages();
         }
 
+        public IQueueClient QueueClient;
 
-        public void RegisterOnMessageHandlerAndReceiveMessages(IQueueClient queueClient)
+
+        public void RegisterOnMessageHandlerAndReceiveMessages()
         {
             // Configure the MessageHandler Options in terms of exception handling, number of concurrent messages to deliver etc.
             var messageHandlerOptions = new MessageHandlerOptions(ExceptionReceivedHandler)
@@ -85,11 +88,12 @@
                 // Indicates whether MessagePump should automatically complete the messages after returning from User Callback.
                 // False below indicates the Complete will be handled by the User Callback as in `ProcessMessagesAsync` below.
                 // For my most scenarios, I think setting it true is better.
-                AutoComplete = true
+                AutoComplete = false,
+                MaxAutoRenewDuration = TimeSpan.FromSeconds(5),
             };
 
             // Register the function that will process messages
-            queueClient.RegisterMessageHandler(ProcessMessagesAsync, messageHandlerOptions);
+            this.QueueClient.RegisterMessageHandler(ProcessMessagesAsync, messageHandlerOptions);
         }
 
         private async Task ProcessMessagesAsync(Message message, CancellationToken token)
@@ -97,7 +101,10 @@
             // Process the message
             Console.WriteLine($"Received message: SequenceNumber:{message.SystemProperties.SequenceNumber} Body:{Encoding.UTF8.GetString(message.Body)} Id: {message.MessageId}");
 
-            FileOperation.SaveFile.FirstMethod($@"D:\data\company_work\M365\IDEAs\request\{message.MessageId}", message.Body.ToString());
+            // Process will throw Exception if the running time of function ProcessMessagesAsync is longer than MaxAutoRenewDuration value.
+            //await Task.Delay(60 * 1000);
+            Console.WriteLine("ProcessMessagesAsync end...");
+            //FileOperation.SaveFile.FirstMethod($@"D:\data\company_work\M365\IDEAs\request\{message.MessageId}", message.Body.ToString());
             // Complete the message so that it is not received again.
             // This can be done only if the queueClient is created in ReceiveMode.PeekLock mode (which is default).
             //await queueClient.CompleteAsync(message.SystemProperties.LockToken);
@@ -105,6 +112,7 @@
             // Note: Use the cancellationToken passed as necessary to determine if the queueClient has already been closed.
             // If queueClient has already been Closed, you may chose to not call CompleteAsync() or AbandonAsync() etc. calls 
             // to avoid unnecessary exceptions.
+            await this.QueueClient.CompleteAsync(message.GetLockToken());
         }
 
         private Task ExceptionReceivedHandler(ExceptionReceivedEventArgs exceptionReceivedEventArgs)
@@ -117,5 +125,19 @@
             Console.WriteLine($"- Executing Action: {context.Action}");
             return Task.CompletedTask;
         }
+    }
+
+    public static class MessageExtensions
+    {
+        public static int? GetDeliveryCount(this Message message)
+        {
+            return message.SystemProperties.IsReceived ? message.SystemProperties.DeliveryCount : (int?)null;
+        }
+
+        public static string GetLockToken(this Message message)
+        {
+            return message.SystemProperties.IsLockTokenSet ? message.SystemProperties.LockToken : null;
+        }
+
     }
 }

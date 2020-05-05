@@ -16,9 +16,10 @@ namespace CSharpDemo
         {
             //EnumParseDemo();
             //TypeDescriptorDemo();
-            TraverseDemo();
-            TraverseAllValueDemo();
+            //TraverseDemo();
+            //TraverseAllValueDemo();
             //ExceptionDemo();
+            TryParseDemo();
         }
 
         static void EnumParseDemo()
@@ -87,6 +88,13 @@ namespace CSharpDemo
             {
                 Console.WriteLine($"Throw exception mesage: {ae.Message}");
             }
+        }
+
+        static void TryParseDemo()
+        {
+            string enString = "";
+            Console.WriteLine(Enum.TryParse<En>(enString, out En enEnum) == false);
+            Console.WriteLine(enEnum);
         }
     }
 

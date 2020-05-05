@@ -70,15 +70,40 @@ namespace CSharpDemo.Parallel
              */
             Console.WriteLine("====================");
 
+            // This is what we want
+            Task task3 = Task.Run(async () =>
+            {
+                Console.WriteLine("Task start...");
+                await Task.Delay(TimeSpan.FromSeconds(2));
+                Console.WriteLine("Task end...");
+            });
+
+            Console.WriteLine("Main therad start...");
+            // Exception: 
+            // System.InvalidOperationException
+            // Message=Start may not be called on a promise-style task.
+            //task3.Start();
+
+            task3.Wait();
+            Console.WriteLine("Main therad end...");
+
+            /*Output:
+             * Main therad start...
+             * Task start...
+             * Task end...
+             * Main therad end...
+             */
+            Console.WriteLine("====================");
+
             // This is what we want.
             Console.WriteLine("Main therad start...");
-            Func<Task> task3 = async () =>
+            Func<Task> task4 = async () =>
             {
                 Console.WriteLine("Task start...");
                 await Task.Delay(TimeSpan.FromSeconds(2));
                 Console.WriteLine("Task end...");
             };
-            task3().Wait();
+            task4().Wait();
             Console.WriteLine("Main therad end...");
             /*Output:
              * Main therad start...
@@ -86,7 +111,6 @@ namespace CSharpDemo.Parallel
              * Task end...
              * Main therad end...
              */
-
         }
 
         // The several Test1 functions is running in serial(They have the same Current Thread ID) 

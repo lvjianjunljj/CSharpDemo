@@ -49,7 +49,6 @@
             //DatasetJsonFileOperation.MainMethod();
             //AzureActiveDirectoryToken.MainMethod();
 
-            EnumDemo.MainMethod();
             Console.ReadKey();
         }
     }
