@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
 using System;
 
@@ -12,7 +13,7 @@ namespace CSharpDemo.Json
             //StringDemo();
             //DateTimeDeserializeDemo();
             //DoubleDeserializeDemo();
-            //EnumDeserializeDemo();
+            EnumDeserializeDemo();
             //ParentClassDemo();
 
         }
@@ -102,7 +103,7 @@ namespace CSharpDemo.Json
                 MissingMemberHandling = MissingMemberHandling.Ignore,
             };
 
-            string doubleConvertDemoClassStr = "{'EnumTestProperty': 'T1'}";
+            string doubleConvertDemoClassStr = "{'EnumTestProperty': 'TT'}";
             EnumConvertDemoClass doubleConvertDemoClass = JsonConvert.DeserializeObject<EnumConvertDemoClass>(doubleConvertDemoClassStr, settings);
             Console.WriteLine(doubleConvertDemoClass.EnumTestProperty);
         }
@@ -156,6 +157,8 @@ namespace CSharpDemo.Json
     }
     class EnumConvertDemoClass
     {
+        [JsonProperty]
+        [JsonConverter(typeof(StringEnumConverter))]
         public EnumTest EnumTestProperty { get; set; }
     }
     enum EnumTest
