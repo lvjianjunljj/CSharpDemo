@@ -12,11 +12,12 @@
     using System.Text.RegularExpressions;
     using CSharpDemo.FileOperation;
     using System.Linq;
+    using System.IO;
 
     public class AzureCosmosDBClientOperation
     {
         // "datacopdev","ideasdatacopppe" or "datacopprod"
-        static readonly string KeyVaultName = "ideasdatacopppe";
+        static readonly string KeyVaultName = "datacopprod";
 
         public static void MainMethod()
         {
@@ -65,6 +66,8 @@
             //CheckDuplicatedEnabledDatasetTest();
 
             //SetOutdatedForDuplicatedDatasetTest();
+
+            DisableAbortedTest();
         }
 
         // Disable all the CFR monitor dataset and datasetTest
@@ -1324,7 +1327,7 @@
                     alertSettingJObject.Remove("_etag");
                     alertSettingJObject.Remove("_attachments");
                     alertSettingJObject.Remove("_ts");
-                    SaveFile.FirstMethod(gitAlertSettingDict[id].Item1, alertSettingJObject.ToString());
+                    WriteFile.FirstMethod(gitAlertSettingDict[id].Item1, alertSettingJObject.ToString());
                 }
                 else if (!ContainsNumber(id) && owningTeamId.StartsWith("IDEAS"))
                 {
@@ -1347,7 +1350,7 @@
                     alertSettingJObject.Remove("_etag");
                     alertSettingJObject.Remove("_attachments");
                     alertSettingJObject.Remove("_ts");
-                    SaveFile.FirstMethod(gitFilePath, alertSettingJObject.ToString());
+                    WriteFile.FirstMethod(gitFilePath, alertSettingJObject.ToString());
                 }
             }
         }
@@ -1439,6 +1442,53 @@
                 //ResourceResponse<Document> resource = azureCosmosDBClient.DeleteDocumentAsync(documentLink, reqOptions).Result;
                 //Console.WriteLine(resource);
             }
+        }
+
+        public static void DisableAbortedTest()
+        {
+            // Based on the testRuns in the past half a month
+            DateTime startDate = DateTime.UtcNow.AddDays(-15);
+            HashSet<string> datasetIds = new HashSet<string>();
+            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "PartitionedTestRun");
+
+            IList<JObject> testRuns = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(
+                new SqlQuerySpec($@"SELECT distinct c.datasetId FROM c WHERE c.dataFabric = 'ADLS' and c.status = 'Aborted' and contains(c.message, 'Forbidden') and c.createTime > '{startDate:o}' order by c.createTime desc")).Result;
+            foreach (var testRun in testRuns)
+            {
+                datasetIds.Add(testRun["datasetId"].ToString());
+                Console.WriteLine(testRun["datasetId"]);
+            }
+
+            string root = @"D:\IDEAs\repo\Ibiza\Source\DataCopMonitors";
+            var datasetTestFolders = Directory.GetDirectories(root, "Dataset*", SearchOption.AllDirectories);
+            var files = GetFiles(datasetTestFolders);
+            Console.WriteLine(files.Count);
+            foreach (var filePath in files)
+            {
+                var fileContent = ReadFile.ThirdMethod(filePath);
+                JToken dataset = JToken.Parse(fileContent);
+                if (datasetIds.Contains(dataset["id"].ToString()))
+                {
+                    dataset["isEnabled"] = false;
+                    dataset["createTime"] = DateTime.Parse(dataset["createTime"].ToString()).ToString("o") + "Z";
+                    dataset["lastModifiedTime"] = DateTime.Parse(dataset["lastModifiedTime"].ToString()).ToString("o") + "Z";
+                    WriteFile.FirstMethod(filePath, dataset.ToString());
+                }
+
+            }
+
+
+        }
+        private static List<string> GetFiles(string[] folders)
+        {
+            var allFiles = new List<string>();
+            foreach (var folder in folders)
+            {
+                var files = Directory.EnumerateFiles(folder, "*.json", SearchOption.AllDirectories);
+                allFiles.AddRange(files);
+            }
+
+            return allFiles;
         }
     }
 }

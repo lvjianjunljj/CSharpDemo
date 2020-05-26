@@ -49,6 +49,8 @@
             //DatasetJsonFileOperation.MainMethod();
             //AzureActiveDirectoryToken.MainMethod();
 
+            SerializableMarkDemo.MainMethod();
+
 
             Console.ReadKey();
         }

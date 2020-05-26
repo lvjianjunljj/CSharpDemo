@@ -14,7 +14,7 @@
     {
         public static void MainMethod()
         {
-            //SendHttpWebRequest();
+            SendHttpWebRequest();
         }
 
         public static void SendHttpWebRequest()

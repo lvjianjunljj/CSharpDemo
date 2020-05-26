@@ -14,7 +14,8 @@
             //SortRowByAssetId();
             //AddDisplayName();
             //UpdateCategoryColumnBasedOnForm();
-            OutputWrongCategory();
+            //OutputWrongCategory();
+            UpdateAssetIdToCatalogId();
         }
 
         private static void SortRowByAssetId()
@@ -287,6 +288,36 @@
                 return "ProductEngagement";
             }
             return string.Empty;
+        }
+
+        private static void UpdateAssetIdToCatalogId()
+        {
+            string readPath = @"D:\IDEAs\repo\Ibiza\Source\DataCompliance\CreateAssetMapping\AssetReference2.tsv";
+            string writePath = @"D:\IDEAs\repo\Ibiza\Source\DataCompliance\CreateAssetMapping\AssetReference.tsv";
+            Configuration cf = new Configuration()
+            {
+                Delimiter = "\t",
+                HeaderValidated = null,
+                HasHeaderRecord = false
+            };
+            StreamReader sr = new StreamReader(readPath);
+            CsvReader csv = new CsvReader(sr, cf);
+            StreamWriter sw = new StreamWriter(writePath);
+            foreach (Row row in csv.GetRecords<Row>())
+            {
+                string ai = row.AssetIdentity?.Trim();
+                string an = row.AssetDisplayName?.Trim();
+                string af = row.AssetFabric?.Trim();
+                string ag = row.AssetSecurityGroup?.Trim();
+                string ac = row.AssetCategory?.Trim();
+                string ad = row.AssetDependencies?.Trim();
+
+                ai = ai.Replace(@"/", @".");
+                ad = ad.Replace(@"/", @".");
+
+                sw.WriteLine($"\"{ai}\"\t\"{an}\"\t\"{af}\"\t\"{ag}\"\t\"{ac}\"\t\"{ad}\"");
+            }
+            sw.Flush();
         }
 
         private class Row

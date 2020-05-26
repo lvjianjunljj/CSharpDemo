@@ -1,5 +1,6 @@
 ﻿namespace CosmosDemo
 {
+    using CosmosDemo.CosmosView;
     using Newtonsoft.Json.Linq;
     using System;
     using System.Collections.Generic;
@@ -9,16 +10,18 @@
         public static void MainMethod()
         {
             //CheckStreamExists();
-            CheckRowCount();
+            //CheckRowCount();
             //CheckDirectoryExists();
 
             //GetRowCountIteratively("2019-07-10T00:00:00.0000000Z");
 
-            //GetStreamInfosDemo();
+            GetStreamInfosDemo();
 
             //CompareStreamInfoRowCount();
 
             //UploadFileDemo();
+
+            //CheckCosmosViewAvailability();
         }
 
         public static void CheckStreamExists()
@@ -100,8 +103,50 @@
             for (int i = 1; i < 11; i++)
             {
                 string fileName = "datacop_service_monitor_test_2019_12_" + (i > 9 ? $"{i}" : $"0{i}");
+                Console.WriteLine(CosmosClient.CheckExists(directoryPath + fileName + ".ss", out long a));
+                Console.WriteLine(a);
                 CosmosClient.UploadFile(folderPath + fileName + ".ss", directoryPath + fileName + ".ss", 3650);
             }
+        }
+
+        public static void CheckCosmosViewAvailability()
+        {
+            string viewPath = @"shares/IDEAs.Prod.Data/Publish/Profiles/Subscription/Consumer/IDEAsConsumerPerpetualProfile/Views/v2/IDEAsConsumerPerpetualProfile.view";
+            //string viewPath = @"https://cosmos14.osdinfra.net/cosmos/IDEAs.Prod/shares/IDEAs.Prod.Data/Publish/Usage/User/Commercial/ActiveUsage/A310/Views/v1/A310TenantActiveUsage.view";
+
+            //List<CosmosViewParameter> viewParameters = new List<CosmosViewParameter>
+            //{
+            //    new CosmosViewParameter
+            //    {
+            //        Name = "StartDate",
+            //        Type = typeof(DateTime),
+            //        Value = "@@TestDate@@",
+            //    },
+            //    new CosmosViewParameter
+            //    {
+            //        Name = "EndDate",
+            //        Type = typeof(DateTime),
+            //        Value = "@@TestDate@@",
+            //    }
+            //};
+
+            List<CosmosViewParameter> viewParameters = new List<CosmosViewParameter>
+            {
+                new CosmosViewParameter
+                {
+                    Name = "PurchaseDate",
+                    Type = typeof(DateTime),
+                    Value = "@@TestDate@@",
+                }
+            };
+
+            DateTime testDate = new DateTime(2020, 5, 12);
+
+            string cosmosScriptContent = CosmosViewClient.BuildScriptForViewAvailabilityTest(viewPath, viewParameters);
+            var scriptToCompile = cosmosScriptContent.Replace("@@TestDate@@", "\"" + testDate.ToString() + "\"");
+
+            CosmosViewClient.CheckViewAvailability(scriptToCompile, out string output);
+            Console.WriteLine(output);
         }
     }
 }

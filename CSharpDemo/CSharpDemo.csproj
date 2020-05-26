@@ -182,6 +182,7 @@
     <Compile Include="ClassInheritDemo.cs" />
     <Compile Include="CloneDemo.cs" />
     <Compile Include="CmdHelper.cs" />
+    <Compile Include="CollectionDemo.cs" />
     <Compile Include="Constant.cs" />
     <Compile Include="ConstructorDemo.cs" />
     <Compile Include="ConvertDemo.cs" />
@@ -232,6 +233,8 @@
     <Compile Include="LINQ\SingleDemo.cs" />
     <Compile Include="LINQ\TestClassForLINQ.cs" />
     <Compile Include="LINQ\ToIEnumerableDemo.cs" />
+    <Compile Include="SerializableMarkDemo.cs" />
+    <Compile Include="SerializelassDemo.cs" />
     <Compile Include="NumberDemo.cs" />
     <Compile Include="Parallel\AutoResetEventDemo.cs" />
     <Compile Include="Parallel\TaskDemo.cs" />

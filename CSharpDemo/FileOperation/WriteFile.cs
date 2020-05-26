@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace CSharpDemo.FileOperation
 {
-    class SaveFile
+    public class WriteFile
     {
         public static void FirstMethod(string filePath, string content)
         {

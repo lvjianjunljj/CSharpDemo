@@ -1,6 +1,5 @@
 ﻿namespace CosmosDemo
 {
-    using Microsoft.Cosmos.ExportClient;
     using Microsoft.Cosmos.FrontEnd.Contract;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
@@ -11,6 +10,13 @@
 
     class CosmosClient
     {
+
+        public CosmosClient()
+        {
+            var certificate = CertificateGenerator.GetCertificateByThumbprint();
+            VC.Setup(null, certificate);
+        }
+
         // Function VcClient.VC.StreamExists(string streamName) just can check the existance of file not directory.
         public static bool CheckStreamExists(string streamPath)
         {
