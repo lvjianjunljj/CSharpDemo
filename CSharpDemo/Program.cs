@@ -49,9 +49,23 @@
             //DatasetJsonFileOperation.MainMethod();
             //AzureActiveDirectoryToken.MainMethod();
 
-            SerializableMarkDemo.MainMethod();
+            var filePaths = new List<string>();
+            var folderPaths = new List<string>{
+                @"D:\IDEAs\repo\Ibiza\Source",
+                @"D:\IDEAs\repo\Ibiza\Tools" };
+            foreach (var folderPath in folderPaths)
+            {
+                filePaths.AddRange(ReadFile.GetAllFile(folderPath));
+            }
 
-
+            Console.WriteLine(filePaths.Count);
+            foreach (var filePath in filePaths)
+            {
+                if (filePath.EndsWith(@".js") || filePath.EndsWith(@".ts"))
+                {
+                    Console.WriteLine(filePath);
+                }
+            }
             Console.ReadKey();
         }
     }

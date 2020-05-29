@@ -18,7 +18,7 @@
             // If we use this line in the WPF Application project, You will throw an Exception:
             // Type 'Customer' in Assembly '..., Version=0.0.0.0, Culture=neutral, PublicKeyToken=null' is not marked as serializable.
             //ViewState["Customer"] = customer;
-            Session[""] = customer;
+            //Session["Customer"] = customer;
         }
     }
 
