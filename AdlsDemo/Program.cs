@@ -15,11 +15,11 @@ namespace AdlsDemo
         // We need the package from nuget Microsoft.Rest.ClientRuntime.Azure.Authentication and Microsoft.Azure.DataLake.Store
         static void Main(string[] args)
         {
-            CheckAdlsFileExistsDemo();
+            //CheckAdlsFileExistsDemo();
             //GetAdlsFileSizeDemo();
             //InsertAdlsFileDemo();
             //DeleteAdlsFileDemo();
-            //GetEnumerateAdlsMetadataEntityDemo();
+            GetEnumerateAdlsMetadataEntityDemo();
 
             Console.ReadKey();
         }
@@ -100,8 +100,8 @@ namespace AdlsDemo
 
             var dataLakeClient = new DataLakeClient(clientId, clientKey);
 
-            IEnumerable<JObject> entities = dataLakeClient.EnumerateAdlsMetadataEntity("cfr-prod-c14.azuredatalakestore.net",
-                "local/users/jianjlv/");
+            IEnumerable<JObject> entities = dataLakeClient.EnumerateAdlsMetadataEntity("ideas-prod-data-c14.azuredatalakestore.net",
+                "local/");
 
             foreach (var entity in entities)
             {

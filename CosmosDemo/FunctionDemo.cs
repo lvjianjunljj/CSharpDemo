@@ -11,11 +11,11 @@
         {
             //CheckStreamExists();
             //CheckRowCount();
-            //CheckDirectoryExists();
+            CheckDirectoryExists();
 
             //GetRowCountIteratively("2019-07-10T00:00:00.0000000Z");
 
-            GetStreamInfosDemo();
+            //GetStreamInfosDemo();
 
             //CompareStreamInfoRowCount();
 
@@ -51,7 +51,8 @@
 
         public static void CheckDirectoryExists()
         {
-            string directoryPath = "https://cosmos14.osdinfra.net/cosmos/IDEAs.Prod/local/Scheduled/Datasets/Public/Profiles/Tenants/";
+            string directoryPath = "https://cosmos14.osdinfra.net/cosmos/IDEAs.Prod/";
+            directoryPath = "https://cosmos14.osdinfra.net/cosmos/IDEAs.Prod.Data/";
 
             Console.WriteLine(CosmosClient.CheckDirectoryExists(directoryPath));
         }
