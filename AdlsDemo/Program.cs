@@ -19,7 +19,7 @@ namespace AdlsDemo
             //GetAdlsFileSizeDemo();
             //InsertAdlsFileDemo();
             //DeleteAdlsFileDemo();
-            GetEnumerateAdlsMetadataEntityDemo();
+            //GetEnumerateAdlsMetadataEntityDemo();
 
             Console.ReadKey();
         }

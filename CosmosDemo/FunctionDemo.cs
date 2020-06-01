@@ -11,7 +11,7 @@
         {
             //CheckStreamExists();
             //CheckRowCount();
-            CheckDirectoryExists();
+            //CheckDirectoryExists();
 
             //GetRowCountIteratively("2019-07-10T00:00:00.0000000Z");
 
@@ -21,6 +21,13 @@
 
             //UploadFileDemo();
 
+            /*
+             * Not work with the error message:
+             * E_CSC_SYSTEM_INTERNAL: Internal error! Could not load file or assembly 'ScopeEngineManaged, Version=10.2.0.0, Culture=neutral, 
+             * PublicKeyToken=a06e40edc83d4f79' or one of its dependencies. An attempt was made to load a program with an incorrect format.
+             *
+             * Not yet fixed it.
+             */
             //CheckCosmosViewAvailability();
         }
 
@@ -53,6 +60,7 @@
         {
             string directoryPath = "https://cosmos14.osdinfra.net/cosmos/IDEAs.Prod/";
             directoryPath = "https://cosmos14.osdinfra.net/cosmos/IDEAs.Prod.Data/";
+            directoryPath = @"https://cosmos14.osdinfra.net/cosmos/Ideas.prod//shares/IDEAs.Prod.Data/Publish/Usage/User/Commercial/CountedActions/TeamsApps/Streams/v1/";
 
             Console.WriteLine(CosmosClient.CheckDirectoryExists(directoryPath));
         }
@@ -132,18 +140,19 @@
             //};
 
             List<CosmosViewParameter> viewParameters = new List<CosmosViewParameter>
-            {
-                new CosmosViewParameter
-                {
-                    Name = "PurchaseDate",
-                    Type = typeof(DateTime),
-                    Value = "@@TestDate@@",
-                }
-            };
+{
+    new CosmosViewParameter
+    {
+        Name = "PurchaseDate",
+        Type = typeof(DateTime),
+        Value = "@@TestDate@@",
+    }
+};
 
-            DateTime testDate = new DateTime(2020, 5, 12);
+            DateTime testDate = new DateTime(2020, 5, 29);
 
             string cosmosScriptContent = CosmosViewClient.BuildScriptForViewAvailabilityTest(viewPath, viewParameters);
+            cosmosScriptContent = "ViewSamples = VIEW \"shares/IDEAs.Prod.Data/Publish/Profiles/Tenant/Commercial/IDEAsTenantServicePlanProfile/Views/v1/IDEAsTenantServicePlanProfile.view\"PARAMS(HistoryDate = DateTime.Parse(@@TestDate@@));OUTPUT ViewSamples TO \"/my/output.tsv\" USING DefaultTextOutputter();";
             var scriptToCompile = cosmosScriptContent.Replace("@@TestDate@@", "\"" + testDate.ToString() + "\"");
 
             CosmosViewClient.CheckViewAvailability(scriptToCompile, out string output);

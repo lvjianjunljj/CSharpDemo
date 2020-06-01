@@ -21,7 +21,7 @@
         /// <returns>True, the compilation is a success; false, the compilation failed</returns>
         public static bool CheckViewAvailability(string scriptToCompile, out string output)
         {
-            var certificate = CertificateGenerator.GetCertificateByThumbprint();
+            var certificate = CertificateGenerator.GetCertificateFromBase64String();
             VC.Setup(null, certificate);
 
             var scriptFilePath = $"./TheScript_{Guid.NewGuid()}.script";

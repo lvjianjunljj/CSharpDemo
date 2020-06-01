@@ -1,5 +1,7 @@
 ﻿namespace CosmosDemo
 {
+    using AzureLib.KeyVault;
+    using System;
     using System.Security.Cryptography;
     using System.Security.Cryptography.X509Certificates;
 
@@ -36,6 +38,14 @@
                     store.Close();
                 }
             }
+        }
+
+        public static X509Certificate2 GetCertificateFromBase64String()
+        {
+            ISecretProvider secretProvider = KeyVaultSecretProvider.Instance;
+            var bundle = secretProvider.GetSecretAsync("datacopprod", "CosmosRedmondClientCert").Result;
+            byte[] privateKeyBytes = Convert.FromBase64String(bundle);
+            return new X509Certificate2(privateKeyBytes, (string)null, X509KeyStorageFlags.MachineKeySet);
         }
     }
 }
