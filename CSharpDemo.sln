@@ -27,6 +27,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DocFileDemo", "DocFileDemo\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdlaDemo", "AdlaDemo\AdlaDemo.csproj", "{C2C07487-8184-47D5-92E8-78516C23FDBF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdlaDemo2", "AdlaDemo2\AdlaDemo2.csproj", "{6059CF71-EF1E-42D8-94FB-E8F418C2679B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
