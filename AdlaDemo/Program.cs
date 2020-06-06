@@ -14,6 +14,19 @@
 
     class Program
     {
+        static string _tenantId = "72f988bf-86f1-41af-91ab-2d7cd011db47";
+        static string _clientId = "";
+        static string _clientSecret = "";
+        static string _clientCertificateThumbprint = "";
+
+        static string _adlaAccountName = "sandbox-c08";
+        static string _adlsAccountName = "sandbox-c08";
+        static string _accountSuffix = "azuredatalakestore.net";
+
+        static string _ClusterInputFilePath = string.Format("/local/temp/{0}/origin.tsv", Environment.UserName);
+        static string _ClusterReferenceFilePath = string.Format("/local/temp/{0}/cluster-reference.txt", Environment.UserName);
+
+
         private static string _ScopeScriptName
         {
             get { return String.Format("SubmitScope example ({0})", Environment.UserName); }
