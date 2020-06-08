@@ -1,4 +1,5 @@
-﻿namespace AdfDemo
+﻿// Sample code for testing ADF v1 sdk: Microsoft.Azure.Management.DataFactories
+namespace AdfDemo
 {
     using System;
     using Microsoft.Azure;
@@ -22,6 +23,30 @@
             string pipelineName = "";
             string datasetName = "";
             string linkedServiceName = "";
+
+            /*
+             * Sample v1 azure data factory in ideas-ppe
+             * ADF v1 service will be shut down for Microsoft internal customers on June 30, 2020.
+             * You won’t be able to create ADF v1 data factories, pipelines after June 30, 2020.
+             * The existing ADF v1 pipelines will automatically shut down and you will not be able to view,
+             * execute your existing ADF v1 pipelines. Migrate your existing ADF v1 pipelines to ADF v2
+             */
+            dataFactory = "ideas-ppe-adf-sandbox";
+            pipelineName = "CosmosToBlob_UserTypeDim";
+            datasetName = "Cosmos_UserTypeDim";
+            linkedServiceName = "CosmosLinkedService";
+
+            /*
+             * Sample v2 azure data factory in ideas-ppe
+             * Microsoft.Azure.Management.DataFactories is the sdk for ADF v1,
+             * we cannot use it to find the Data factory v2.
+             */
+            dataFactory = "fcm-adf";
+            pipelineName = "invokeBricks";
+            datasetName = "blobIn";
+            // There should not be linked service list in ADF v2
+            //linkedServiceName = "CosmosLinkedService";
+
 
             DateTime slice = new DateTime(2020, 5, 4);
 
@@ -55,6 +80,19 @@
             Console.WriteLine(JsonConvert.SerializeObject(dataset));
             Console.WriteLine(JsonConvert.SerializeObject(linkedService));
 
+            //Pipeline pipelineInput = new Pipeline
+            //{
+            //    Properties = new PipelineProperties
+            //    {
+
+            //    }
+            //};
+            //client.Pipelines.CreateOrUpdate(resourceGroup, dataFactory, new PipelineCreateOrUpdateParameters()
+            //{
+            //    Pipeline = pipelineInput
+            //});
+
+            Console.WriteLine("End...");
             Console.ReadKey();
         }
     }
