@@ -44,9 +44,7 @@ namespace AdfDemo
             //dataFactory = "fcm-adf";
             //pipelineName = "invokeBricks";
             //datasetName = "blobIn";
-
-            // Not sure if there is linked service list in ADF v2
-            //linkedServiceName = "CosmosLinkedService";
+            //linkedServiceName = "adla_sandbox_c08";
 
 
             DateTime slice = new DateTime(2020, 5, 4);

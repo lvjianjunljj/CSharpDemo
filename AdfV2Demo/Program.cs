@@ -1,10 +1,12 @@
 ﻿namespace AdfV2Demo
 {
     using Microsoft.Azure.Management.DataFactory;
+    using Microsoft.Azure.Management.DataFactory.Models;
     using Microsoft.IdentityModel.Clients.ActiveDirectory;
     using Microsoft.Rest;
     using Newtonsoft.Json;
     using System;
+    using System.Threading;
 
     class Program
     {
@@ -19,7 +21,7 @@
             string dataFactory = "";
             string pipelineName = "";
             string datasetName = "";
-            //string linkedServiceName = "";
+            string linkedServiceName = "";
 
             /*
              * Sample v2 azure data factory in ideas-ppe
@@ -27,11 +29,9 @@
              * we cannot use it to find the Data factory v2.
              */
             dataFactory = "fcm-adf";
-            pipelineName = "invokeBricks";
+            pipelineName = "scope_test_pipeline";
             datasetName = "blobIn";
-
-            // Not sure if there is linked service list in ADF v2
-            //linkedServiceName = "CosmosLinkedService";
+            linkedServiceName = "adla_sandbox_c08";
 
 
             DateTime slice = new DateTime(2020, 5, 4);
@@ -63,12 +63,23 @@
             //});
 
             var dataset = client.Datasets.Get(resourceGroup, dataFactory, datasetName);
-            //var linkedService = client.LinkedServices.Get(resourceGroup, dataFactory, linkedServiceName);
+            var linkedService = client.LinkedServices.Get(resourceGroup, dataFactory, linkedServiceName);
+            var response = client.Pipelines.CreateRun(resourceGroup, dataFactory, pipelineName);
+
+            var run = client.PipelineRuns.Get(resourceGroup, dataFactory, response.RunId);
+            while (run.Status == "InProgress")
+            {
+                Thread.Sleep(5000);
+                run = client.PipelineRuns.Get(resourceGroup, dataFactory, response.RunId);
+            }
+
 
             Console.WriteLine(JsonConvert.SerializeObject(pipeline));
             Console.WriteLine(JsonConvert.SerializeObject(dataset));
-            //Console.WriteLine(JsonConvert.SerializeObject(linkedService));
-
+            Console.WriteLine(JsonConvert.SerializeObject(linkedService));
+            Console.WriteLine(JsonConvert.SerializeObject(response));
+            Console.WriteLine(JsonConvert.SerializeObject(run));
+            Console.WriteLine(run.Status);
             //Pipeline pipelineInput = new Pipeline
             //{
             //    Properties = new PipelineProperties
@@ -81,7 +92,22 @@
             //    Pipeline = pipelineInput
             //});
 
+            //string azureCosmosDBConnString = "";
+            //string cosmosDbLinkedServiceName = "cosmosDbLinkedService";
+            //LinkedServiceResource cosmosDbLinkedService = new LinkedServiceResource(
+            //    new CosmosDbLinkedService
+            //    {
+            //        ConnectionString = new SecureString(azureCosmosDBConnString),
+            //    }
+            //);
+
+            //LinkedServiceResource cosmosLinkedService = new LinkedServiceResource(
+            //);
+            //client.LinkedServices.CreateOrUpdate(resourceGroup, dataFactory, cosmosDbLinkedServiceName, cosmosDbLinkedService);
+            //Console.WriteLine(JsonConvert.SerializeObject(cosmosDbLinkedService, client.SerializationSettings));
+
             Console.WriteLine("End...");
+            Console.WriteLine("Press any key to exit");
             Console.ReadKey();
         }
     }
