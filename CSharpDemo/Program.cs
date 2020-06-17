@@ -4,8 +4,6 @@
     using CSharpDemo.Application;
     using CSharpDemo.Azure;
     using CSharpDemo.Azure.CosmosDB;
-    using CSharpDemo.CSharpInDepth.Part1;
-    using CSharpDemo.CSharpInDepth.Part2.CSharp2;
     using CSharpDemo.FileOperation;
     using CSharpDemo.IcMTest;
     using CSharpDemo.IDEAs;
@@ -49,23 +47,6 @@
             //DatasetJsonFileOperation.MainMethod();
             //AzureActiveDirectoryToken.MainMethod();
 
-            var filePaths = new List<string>();
-            var folderPaths = new List<string>{
-                @"D:\IDEAs\repo\Ibiza\Source",
-                @"D:\IDEAs\repo\Ibiza\Tools" };
-            foreach (var folderPath in folderPaths)
-            {
-                filePaths.AddRange(ReadFile.GetAllFile(folderPath));
-            }
-
-            Console.WriteLine(filePaths.Count);
-            foreach (var filePath in filePaths)
-            {
-                if (filePath.EndsWith(@".js") || filePath.EndsWith(@".ts"))
-                {
-                    Console.WriteLine(filePath);
-                }
-            }
             Console.ReadKey();
         }
     }

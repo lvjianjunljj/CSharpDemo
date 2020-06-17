@@ -3,12 +3,14 @@
     using CSharpDemo.Azure.CosmosDB;
     using CSharpDemo.FileOperation;
     using Microsoft.Azure.Documents;
+    using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
     using System;
+    using System.IO;
 
     class DatasetJsonFileOperation
     {
-        private static string FolderPath = @"D:\IDEAs\Ibiza\Source\DataCopMonitors";
+        private static string FolderPath = @"D:\IDEAs\repo\Ibiza\Source\DataCopMonitors";
 
 
         public static void MainMethod()
@@ -17,6 +19,8 @@
             //UpdateOldPathSchemaDatasetJsonForMergingADLSCosmos();
             //UpdateCFRDatasetJsonForMergingADLSCosmos();
             //DisableAllDatasets();
+            DisableAllDatasetTest();
+
         }
         public static void DisableAllDatasets()
         {
@@ -73,7 +77,7 @@
             int count = 0;
             foreach (var folder in folders)
             {
-                System.Console.WriteLine(folder);
+                Console.WriteLine(folder);
                 string subFolderPath = folder + @"\Dataset";
                 try
                 {
@@ -86,7 +90,7 @@
                 }
                 catch (Exception e)
                 {
-                    System.Console.WriteLine(e.Message);
+                    Console.WriteLine(e.Message);
                 }
             }
             Console.WriteLine(count);
@@ -94,7 +98,7 @@
 
         public static void UpdateCFRDatasetJsonForMergingADLSCosmos()
         {
-            string cfrFolder = FolderPath + @"\CFR\Cooked\Datasets";
+            string cfrFolder = Path.Combine(FolderPath, @"\CFR\Cooked\Datasets");
             try
             {
                 var datasetJsonFiles = ReadFile.GetFolderSubPaths(cfrFolder, ReadType.File, PathType.Absolute);
@@ -109,6 +113,7 @@
                 Console.WriteLine(e.Message);
             }
         }
+
         private static void UpdateDatasetConnectionInfoForMergingADLSCosmos(string filePath)
         {
             if (!filePath.EndsWith(".json"))
@@ -147,6 +152,25 @@
                     datasetJObject.Remove("lastModifiedBy");
                 }
                 WriteFile.FirstMethod(filePath, datasetJObject.ToString());
+            }
+        }
+
+        public static void DisableAllDatasetTest()
+        {
+            string fileFolder = Path.Combine(FolderPath, @"PROD\ConsumerPaidSubscription\Monitors\");
+            var filePaths = ReadFile.GetFolderSubPaths(fileFolder, ReadType.File, PathType.Absolute);
+            foreach (var filePath in filePaths)
+            {
+                var fileContentString = ReadFile.ThirdMethod(filePath);
+                var json = JsonConvert.DeserializeObject<JObject>(fileContentString, new JsonSerializerSettings
+                {
+                    // Default value is DateParseHandling.DateTime
+                    DateParseHandling = DateParseHandling.None
+                });
+                var id = json["id"].ToString();
+                json["status"] = "Disabled";
+                WriteFile.FirstMethod(filePath, json.ToString());
+                Console.WriteLine(id);
             }
         }
     }

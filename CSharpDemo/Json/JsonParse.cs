@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -61,6 +62,15 @@ namespace CSharpDemo.Json
                 DateParseHandling = DateParseHandling.None
             };
             JObject timeSpanTestClassJsonConvert = JsonConvert.DeserializeObject<JObject>(timeSpanTestClassStr, settings);
+
+            Console.WriteLine(timeSpanTestClassJsonConvert["TimeSpanTest"]);
+            Console.WriteLine(timeSpanTestClassJsonConvert["DateTimeTest"]);
+
+            // For the Date Parse handling setting, we can use this way to configure it.
+            Console.WriteLine("JObject.Load parse...");
+            JsonReader reader = new JsonTextReader(new StringReader(timeSpanTestClassStr));
+            reader.DateParseHandling = DateParseHandling.None;
+            timeSpanTestClassJsonConvert = JObject.Load(reader);
 
             Console.WriteLine(timeSpanTestClassJsonConvert["TimeSpanTest"]);
             Console.WriteLine(timeSpanTestClassJsonConvert["DateTimeTest"]);
