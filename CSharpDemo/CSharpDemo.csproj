@@ -233,6 +233,7 @@
     <Compile Include="LINQ\SingleDemo.cs" />
     <Compile Include="LINQ\TestClassForLINQ.cs" />
     <Compile Include="LINQ\ToIEnumerableDemo.cs" />
+    <Compile Include="PropertyComparable.cs" />
     <Compile Include="SerializableMarkDemo.cs" />
     <Compile Include="SerializelassDemo.cs" />
     <Compile Include="NumberDemo.cs" />

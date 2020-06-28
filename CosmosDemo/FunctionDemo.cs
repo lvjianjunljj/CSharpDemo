@@ -19,7 +19,7 @@
 
             //CompareStreamInfoRowCount();
 
-            //UploadFileDemo();
+            UploadFileDemo();
 
             /*
              * Not work with the error message:
@@ -114,7 +114,7 @@
                 string fileName = "datacop_service_monitor_test_2019_12_" + (i > 9 ? $"{i}" : $"0{i}");
                 Console.WriteLine(CosmosClient.CheckExists(directoryPath + fileName + ".ss", out long a));
                 Console.WriteLine(a);
-                CosmosClient.UploadFile(folderPath + fileName + ".ss", directoryPath + fileName + ".ss", 3650);
+                CosmosClient.UploadFile(folderPath + fileName + ".ss", directoryPath + fileName + ".ss", 365);
             }
         }
 
