@@ -1,67 +1,18 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 
 namespace CSharpDemo.ReflectionDemo
 {
-    public enum GenderEnum
-    {
-        Boy = 0,
-        Girl = 1,
-        Dog = 2
-    }
-
-    class WorkerModel
-    {
-
-        /// <summary>
-        /// 字段 Fields
-        /// </summary>
-        public string name = "Hathway";
-        private int id = 32;
-        protected bool isAdmin = true;
-        public GenderEnum gender = GenderEnum.Girl;
-
-
-        /// <summary>
-        /// 属性 Attributes 
-        /// </summary>
-        public string Name { get; set; }
-        public GenderEnum Gender { get; set; }
-        private int Id { get; set; }
-        protected bool IsAdmin { get; set; }
-        public IList<string> StringList { get; set; }
-
-        /// <summary>
-        /// 方法 Function
-        /// </summary>
-        public void Android()
-        {
-        }
-        protected void iOS()
-        {
-        }
-        private void WindowPhone()
-        {
-        }
-
-
-        /// <summary>
-        /// 构造方法 Constructor
-        /// </summary>
-        public WorkerModel()
-        {
-        }
-
-        public WorkerModel(string name, int id, GenderEnum gender, bool isAdmin)
-        {
-        }
-
-
-    }
     class ReflectionGetValue
     {
         public static void MainMethod()
+        {
+            //WorkerModelTest();
+            GetValueToStringTest();
+        }
+        private static void WorkerModelTest()
         {
             WorkerModel wm = new WorkerModel("name", 1, GenderEnum.Girl, true);
             wm.Name = "Name";
@@ -198,5 +149,131 @@ namespace CSharpDemo.ReflectionDemo
         {
             return o1 + "送书来了3";
         }
+
+        enum GenderEnum
+        {
+            Boy = 0,
+            Girl = 1,
+            Dog = 2
+        }
+
+        class WorkerModel
+        {
+
+            /// <summary>
+            /// 字段 Fields
+            /// </summary>
+            public string name = "Hathway";
+            private int id = 32;
+            protected bool isAdmin = true;
+            public GenderEnum gender = GenderEnum.Girl;
+
+
+            /// <summary>
+            /// 属性 Attributes 
+            /// </summary>
+            public string Name { get; set; }
+            public GenderEnum Gender { get; set; }
+            private int Id { get; set; }
+            protected bool IsAdmin { get; set; }
+            public IList<string> StringList { get; set; }
+
+            /// <summary>
+            /// 方法 Function
+            /// </summary>
+            public void Android()
+            {
+            }
+            protected void iOS()
+            {
+            }
+            private void WindowPhone()
+            {
+            }
+
+
+            /// <summary>
+            /// 构造方法 Constructor
+            /// </summary>
+            public WorkerModel()
+            {
+            }
+
+            public WorkerModel(string name, int id, GenderEnum gender, bool isAdmin)
+            {
+            }
+        }
+
+        static void GetValueToStringTest()
+        {
+            ReflectionTest test = new ReflectionTest();
+            test.Set = new HashSet<string> { "1", "2" };
+            test.Dict = new Dictionary<string, string>
+            {
+                ["1"] = "1",
+                ["2"] = "2",
+                ["3"] = null,
+            };
+            Console.WriteLine(test.Dict.ContainsKey("3"));
+            test.Array = new string[] { "1", "2" };
+            test.Char = '1';
+            test.Boolean = true;
+            test.Enum = ReflectionEnum.One;
+            var properties = test.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.GetProperty);
+
+            Console.WriteLine(JsonConvert.SerializeObject(test));
+            Console.WriteLine("---------------");
+
+            //object property = setProperty.GetValue(test);
+
+            foreach (var property in properties)
+            {
+                var type = property?.GetValue(test)?.GetType();
+                string propertyStr = ConvertPropertyValueToString(property?.GetValue(test));
+
+                Console.WriteLine(type);
+                Console.WriteLine(property?.GetValue(test)?.ToString());
+                Console.WriteLine(propertyStr);
+                Console.WriteLine("-------------------");
+            }
+        }
+
+        // This is an important function when we use reflection to get the property value 
+        // to avoid getting type tostring like: System.Collections.Generic.HashSet`1[System.String]
+        private static string ConvertPropertyValueToString(object propertyValueObject)
+        {
+            if (propertyValueObject == null)
+            {
+                return string.Empty;
+            }
+
+            if (propertyValueObject is string || propertyValueObject is char || propertyValueObject is Enum)
+            {
+                return propertyValueObject.ToString();
+            }
+
+            return JsonConvert.SerializeObject(propertyValueObject);
+        }
+
+        class ReflectionTest
+        {
+            public HashSet<string> Set { get; set; }
+            public Dictionary<string, string> Dict { get; set; }
+            public string[] Array { get; set; }
+            public string Str { get; set; }
+            public char Char { get; set; }
+            public bool Boolean { get; set; }
+            public float Float { get; set; }
+            public int Int { get; set; }
+            public ReflectionEnum Enum { get; set; }
+        }
+
+        enum ReflectionEnum
+        {
+            One = 1,
+            Two = 2,
+            Threee = 3
+        }
     }
+
 }
