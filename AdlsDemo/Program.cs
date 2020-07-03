@@ -15,11 +15,14 @@ namespace AdlsDemo
         // We need the package from nuget Microsoft.Rest.ClientRuntime.Azure.Authentication and Microsoft.Azure.DataLake.Store
         static void Main(string[] args)
         {
+            Console.WriteLine("Start...");
             //CheckAdlsFileExistsDemo();
-            //GetAdlsFileSizeDemo();
+            GetIDEAsProdAdlsFileSizeDemo();
+            GetObdTestFileSizeDemo();
             //InsertAdlsFileDemo();
             //DeleteAdlsFileDemo();
             //GetEnumerateAdlsMetadataEntityDemo();
+            Console.WriteLine("End...");
 
             Console.ReadKey();
         }
@@ -39,7 +42,7 @@ namespace AdlsDemo
             Console.WriteLine(dataLakeClient.CheckExists("ideas-ppe-c14.azuredatalakestore.net", "/local/build/user/dekashet/TeamsMeetingProdAfterTimeZoneFixApril18th/directViewCodeWithAdjustEndDate.csv"));
         }
 
-        public static void GetAdlsFileSizeDemo()
+        public static void GetIDEAsProdAdlsFileSizeDemo()
         {
             ISecretProvider secretProvider = KeyVaultSecretProvider.Instance;
 
@@ -49,7 +52,12 @@ namespace AdlsDemo
             var dataLakeClient = new DataLakeClient(clientId, clientKey);
 
             Console.WriteLine(dataLakeClient.GetFileSize("ideas-prod-c14.azuredatalakestore.net",
-                "local/Scheduled/Datasets/Public/Profiles/OlsLicenses/v4/2019/08/20/LicensesCommercialHistory_2019-08-20.ss"));
+                "local/Scheduled/Datasets/Public/Profiles/OlsLicenses/v4/2020/06/20/LicensesCommercialHistory_2020-06-20.ss"));
+        }
+
+        public static void GetObdTestFileSizeDemo()
+        {
+
         }
 
         public static void InsertAdlsFileDemo()

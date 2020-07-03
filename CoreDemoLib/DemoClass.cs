@@ -1,0 +1,6 @@
+﻿namespace CoreDemoLib
+{
+    class DemoClass
+    {
+    }
+}
