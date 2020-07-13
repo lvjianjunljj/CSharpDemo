@@ -11,6 +11,8 @@
     <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
   </PropertyGroup>
@@ -233,6 +235,7 @@
     <Compile Include="LINQ\SingleDemo.cs" />
     <Compile Include="LINQ\TestClassForLINQ.cs" />
     <Compile Include="LINQ\ToIEnumerableDemo.cs" />
+    <Compile Include="NullablePropertyDemo.cs" />
     <Compile Include="PropertyComparable.cs" />
     <Compile Include="SerializableMarkDemo.cs" />
     <Compile Include="SerializelassDemo.cs" />
