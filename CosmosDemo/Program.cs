@@ -10,7 +10,11 @@
         {
             FunctionDemo.MainMethod();
 
-            Console.ReadKey();
+            if (System.Diagnostics.Debugger.IsAttached)
+            {
+                Console.WriteLine("Press enter key to exit");
+                Console.ReadLine();
+            }
         }
     }
 }

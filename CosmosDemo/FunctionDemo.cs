@@ -16,10 +16,11 @@
             //GetRowCountIteratively("2019-07-10T00:00:00.0000000Z");
 
             //GetStreamInfosDemo();
+            //GetFileStream();
 
             //CompareStreamInfoRowCount();
 
-            UploadFileDemo();
+            //UploadFileDemo();
 
             /*
              * Not work with the error message:
@@ -118,6 +119,15 @@
             }
         }
 
+        public static void GetFileStream()
+        {
+            string streamPath = "https://cosmos14.osdinfra.net/cosmos/IDEAs.Prod/local/Scheduled/Datasets/Public/Profiles/Tenants/TenantsHistory.ss";
+
+            var stream = CosmosClient.ReadStream(streamPath);
+            System.IO.StreamReader reader = new System.IO.StreamReader(stream);
+            Console.WriteLine(reader.ReadToEnd());
+        }
+
         public static void CheckCosmosViewAvailability()
         {
             string viewPath = @"shares/IDEAs.Prod.Data/Publish/Profiles/Subscription/Consumer/IDEAsConsumerPerpetualProfile/Views/v2/IDEAsConsumerPerpetualProfile.view";
@@ -140,14 +150,14 @@
             //};
 
             List<CosmosViewParameter> viewParameters = new List<CosmosViewParameter>
-{
-    new CosmosViewParameter
-    {
-        Name = "PurchaseDate",
-        Type = typeof(DateTime),
-        Value = "@@TestDate@@",
-    }
-};
+                                                        {
+                                                            new CosmosViewParameter
+                                                            {
+                                                                Name = "PurchaseDate",
+                                                                Type = typeof(DateTime),
+                                                                Value = "@@TestDate@@",
+                                                            }
+                                                        };
 
             DateTime testDate = new DateTime(2020, 5, 29);
 

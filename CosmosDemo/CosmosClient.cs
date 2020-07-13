@@ -141,5 +141,12 @@
             var fi = new FileInfo(source);
             VC.Upload(source, dest, 0, fi.Length, false, TimeSpan.FromDays(expiryDays ?? 30), false);
         }
+
+        public static Stream ReadStream(string streamPath)
+        {
+            var certificate = CertificateGenerator.GetCertificateByThumbprint();
+            VC.Setup(null, certificate);
+            return VC.ReadStream(streamPath, true);
+        }
     }
 }
