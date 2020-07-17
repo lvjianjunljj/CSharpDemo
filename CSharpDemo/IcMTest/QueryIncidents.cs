@@ -683,6 +683,7 @@ namespace CSharpDemo.IcMTest
             // build the URL we'll hit
             string LastSyncTimeString = DateTime.UtcNow.AddHours(-100).ToString("s");
             url = $@"https://icm.ad.msft.net/api/cert/incidents?$filter=OwningTeamId eq 'IDEAS\ScorecardTest' and ModifiedDate ge datetime'{LastSyncTimeString}'";
+            url = $@"https://prod.microsofticm.com/api/cert/incidents?$filter=OwningTeamId eq 'IDEAS\Test' and ModifiedDate ge datetime'{LastSyncTimeString}'";
             // CreatedBy is not a valid filter in the query url
             // and CreatedBy eq 'DataCopMonitor'
 
@@ -691,7 +692,7 @@ namespace CSharpDemo.IcMTest
             // "icm.ad.msft.net" is the OdataServiceBaseUri
             //url = string.Format("https://{0}/api/cert/incidents({1})", "icm.ad.msoppe.msft.net", id);
 
-            url = @"https://icm.ad.msft.net/api/cert/incidents?$filter=OwningTeamId eq 'IDEAS\IDEAsDataCopTest' and Id eq 175353420";
+            //url = @"https://icm.ad.msft.net/api/cert/incidents?$filter=OwningTeamId eq 'IDEAS\IDEAsDataCopTest' and Id eq 175353420";
 
             // an error query
             //url = @"https://icm.ad.msft.net/api/cert/incidents?&$filter=OwningTeamId eq '<The SQL oncall team>' and ModifiedDate ge datetime'2019-04-11T15:24:41'";
@@ -708,7 +709,7 @@ namespace CSharpDemo.IcMTest
             //    ) and  Status eq 'RESOLVED'";
 
 
-            url = @"https://prod.microsofticm.com/api/cert/incidents?$filter=OwningTeamId eq 'IDEAS\IDEAsDataCopTest' and Id eq 175353420";
+            //url = @"https://prod.microsofticm.com/api/cert/incidents?$filter=OwningTeamId eq 'IDEAS\IDEAsDataCopTest' and Id eq 175353420";
             IEnumerable<JToken> incidents = GetIncidentListStatic<JToken>(url);
             int count = 0;
             foreach (var incident in incidents)

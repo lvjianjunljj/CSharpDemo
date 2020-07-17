@@ -185,6 +185,7 @@
     <Compile Include="CloneDemo.cs" />
     <Compile Include="CmdHelper.cs" />
     <Compile Include="CollectionDemo.cs" />
+    <Compile Include="Concurrent\ConcurrentDictionaryDemo.cs" />
     <Compile Include="Constant.cs" />
     <Compile Include="ConstructorDemo.cs" />
     <Compile Include="ConvertDemo.cs" />

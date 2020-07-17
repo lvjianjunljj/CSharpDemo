@@ -11,9 +11,13 @@ namespace CSharpDemo.ReflectionDemo
         public static void MainMethod()
         {
             Test t = new Test();
-            t.E = new List<string>();
-            t.E.Add("111");
-            t.E.Add("222");
+
+            t.F = new HashSet<string>();
+            t.F.Add("111");
+            t.F.Add("222");
+
+            Console.WriteLine(JsonConvert.SerializeObject(t));
+
             Type type = t.GetType();
             PropertyInfo propertyInfo = type.GetProperty("A");
             propertyInfo.SetValue(t, "AAA");
@@ -47,15 +51,24 @@ namespace CSharpDemo.ReflectionDemo
 
             // We cant convert string to Collection from string through these function
             propertyInfo = type.GetProperty("E");
-            CollectionConverter collectionConverter = new CollectionConverter();
-            Console.WriteLine(collectionConverter.ConvertFromString("[1,2,3]"));
-            Console.WriteLine(TypeDescriptor.GetConverter(typeof(IList<string>)).ConvertFrom("[1,2,3]"));
 
-            //Console.WriteLine(JsonConvert.DeserializeObject<IList<string>>("[1,2,3]"));
-            //propertyInfo?.SetValue(t, TypeDescriptor.GetConverter(propertyInfo.PropertyType).ConvertFromString("[1,2,3]"));
-            //Console.WriteLine(t.E[0]);
+            //CollectionConverter collectionConverter = new CollectionConverter();
+            //Console.WriteLine(collectionConverter.ConvertFromString("[\"1\", \"2\", \"3\"]"));
+            //Console.WriteLine(TypeDescriptor.GetConverter(typeof(IList<int>)).ConvertFrom("[1,2,3]"));
 
-            //propertyInfo?.SetValue(t, JsonConvert.DeserializeObject<dynamic>("[1,2,3]"));
+            Console.WriteLine(propertyInfo.PropertyType.IsGenericType);
+            Console.WriteLine(propertyInfo.PropertyType.Name.Equals("IList`1"));
+            var listProperty = JsonConvert.DeserializeObject<IList<string>>("[\"1\", \"2\", \"3\"]");
+            propertyInfo?.SetValue(t, listProperty);
+            Console.WriteLine(t.E[0]);
+
+
+            propertyInfo = type.GetProperty("F");
+            Console.WriteLine(propertyInfo.PropertyType.IsGenericType);
+            Console.WriteLine(propertyInfo.PropertyType.Name.Equals("HashSet`1"));
+            var hashSetProperty = JsonConvert.DeserializeObject<HashSet<string>>("[\"1\", \"2\", \"3\"]");
+            propertyInfo?.SetValue(t, hashSetProperty);
+            Console.WriteLine(t.F.Count);
 
             try
             {
@@ -80,6 +93,7 @@ namespace CSharpDemo.ReflectionDemo
         public int C { get; set; }
         public string D { get; set; }
         public IList<string> E { get; set; }
+        public HashSet<string> F { get; set; }
     }
     enum EnumClass
     {

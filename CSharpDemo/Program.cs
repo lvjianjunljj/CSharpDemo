@@ -4,6 +4,7 @@
     using CSharpDemo.Application;
     using CSharpDemo.Azure;
     using CSharpDemo.Azure.CosmosDB;
+    using CSharpDemo.Concurrent;
     using CSharpDemo.FileOperation;
     using CSharpDemo.IcMTest;
     using CSharpDemo.IDEAs;
@@ -47,7 +48,14 @@
             //DatasetJsonFileOperation.MainMethod();
             //AzureActiveDirectoryToken.MainMethod();
 
-            Console.ReadKey();
+            ReflectionSetValue.MainMethod();
+
+            if (Debugger.IsAttached)
+            {
+                Console.WriteLine("press enter key to exit...");
+                Console.ReadLine();
+            }
         }
     }
+
 }
