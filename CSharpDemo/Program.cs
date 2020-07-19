@@ -48,7 +48,6 @@
             //DatasetJsonFileOperation.MainMethod();
             //AzureActiveDirectoryToken.MainMethod();
 
-            ReflectionSetValue.MainMethod();
 
             if (Debugger.IsAttached)
             {
