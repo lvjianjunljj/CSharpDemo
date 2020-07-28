@@ -20,7 +20,7 @@
 
             //CompareStreamInfoRowCount();
 
-            //UploadFileDemo();
+            UploadFileDemo();
 
             /*
              * Not work with the error message:

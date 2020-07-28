@@ -2,6 +2,7 @@
 namespace AzureLib.KeyVault
 {
     using System;
+    using System.Collections.Generic;
     using System.Net.Http;
     using System.Threading.Tasks;
     using Microsoft.Azure.KeyVault;
@@ -48,6 +49,28 @@ namespace AzureLib.KeyVault
             string vaultUri = $"https://{keyVaultName}.vault.azure.net/";
             SecretBundle secret = keyVaultClient.GetSecretAsync(vaultUri, secretName).Result;
             return secret.Value;
+        }
+
+        public static void SetSecret(string keyVaultName, string secretName, string secretValue)
+        {
+            AzureServiceTokenProvider azureServiceTokenProvider = new AzureServiceTokenProvider();
+            KeyVaultClient keyVaultClient = new KeyVaultClient(new KeyVaultClient.AuthenticationCallback(azureServiceTokenProvider.KeyVaultTokenCallback));
+            string vaultUri = $"https://{keyVaultName}.vault.azure.net/";
+            keyVaultClient.SetSecretAsync(vaultUri, secretName, secretValue).Wait();
+        }
+
+        public static Dictionary<string, string> GetAllFromKeyVault(string keyVaultName)
+        {
+            var secretDict = new Dictionary<string, string>();
+            AzureServiceTokenProvider azureServiceTokenProvider = new AzureServiceTokenProvider();
+            KeyVaultClient keyVaultClient = new KeyVaultClient(new KeyVaultClient.AuthenticationCallback(azureServiceTokenProvider.KeyVaultTokenCallback));
+            string vaultUri = $"https://{keyVaultName}.vault.azure.net/";
+            var secrets = keyVaultClient.GetSecretsAsync(vaultUri).Result;
+            foreach (var secret in secrets)
+            {
+                secretDict.Add(secret.Identifier.Name, keyVaultClient.GetSecretAsync(vaultUri, secret.Identifier.Name).Result.Value);
+            }
+            return secretDict;
         }
 
         public static void GetAllFromKeyVault(string vaultName, string appId, string appSecret)
