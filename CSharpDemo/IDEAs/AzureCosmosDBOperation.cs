@@ -14,14 +14,18 @@
     using System.Linq;
     using System.IO;
 
-    public class AzureCosmosDBClientOperation
+    public class AzureCosmosDBOperation
     {
-        // "datacopdev","ideasdatacopppe" or "datacopprod"
-        static readonly string KeyVaultName = "datacopprod";
 
         public static void MainMethod()
         {
-            AzureCosmosDBClient.KeyVaultName = KeyVaultName;
+            // for datacop: "datacopdev","ideasdatacopppe" or "datacopprod"
+            string KeyVaultName = "datacopprod";
+            var secretProvider = KeyVaultSecretProvider.Instance;
+            string endpoint = secretProvider.GetSecretAsync(KeyVaultName, "CosmosDBEndPoint").Result;
+            string key = secretProvider.GetSecretAsync(KeyVaultName, "CosmosDBAuthKey").Result;
+            AzureCosmosDBClient.Endpoint = endpoint;
+            AzureCosmosDBClient.Key = key;
 
             //UpdateAllAlertSettingsDemo();
             //UpdateAllDatasetTestCreatedBy();
@@ -41,7 +45,7 @@
             //EnableAllCosmosDatasetTestSuccessively();
             //EnableAllCosmosDatasetTestWhenNoActiveMessage();
 
-            //QueryAlertSettingDemo();
+            QueryAlertSettingDemo();
             //QueryDataSetDemo();
             //QueryTestRunTestContentDemo();
             //QueryMonitroReportDemo();
@@ -55,7 +59,12 @@
             // We can use this function to delete instance without any limitation.
             //DeleteAlertsWithoutIncidentId();
 
-            //MigrateData("ServiceMonitorReport", "datacopprod", "ideasdatacopppe");
+
+            //string prodEndpoint = secretProvider.GetSecretAsync("datacopprod", "CosmosDBEndPoint").Result;
+            //string prodKey = secretProvider.GetSecretAsync("datacopprod", "CosmosDBAuthKey").Result;
+            //string ppeEndpoint = secretProvider.GetSecretAsync("datacopprod", "CosmosDBEndPoint").Result;
+            //string ppeKey = secretProvider.GetSecretAsync("datacopprod", "CosmosDBAuthKey").Result;
+            //MigrateData("ServiceMonitorReport", prodEndpoint, prodKey, ppeEndpoint, ppeKey);
 
             //AddCompletenessMonitors4ADLS();
 
@@ -67,7 +76,7 @@
 
             //SetOutdatedForDuplicatedDatasetTest();
 
-            DisableAbortedTest();
+            //DisableAbortedTest();
         }
 
         // Disable all the CFR monitor dataset and datasetTest
@@ -504,14 +513,18 @@
             }
         }
 
-        public static void MigrateData(string collectionId, string fromKeyVaultName, string toKeyVaultName)
+        //public static void MigrateData(string collectionId, string fromKeyVaultName, string toKeyVaultName)
+        public static void MigrateData(string collectionId, string fromEndPoint, string fromKey, string toEndPoint, string toKey)
         {
-            AzureCosmosDBClient.KeyVaultName = fromKeyVaultName;
+            AzureCosmosDBClient.Endpoint = fromEndPoint;
+            AzureCosmosDBClient.Key = fromKey;
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", collectionId);
             IList<JObject> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c where c.level = 'DataCop' and c.reportStartTimeStamp > '2020-02-22T15:00:00'")).Result;
 
             // This is a funny thing. azureCosmosDBClient has not been changed.
-            AzureCosmosDBClient.KeyVaultName = toKeyVaultName;
+            // Root cause is that we use the single module
+            AzureCosmosDBClient.Endpoint = toEndPoint;
+            AzureCosmosDBClient.Key = toKey;
             azureCosmosDBClient = new AzureCosmosDBClient("DataCop", collectionId, CosmosDBDocumentClientMode.NoSingle);
             int count = 0;
             foreach (JObject json in list)
@@ -991,7 +1004,7 @@
         {
             string queueName = "cosmostest";
             ISecretProvider secretProvider = KeyVaultSecretProvider.Instance;
-            string serviceBusConnectionString = secretProvider.GetSecretAsync(KeyVaultName, "ServiceBusConnectionString").Result;
+            string serviceBusConnectionString = secretProvider.GetSecretAsync("datacopprod", "ServiceBusConnectionString").Result;
             Dictionary<string, long> messageCountDetails = MicrosoftServiceBusLib.MicrosoftServiceBusClient.GetMessageCountDetails(serviceBusConnectionString, queueName);
             //foreach (var messageCountDetail in messageCountDetails)
             //{

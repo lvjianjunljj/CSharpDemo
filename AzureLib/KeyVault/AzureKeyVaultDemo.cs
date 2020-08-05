@@ -18,7 +18,8 @@ namespace AzureLib.KeyVault
 
         public static void MainMethod()
         {
-            FailedGetAllSecretDemo();
+            //FailedGetAllSecretDemo();
+            MigrateDataBuildSecrets();
         }
 
         public static void FailedGetAllSecretDemo()
@@ -39,11 +40,48 @@ namespace AzureLib.KeyVault
             }
         }
 
+        public static void MigrateDataBuildSecrets()
+        {
+            string sourcekeyVaultName = "databuild2-ppe";
+            string targetkeyVaultName = "cloudscopeppe";
+
+            IList<string> secretNames = new List<string>(){"CloudScopeCosmosDbConnectionString",
+                                "CloudScopeHcmAgentMachineUsername",
+                                "CloudScopeMonitorDataPushStorageConnectionString",
+                                "CloudScopePPECosmosDbConnectionString",
+                                "CloudScopePPEHcmAgentMachinePassword",
+                                "CloudScopePPEHcmAgentMachineUsername",
+                                "CloudScopePPEServiceBusReadWriteKey",
+                                "DataBuildCosmosDbConnectionString",
+                                "DataBuildDeploySingleTenantClientSecret",
+                                "DataBuildServiceBusConnectionString",
+                                "DataBuildStoragePpeConnectionString",
+                                "DataBuildVNextStorageConnectionString",
+                                "DataCopCosmosDbAuthKey",
+                                "DataCopCosmosDbEndpoint",
+                                "DBSamplesBatchKey",
+                                "DBSamplesSqlDbConnectionString",
+                                "DeployStorageConnectionString",
+                                "IDEAsModelScoringAccessKey",
+                                "IDEAsTestModelScoringAccessKey",
+                                "LogStorageConnectionString",
+                                "MultiTenantAppClientSecret",
+                                "SensitiveProdDatabricksAccessKey",
+                                "SensitiveTestDatabricksAccessKey",
+                                "TrackerStorageConnectionString"};
+
+            //IList<string> secretValues = GetSecrets(sourcekeyVaultName, secretNames);
+            //string secretValuesStr = JsonConvert.SerializeObject(secretValues);
+            string secretValuesStr = "[\"DefaultEndpointsProtocol=https;AccountName=cloudscope;AccountKey=2CrNyIgnRrIUFkttrlCO0ntIjPXJ8Wwt4x8Hi9aPwyniGFk9FAnJ2kr70UeLzxbNJuwShbsdlcSDvwtjqMWJ8A==;TableEndpoint=https://cloudscope.table.cosmos.azure.com:443/;\",\"databuildvnext\",\"DefaultEndpointsProtocol=https;AccountName=cloudscopestatemonitor;AccountKey=7ivbqkBALcpne4vLWSCPfy4H6yDiIu4QbxteWJDs1Q8g86+Ed9MkbMMKe09+Ct4EzFFjChrquHG0F64ycuzKDg==;BlobEndpoint=https://cloudscopestatemonitor.blob.core.windows.net/;TableEndpoint=https://cloudscopestatemonitor.table.core.windows.net/;QueueEndpoint=https://cloudscopestatemonitor.queue.core.windows.net/;FileEndpoint=https://cloudscopestatemonitor.file.core.windows.net/\",\"DefaultEndpointsProtocol=https;AccountName=cloudscopeppe;AccountKey=Oiul2jgwek4kmGlSrAxX6IXQni8l7DMLSArpjU1ECcsGaGau3URXqwh9iHnFqrYfJhUm8olkusPlDr2wO1y1bg==;TableEndpoint=https://cloudscopeppe.table.cosmos.azure.com:443/;\",\"Zodeb?swud!9l2lg\",\"databuildvnext\",\"Endpoint=sb://cloudscopeservicebus-ppe.servicebus.windows.net/;SharedAccessKeyName=ReadWriteKey;SharedAccessKey=Bjl3W9B9ETDKrA21G/zi2CRWnpZ583peYRLCcLiVoOE=\",\"DefaultEndpointsProtocol=https;AccountName=databuild-ppe;AccountKey=JP6zCmtkDydbtDK1GBPruFiJNNBrzJnEPKmTFifcDjAlC2toCcZBBuYlq602FGLn6vWgKCl89wfLkroE7Nx59g==;TableEndpoint=https://databuild-ppe.table.cosmos.azure.com:443/;\",\"kWn_A23Kqrjc8-0-rU.G-P3xZrHQqOKWF9\",\"Endpoint=sb://databuild-ppe.servicebus.windows.net/;SharedAccessKeyName=DataBuildDeployReadWriteAccess;SharedAccessKey=MsBTp9PTASwWBxEx3GeX9S+zzOF2k1xA7DwkLRcOxuQ=\",\"DefaultEndpointsProtocol=https;AccountName=databuild2ppe;AccountKey=rXQ0S+ULvAMtd19cTkAtM4V79HM1hbBpXiih98iriFj5yP9XucI66ZHL7DvSLpGr3aHc9qG458KTHQMtp7JB+w==;EndpointSuffix=core.windows.net\",\"DefaultEndpointsProtocol=https;AccountName=databuilddeployppe;AccountKey=XzF6G+3GS9GyRnOAO5EFzPoO/ULJirHOmkL72M6TZmA3V8AnUh/OCcjuc0Np6K5J+gGVvZjV7SP7Mk0018Ak1A==;EndpointSuffix=core.windows.net\",\"4OGFKJLdwmwEZd30rYOPcVeeWyhF9Ig7fb4tQPJoCMWGnfRVaCP17N0bBtFnGi7Nn7dIydvlmsVfRurvYZxVpw==\",\"https://datacopppe.documents.azure.com:443/\",\"mK+5hUUqIXzZMfJKj1eFHpRCjNgGOH1708vVAlvXk5qlUs2tACMLm6rHxrok4++yWobXR/h1aLOLb3mT6pvCXg==\",\"Server=tcp:databuild2test.database.windows.net,1433;Initial Catalog=CountedActionTestDb;Persist Security Info=False;User ID=DataBuildSqlUser;Password=z?,dmHEXB1zz,LtYmam/He{ied}^9gw=;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;\",\"DefaultEndpointsProtocol=https;AccountName=databuilddeployppe;AccountKey=XzF6G+3GS9GyRnOAO5EFzPoO/ULJirHOmkL72M6TZmA3V8AnUh/OCcjuc0Np6K5J+gGVvZjV7SP7Mk0018Ak1A==;EndpointSuffix=core.windows.net\",\"placeholder\",\"dapic6b657b377fa9a40ea8d819cb02a54e0\",\"DefaultEndpointsProtocol=https;AccountName=databuildlogsppe;AccountKey=mnUx3E6O0VZvoNtXvezijEHWEv+lT83Y15um3eZr1YbuKEu2u4a8dgPn0r0cb1HcKFUzvgU2z2ufsOfsLJW6Ew==;EndpointSuffix=core.windows.net\",\"1i8FrkBL_?RL5cAKsKaWBl:[npMOW933\",\"placeholder\",\"placeholder\",\"DefaultEndpointsProtocol=https;AccountName=databuildtrackersppe;AccountKey=TkPjjppFigSA42TaLB5JKNH26/+OHmrOnCtekNZdEqh1tGdiXmTUANJaXzxBkNVCQS/DlWBABMEAYhQBjS0TVw==;EndpointSuffix=core.windows.net\"]";
+            IList<string> secretValues = JsonConvert.DeserializeObject<IList<string>>(secretValuesStr);
+            for (int i = 0; i < secretNames.Count; i++)
+            {
+                SetSecret(targetkeyVaultName, secretNames[i], secretValues[i]);
+            }
+        }
+
         public static void GetAllFromKeyVaultDemo()
         {
-            AzureKeyVaultDemo azureKeyVaultClass = new AzureKeyVaultDemo();
-            Task<string> azureKeyVaultTask = azureKeyVaultClass.GetSecretAsync("AppSecret");
-            Console.WriteLine(azureKeyVaultTask.Result);
             string appSecretValue = GetSecret("AppSecret");
             Console.WriteLine(appSecretValue);
 
@@ -72,15 +110,6 @@ namespace AzureLib.KeyVault
             SecretBundle secret = keyVaultClient.GetSecretAsync(vaultUri, secretName).Result;
             return secret.Value;
         }
-        public async Task<string> GetSecretAsync(string secretName)
-        {
-            AzureServiceTokenProvider azureServiceTokenProvider = new AzureServiceTokenProvider();
-            KeyVaultClient keyVaultClient = new KeyVaultClient(new KeyVaultClient.AuthenticationCallback(azureServiceTokenProvider.KeyVaultTokenCallback));
-            string vaultUri = "https://csharpmvcwebapikeyvault.vault.azure.net/";
-            SecretBundle secret = await keyVaultClient.GetSecretAsync(vaultUri, secretName);
-
-            return secret.Value;
-        }
 
         public static string GetSecret(string keyVaultName, string secretName)
         {
@@ -93,12 +122,15 @@ namespace AzureLib.KeyVault
             return secret.Value;
         }
 
-        public static void SetSecret(string keyVaultName, string secretName, string secretValue)
+        public static IList<string> GetSecrets(string keyVaultName, IList<string> secretNames)
         {
-            AzureServiceTokenProvider azureServiceTokenProvider = new AzureServiceTokenProvider();
-            KeyVaultClient keyVaultClient = new KeyVaultClient(new KeyVaultClient.AuthenticationCallback(azureServiceTokenProvider.KeyVaultTokenCallback));
-            string vaultUri = $"https://{keyVaultName}.vault.azure.net/";
-            keyVaultClient.SetSecretAsync(vaultUri, secretName, secretValue).Wait();
+            IList<string> secretValues = new List<string>();
+            foreach (var secretName in secretNames)
+            {
+                secretValues.Add(GetSecret(keyVaultName, secretName));
+            }
+
+            return secretValues;
         }
 
         public static Dictionary<string, string> GetAllFromKeyVault(string keyVaultName)
@@ -113,6 +145,14 @@ namespace AzureLib.KeyVault
                 secretDict.Add(secret.Identifier.Name, keyVaultClient.GetSecretAsync(vaultUri, secret.Identifier.Name).Result.Value);
             }
             return secretDict;
+        }
+
+        public static void SetSecret(string keyVaultName, string secretName, string secretValue)
+        {
+            AzureServiceTokenProvider azureServiceTokenProvider = new AzureServiceTokenProvider();
+            KeyVaultClient keyVaultClient = new KeyVaultClient(new KeyVaultClient.AuthenticationCallback(azureServiceTokenProvider.KeyVaultTokenCallback));
+            string vaultUri = $"https://{keyVaultName}.vault.azure.net/";
+            keyVaultClient.SetSecretAsync(vaultUri, secretName, secretValue).Wait();
         }
 
         public static void GetAllFromKeyVault(string vaultName, string appId, string appSecret)

@@ -1,5 +1,6 @@
 ﻿namespace CSharpDemo.IDEAs
 {
+    using AzureLib.KeyVault;
     using CSharpDemo.Azure.CosmosDB;
     using CSharpDemo.FileOperation;
     using Microsoft.Azure.Documents;
@@ -24,7 +25,13 @@
         }
         public static void DisableAllDatasets()
         {
-            AzureCosmosDBClient.KeyVaultName = "datacopprod";
+            string keyVaultName = "datacopprod";
+            var secretProvider = KeyVaultSecretProvider.Instance;
+            string endpoint = secretProvider.GetSecretAsync(keyVaultName, "CosmosDBEndPoint").Result;
+            string key = secretProvider.GetSecretAsync(keyVaultName, "CosmosDBAuthKey").Result;
+            AzureCosmosDBClient.Endpoint = endpoint;
+            AzureCosmosDBClient.Key = key;
+
             string fileFolder = FolderPath + @"\PROD\DataVC\Monitor";
             var filePaths = ReadFile.GetFolderSubPaths(fileFolder, ReadType.File, PathType.Absolute);
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "DatasetTest");

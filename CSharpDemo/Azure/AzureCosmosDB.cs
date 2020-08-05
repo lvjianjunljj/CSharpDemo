@@ -1,5 +1,6 @@
 ﻿namespace CSharpDemo.Azure
 {
+    using AzureLib.KeyVault;
     using CSharpDemo.Azure.CosmosDB;
     using Microsoft.Azure.Documents;
     using Microsoft.Azure.Documents.Client;
@@ -13,7 +14,12 @@
         public static void MainMethod()
         {
             // keyVault name csharpmvcwebapikeyvault for csharpmvcwebapicosmosdb
-            AzureCosmosDBClient.KeyVaultName = "csharpmvcwebapikeyvault";
+            string keyVaultName = "csharpmvcwebapikeyvault";
+            var secretProvider = KeyVaultSecretProvider.Instance;
+            string endpoint = secretProvider.GetSecretAsync(keyVaultName, "CosmosDBEndPoint").Result;
+            string key = secretProvider.GetSecretAsync(keyVaultName, "CosmosDBAuthKey").Result;
+            AzureCosmosDBClient.Endpoint = endpoint;
+            AzureCosmosDBClient.Key = key;
 
 
             //CreateNewContainer();

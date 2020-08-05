@@ -14,11 +14,8 @@
 
     class AzureCosmosDBClient
     {
-        // "datacopdev","ideasdatacopppe", "datacopprod" or "csharpmvcwebapikeyvault"(csharpmvcwebapicosmosdb)
-        public static string KeyVaultName;
-
-        public string Endpoint { get; set; }
-        public string Key { get; set; }
+        public static string Endpoint { get; set; }
+        public static string Key { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CosmosDBDocumentCollection"/> class.
@@ -181,10 +178,8 @@
         /// </summary>
         private CosmosDBDocumentClient()
         {
-            ISecretProvider secretProvider = KeyVaultSecretProvider.Instance;
-
-            string endpoint = secretProvider.GetSecretAsync(AzureCosmosDBClient.KeyVaultName, "CosmosDBEndPoint").Result;
-            string key = secretProvider.GetSecretAsync(AzureCosmosDBClient.KeyVaultName, "CosmosDBAuthKey").Result;
+            string endpoint = AzureCosmosDBClient.Endpoint;
+            string key = AzureCosmosDBClient.Key;
 
             // https://docs.microsoft.com/en-us/azure/cosmos-db/performance-tips has more details.
             ConnectionPolicy connectionPolicy = new ConnectionPolicy()
