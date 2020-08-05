@@ -48,6 +48,7 @@
             //DatasetJsonFileOperation.MainMethod();
             //AzureActiveDirectoryToken.MainMethod();
 
+            AzureKeyVaultDemo.MainMethod();
 
             if (Debugger.IsAttached)
             {
