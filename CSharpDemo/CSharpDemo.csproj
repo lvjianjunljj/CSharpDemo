@@ -224,7 +224,7 @@
     <Compile Include="HttpRequestDemo.cs" />
     <Compile Include="IcMTest\FireIncident.cs" />
     <Compile Include="IcMTest\MultiRequestError.cs" />
-    <Compile Include="IDEAs\AzureCosmosDBClientOperation.cs" />
+    <Compile Include="IDEAs\AzureCosmosDBOperation.cs" />
     <Compile Include="IDEAs\DatasetJsonFileOperation.cs" />
     <Compile Include="IDisposableImplementDemo.cs" />
     <Compile Include="Json\JsonCovertDemo.cs" />

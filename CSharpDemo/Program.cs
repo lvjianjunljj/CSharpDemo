@@ -38,7 +38,7 @@
     {
         static void Main(string[] args)
         {
-            AzureCosmosDBClientOperation.MainMethod();
+            AzureCosmosDBOperation.MainMethod();
             //AzureServiceBus.MainMethod();
             //AzureCosmosDB.MainMethod();
 
