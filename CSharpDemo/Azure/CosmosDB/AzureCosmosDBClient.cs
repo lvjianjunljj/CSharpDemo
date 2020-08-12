@@ -1,6 +1,5 @@
 ﻿namespace CSharpDemo.Azure.CosmosDB
 {
-    using AzureLib.KeyVault;
     using System;
     using System.Collections.Concurrent;
     using System.Collections.Generic;

@@ -45,7 +45,7 @@
             //EnableAllCosmosDatasetTestSuccessively();
             //EnableAllCosmosDatasetTestWhenNoActiveMessage();
 
-            QueryAlertSettingDemo();
+            //QueryAlertSettingDemo();
             //QueryDataSetDemo();
             //QueryTestRunTestContentDemo();
             //QueryMonitroReportDemo();
@@ -64,7 +64,7 @@
             //string prodKey = secretProvider.GetSecretAsync("datacopprod", "CosmosDBAuthKey").Result;
             //string ppeEndpoint = secretProvider.GetSecretAsync("datacopprod", "CosmosDBEndPoint").Result;
             //string ppeKey = secretProvider.GetSecretAsync("datacopprod", "CosmosDBAuthKey").Result;
-            //MigrateData("ServiceMonitorReport", prodEndpoint, prodKey, ppeEndpoint, ppeKey);
+            //MigrateData("DataCop", "ServiceMonitorReport", prodEndpoint, prodKey, ppeEndpoint, ppeKey);
 
             //AddCompletenessMonitors4ADLS();
 
@@ -77,6 +77,21 @@
             //SetOutdatedForDuplicatedDatasetTest();
 
             //DisableAbortedTest();
+
+
+
+
+
+            // For cloudscope
+            // For cosmos db data torus migration, we cannot get secret from different tenant with one account
+            // So I just define the endpoint and key but not get them from key vault
+            // This SDK doesn't work for CosmosDB Table, we need to use SDK Microsoft.Azure.Cosmos.Table
+            string microsoftEndPoint = "https://cloudscopeppe.table.cosmos.azure.com:443/";
+            string microsoftKey = "";
+            string torusEndpoint = "https://cloudscope-ppe.table.cosmos.azure.com:443/";
+            string torusKey = "";
+
+            MigrateData("TablesDB", "TestPerf", microsoftEndPoint, microsoftKey, torusEndpoint, torusKey);
         }
 
         // Disable all the CFR monitor dataset and datasetTest
@@ -514,18 +529,18 @@
         }
 
         //public static void MigrateData(string collectionId, string fromKeyVaultName, string toKeyVaultName)
-        public static void MigrateData(string collectionId, string fromEndPoint, string fromKey, string toEndPoint, string toKey)
+        public static void MigrateData(string databaseId, string collectionId, string fromEndPoint, string fromKey, string toEndPoint, string toKey)
         {
             AzureCosmosDBClient.Endpoint = fromEndPoint;
             AzureCosmosDBClient.Key = fromKey;
-            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", collectionId);
+            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient(databaseId, collectionId);
             IList<JObject> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c where c.level = 'DataCop' and c.reportStartTimeStamp > '2020-02-22T15:00:00'")).Result;
 
             // This is a funny thing. azureCosmosDBClient has not been changed.
             // Root cause is that we use the single module
             AzureCosmosDBClient.Endpoint = toEndPoint;
             AzureCosmosDBClient.Key = toKey;
-            azureCosmosDBClient = new AzureCosmosDBClient("DataCop", collectionId, CosmosDBDocumentClientMode.NoSingle);
+            azureCosmosDBClient = new AzureCosmosDBClient(databaseId, collectionId, CosmosDBDocumentClientMode.NoSingle);
             int count = 0;
             foreach (JObject json in list)
             {
