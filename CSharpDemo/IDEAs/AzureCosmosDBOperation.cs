@@ -90,14 +90,7 @@
             //string microsoftKey = "";
             //string torusEndpoint = "https://cloudscope-ppe.table.cosmos.azure.com:443/";
             //string torusKey = "";
-
             //MigrateData("TablesDB", "TestPerf", microsoftEndPoint, microsoftKey, torusEndpoint, torusKey);
-            string microsoftEndPoint = "https://datacop-ppe.documents.azure.com:443";
-            string microsoftKey = "J6pX5sHQPY0HbFMYyL2s0O9foLYw72ITbYEARB999n5Xoi4cL6aEsyKi8HWft7Mv7vNAzBcWOiFY38cbYDj67Q==";
-            AzureCosmosDBClient.Endpoint = microsoftEndPoint;
-            AzureCosmosDBClient.Key = microsoftKey;
-            DisableAllDataset();
-
         }
 
         // Disable all the CFR monitor dataset and datasetTest
