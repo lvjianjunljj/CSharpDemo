@@ -52,9 +52,6 @@
             //AzureKeyVaultDemo.MainMethod();
 
 
-
-            //HttpRequestDemo.MainMethod();
-
             if (Debugger.IsAttached)
             {
                 Console.WriteLine("press enter key to exit...");
