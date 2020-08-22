@@ -20,12 +20,12 @@
         public static void MainMethod()
         {
             // for datacop: "datacopdev","ideasdatacopppe" or "datacopprod"
-            string KeyVaultName = "datacopprod";
-            var secretProvider = KeyVaultSecretProvider.Instance;
-            string endpoint = secretProvider.GetSecretAsync(KeyVaultName, "CosmosDBEndPoint").Result;
-            string key = secretProvider.GetSecretAsync(KeyVaultName, "CosmosDBAuthKey").Result;
-            AzureCosmosDBClient.Endpoint = endpoint;
-            AzureCosmosDBClient.Key = key;
+            //string KeyVaultName = "datacopprod";
+            //var secretProvider = KeyVaultSecretProvider.Instance;
+            //string endpoint = secretProvider.GetSecretAsync(KeyVaultName, "CosmosDBEndPoint").Result;
+            //string key = secretProvider.GetSecretAsync(KeyVaultName, "CosmosDBAuthKey").Result;
+            //AzureCosmosDBClient.Endpoint = endpoint;
+            //AzureCosmosDBClient.Key = key;
 
             //UpdateAllAlertSettingsDemo();
             //UpdateAllDatasetTestCreatedBy();
@@ -86,12 +86,18 @@
             // For cosmos db data torus migration, we cannot get secret from different tenant with one account
             // So I just define the endpoint and key but not get them from key vault
             // This SDK doesn't work for CosmosDB Table, we need to use SDK Microsoft.Azure.Cosmos.Table
-            string microsoftEndPoint = "https://cloudscopeppe.table.cosmos.azure.com:443/";
-            string microsoftKey = "";
-            string torusEndpoint = "https://cloudscope-ppe.table.cosmos.azure.com:443/";
-            string torusKey = "";
+            //string microsoftEndPoint = "https://cloudscopeppe.table.cosmos.azure.com:443/";
+            //string microsoftKey = "";
+            //string torusEndpoint = "https://cloudscope-ppe.table.cosmos.azure.com:443/";
+            //string torusKey = "";
 
-            MigrateData("TablesDB", "TestPerf", microsoftEndPoint, microsoftKey, torusEndpoint, torusKey);
+            //MigrateData("TablesDB", "TestPerf", microsoftEndPoint, microsoftKey, torusEndpoint, torusKey);
+            string microsoftEndPoint = "https://datacop-ppe.documents.azure.com:443";
+            string microsoftKey = "J6pX5sHQPY0HbFMYyL2s0O9foLYw72ITbYEARB999n5Xoi4cL6aEsyKi8HWft7Mv7vNAzBcWOiFY38cbYDj67Q==";
+            AzureCosmosDBClient.Endpoint = microsoftEndPoint;
+            AzureCosmosDBClient.Key = microsoftKey;
+            DisableAllDataset();
+
         }
 
         // Disable all the CFR monitor dataset and datasetTest
@@ -916,6 +922,11 @@
                 Console.WriteLine(dataset["id"].ToString());
                 dataset["isEnabled"] = false;
                 azureCosmosDBClient.UpsertDocumentAsync(dataset).Wait();
+
+                //string id = dataset["id"].ToString();
+                //Console.WriteLine(id);
+                //string documentLink = GetDocumentLink("DataCop", "Dataset", id);
+                //ResourceResponse<Document> resource = azureCosmosDBClient.DeleteDocumentAsync(documentLink).Result;
             }
         }
 

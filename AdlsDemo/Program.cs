@@ -3,13 +3,8 @@
     using AzureLib.KeyVault;
     using Newtonsoft.Json.Linq;
     using System;
-    using System.Collections;
     using System.Collections.Generic;
     using System.Diagnostics;
-    using System.IO;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
 
     class Program
     {
@@ -23,6 +18,8 @@
             InsertAdlsFileDemo();
             //DeleteAdlsFileDemo();
             //GetEnumerateAdlsMetadataEntityDemo();
+
+
             Console.WriteLine("End...");
 
             if (Debugger.IsAttached)
@@ -80,7 +77,7 @@
             for (int i = 1; i < 11; i++)
             {
                 string fileName = "datacop_service_monitor_test_2019_12_" + (i > 9 ? $"{i}" : $"0{i}");
-                //dataLakeClient.CreateFile("ideas-prod-c14.azuredatalakestore.net", folderPath + fileName + ".ss", fileName);
+                dataLakeClient.CreateFile("ideas-prod-c14.azuredatalakestore.net", folderPath + fileName + ".ss", fileName);
                 //Console.WriteLine(dataLakeClient.CheckExists("ideas-prod-c14.azuredatalakestore.net", folderPath + fileName + ".ss"));
                 Console.WriteLine(dataLakeClient.GetFileSize("ideas-prod-c14.azuredatalakestore.net", folderPath + fileName + ".ss"));
             }

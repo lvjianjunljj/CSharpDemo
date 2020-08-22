@@ -14,7 +14,38 @@
     {
         public static void MainMethod()
         {
-            SendHttpWebRequest();
+            //SendHttpWebRequest();
+            SendSubmitJobRequestWithDictBody();
+        }
+
+        private static void SendSubmitJobRequestWithDictBody()
+        {
+            string scriptStr = File.ReadAllText(@"D:\data\company_work\M365\IDEAs\cloudscope\employees_test_script.script");
+
+
+
+            string url = "http://localhost:2189/api/datalake/sandbox-c08/submitJob";
+            HttpClient client = new HttpClient();
+            var values = new Dictionary<string, string>
+            {
+                { "Script", scriptStr},
+                {"PipelineRunId", Guid.NewGuid().ToString()},
+                {"Compression", "false"},
+                {"ScopeJobName", "Submit Scope Example by api(jianjlv)"},
+                {"Priority", "1000"},
+                {"TokenAllocation","0"},
+                {"VirtualClusterPercentAllocation","0"},
+                {"NebulaCommandLineArgs"," -on adl "},
+
+            };
+            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, url);
+
+            request.Content = new FormUrlEncodedContent(values);
+            var response = client.SendAsync(request).Result;
+
+            var responseString = response.Content.ReadAsStringAsync().Result;
+            Console.WriteLine(responseString);
         }
 
         public static void SendHttpWebRequest()

@@ -15,6 +15,7 @@
     using CSharpDemo.RetrierDir;
     using CSharpDemoAux;
     using Microsoft.Azure.Documents;
+    using Microsoft.Azure.Documents.SystemFunctions;
     using Microsoft.Azure.ServiceBus;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Converters;
@@ -22,6 +23,7 @@
     using System;
     using System.Collections.Generic;
     using System.ComponentModel;
+    using System.Configuration;
     using System.Diagnostics;
     using System.IO;
     using System.Linq;
@@ -38,7 +40,7 @@
     {
         static void Main(string[] args)
         {
-            AzureCosmosDBOperation.MainMethod();
+            //AzureCosmosDBOperation.MainMethod();
             //AzureServiceBus.MainMethod();
             //AzureCosmosDB.MainMethod();
 
@@ -51,7 +53,7 @@
 
 
 
-
+            //HttpRequestDemo.MainMethod();
 
             if (Debugger.IsAttached)
             {
