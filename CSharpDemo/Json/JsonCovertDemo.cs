@@ -2,6 +2,7 @@
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Generic;
 
 namespace CSharpDemo.Json
 {
@@ -13,9 +14,9 @@ namespace CSharpDemo.Json
             //StringDemo();
             //DateTimeDeserializeDemo();
             //DoubleDeserializeDemo();
-            EnumDeserializeDemo();
+            //EnumDeserializeDemo();
             //ParentClassDemo();
-
+            DictionaryDemo();
         }
 
         public static void TypeDemo()
@@ -122,6 +123,25 @@ namespace CSharpDemo.Json
             //var typeClass = objectClass as TypeConvertDemoClass;
             //var typeClass = (TypeConvertDemoClass)Convert.ChangeType(objectClass, typeof(TypeConvertDemoClass));
         }
+
+        public static void DictionaryDemo()
+        {
+            DictionaryClass dictClass = new DictionaryClass();
+            dictClass.Dict = new Dictionary<string, string>()
+            {
+                ["Key"] = "Value"
+            };
+
+            Console.WriteLine(JsonConvert.SerializeObject(dictClass));
+
+            string dictClassStr = "{Dict:{\"Key\":\"Value\"}}";
+            var dictParse = JsonConvert.DeserializeObject<DictionaryClass>(dictClassStr);
+            foreach (var pair in dictParse.Dict)
+            {
+                Console.WriteLine($"'{pair.Key}': '{pair.Value}'");
+
+            }
+        }
     }
 
     class StringConvertDemoClass
@@ -165,5 +185,10 @@ namespace CSharpDemo.Json
     {
         T1 = 0,
         T2 = 1,
+    }
+
+    class DictionaryClass
+    {
+        public Dictionary<string, string> Dict { get; set; }
     }
 }
