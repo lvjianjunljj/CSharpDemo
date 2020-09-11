@@ -20,15 +20,15 @@
         {
             string token = GetGDPRCloudScopeTokenByAADLib();
 
-            Console.WriteLine("joblist");
-            RunTestByMultiThread(60, 10, new HttpClient(),
-                @"http://cloudscope-ppe-gdpr.asecloudscopeppe.p.azurewebsites.net/api/virtualCluster/ideas-prod-c14/jobList",
-                @"Get",
-                token,
-                string.Empty);
+            //Console.WriteLine("joblist");
+            //RunTestByMultiThread(60, 10, new HttpClient(),
+            //    @"http://cloudscope-ppe-gdpr.asecloudscopeppe.p.azurewebsites.net/api/virtualCluster/ideas-prod-c14/jobList",
+            //    @"Get",
+            //    token,
+            //    string.Empty);
 
             //Console.WriteLine("jobInfo");
-            //RunTestByMultiThread(50, 10, new HttpClient(),
+            //RunTestByMultiThread(60, 10, new HttpClient(),
             //    @"http://cloudscope-ppe-gdpr.asecloudscopeppe.p.azurewebsites.net/api/virtualCluster/ideas-prod-c14/jobInfo/fab038d1-4fbf-492e-80cf-b7476eea7494",
             //    @"Get",
             //    token,
@@ -55,7 +55,12 @@
             //    token,
             //    string.Empty);
 
-
+            Console.WriteLine("jobcancel");
+            RunTestByMultiThread(50, 10, new HttpClient(),
+                @"http://cloudscope-ppe-gdpr.asecloudscopeppe.p.azurewebsites.net/api/virtualCluster/ideas-prod-c14/canceljob/1983d959-1963-4536-9236-845d9b88a31b",
+                @"Put",
+                token,
+                string.Empty);
 
             //Console.WriteLine("submitJob");
             //RunTestByMultiThread(50, 10, new HttpClient(),
@@ -69,7 +74,7 @@
         {
             string tenantId = @"cdc5aeea-15c5-4db6-b079-fcadd2505dc2";
             string client_id = @"8e2888f4-cebf-47ad-9811-53a584413523";
-            string client_secret = AzureKeyVaultDemo.GetSecret("cloudscopeppe", "GdprAadAuthAppSecret"); ;
+            string client_secret = AzureKeyVaultDemo.GetSecret("cloudscopeppe", "GdprAadAuthAppSecret");
             string resource = @"api://ead06413-cb7c-408e-a533-2cdbe58bf3a6";
             var authenticationContext = new AuthenticationContext($"https://login.microsoftonline.com/{tenantId}", TokenCache.DefaultShared);
 
@@ -141,7 +146,8 @@
                 //{
                 //    Console.WriteLine(respString);
                 //}
-                return response.StatusCode == HttpStatusCode.OK || response.StatusCode == HttpStatusCode.Accepted;
+                var succeed = response.StatusCode == HttpStatusCode.OK || response.StatusCode == HttpStatusCode.Accepted;
+                return true;
             }
         }
 
