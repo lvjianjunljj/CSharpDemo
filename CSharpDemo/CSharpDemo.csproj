@@ -238,6 +238,7 @@
     <Compile Include="LINQ\ToIEnumerableDemo.cs" />
     <Compile Include="NullablePropertyDemo.cs" />
     <Compile Include="PropertyComparable.cs" />
+    <Compile Include="QPSTestDemo.cs" />
     <Compile Include="RegexDemo.cs" />
     <Compile Include="SerializableMarkDemo.cs" />
     <Compile Include="SerializelassDemo.cs" />

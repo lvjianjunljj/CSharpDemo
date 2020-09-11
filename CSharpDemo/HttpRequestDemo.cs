@@ -22,8 +22,6 @@
         {
             string scriptStr = File.ReadAllText(@"D:\data\company_work\M365\IDEAs\cloudscope\employees_test_script.script");
 
-
-
             string url = "http://localhost:2189/api/datalake/sandbox-c08/submitJob";
             HttpClient client = new HttpClient();
             var values = new Dictionary<string, string>

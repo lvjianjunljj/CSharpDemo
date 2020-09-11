@@ -51,7 +51,7 @@
             //AzureActiveDirectoryToken.MainMethod();
             //AzureKeyVaultDemo.MainMethod();
 
-
+            QPSTestDemo.MainMethod();
 
             if (Debugger.IsAttached)
             {
