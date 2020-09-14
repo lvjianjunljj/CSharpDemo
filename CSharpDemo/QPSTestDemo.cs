@@ -34,40 +34,61 @@
             //    token,
             //    string.Empty);
 
-            //Console.WriteLine("exists");
-            //RunTestByMultiThread(50, 10, new HttpClient(),
-            //    @"http://cloudscope-ppe-gdpr.asecloudscopeppe.p.azurewebsites.net/api/virtualCluster/ideas-prod-c14/jobSubmissionStatus/fab038d1-4fbf-492e-80cf-b7476eea7494",
-            //    @"Get",
-            //    token,
-            //    string.Empty);
-
             //Console.WriteLine("jobSubmissionStatus");
-            //RunTestByMultiThread(50, 10, new HttpClient(),
+            //RunTestByMultiThread(60, 10, new HttpClient(),
             //    @"http://cloudscope-ppe-gdpr.asecloudscopeppe.p.azurewebsites.net/api/virtualCluster/ideas-prod-c14/jobSubmissionStatus/fab038d1-4fbf-492e-80cf-b7476eea7494",
             //    @"Get",
             //    token,
             //    string.Empty);
 
             //Console.WriteLine("jobAnalysis");
-            //RunTestByMultiThread(50, 10, new HttpClient(),
+            //RunTestByMultiThread(60, 10, new HttpClient(),
             //    @"http://cloudscope-ppe-gdpr.asecloudscopeppe.p.azurewebsites.net/api/virtualCluster/ideas-prod-c14/jobAnalysis?jobId=2db4018c-16b6-4ec9-ad1d-43dff0172214",
             //    @"Get",
             //    token,
             //    string.Empty);
 
-            Console.WriteLine("jobcancel");
-            RunTestByMultiThread(50, 10, new HttpClient(),
-                @"http://cloudscope-ppe-gdpr.asecloudscopeppe.p.azurewebsites.net/api/virtualCluster/ideas-prod-c14/canceljob/1983d959-1963-4536-9236-845d9b88a31b",
-                @"Put",
-                token,
-                string.Empty);
+            //Console.WriteLine("jobcancel");
+            //RunTestByMultiThread(60, 10, new HttpClient(),
+            //    @"http://cloudscope-ppe-gdpr.asecloudscopeppe.p.azurewebsites.net/api/virtualCluster/ideas-prod-c14/canceljob/1983d959-1963-4536-9236-845d9b88a31b",
+            //    @"Put",
+            //    token,
+            //    string.Empty);
 
             //Console.WriteLine("submitJob");
-            //RunTestByMultiThread(50, 10, new HttpClient(),
+            //RunTestByMultiThread(60, 10, new HttpClient(),
             //    @"http://cloudscope-ppe-gdpr.asecloudscopeppe.p.azurewebsites.net/api/virtualCluster/ideas-prod-c14/submitJob?workloadqueuename=gdpr",
             //    @"Post",
             //    token,
             //    File.ReadAllText(@"D:\data\company_work\M365\IDEAs\cloudscope\submitjobcontent.json"));
+
+            //Console.WriteLine("externaltracker");
+            //RunTestByMultiThread(60, 10, new HttpClient(),
+            //    @"http://cloudscope-ppe-gdpr.asecloudscopeppe.p.azurewebsites.net/api/virtualCluster/ideas-prod-c14/externaltracker",
+            //    @"Post",
+            //    token,
+            //    File.ReadAllText(@"D:\data\company_work\M365\IDEAs\cloudscope\externaltrackercontent.json"));
+
+            //Console.WriteLine("deletestream");
+            //RunTestByMultiThread(60, 10, new HttpClient(),
+            //    @"http://cloudscope-ppe-gdpr.asecloudscopeppe.p.azurewebsites.net/api/virtualCluster/ideas-prod-c14/stream?streamRelativePath=%2Flocal%2Fusers%2Fxiaress%2FWriteStreamTest.txt",
+            //    @"Delete",
+            //    token,
+            //    string.Empty);
+
+            Console.WriteLine("writestream");
+            RunTestByMultiThread(60, 10, new HttpClient(),
+                @"http://cloudscope-ppe-gdpr.asecloudscopeppe.p.azurewebsites.net/api/virtualCluster/ideas-prod-c14/stream?streamRelativePath=%2Flocal%2Fusers%2Fxiare%2FWriteStreamTest.txt&append=false&streamExpiryInDays=20",
+                @"Post",
+                token,
+                "\"Test for write stream via adls\"");
+
+            //Console.WriteLine("readstream");
+            //RunTestByMultiThread(60, 10, new HttpClient(),
+            //    @"http://cloudscope-ppe-gdpr.asecloudscopeppe.p.azurewebsites.net/api/virtualCluster/ideas-prod-c14/stream?streamRelativePath=%2Flocal%2Fusers%2Fxiaress%2FWriteStreamTest.txt",
+            //    @"Get",
+            //    token,
+            //    string.Empty);
         }
 
         private static string GetGDPRCloudScopeTokenByAADLib()
@@ -147,6 +168,12 @@
                 //    Console.WriteLine(respString);
                 //}
                 var succeed = response.StatusCode == HttpStatusCode.OK || response.StatusCode == HttpStatusCode.Accepted;
+                    Console.WriteLine(response.StatusCode);
+                if (!succeed)
+                {
+                    string respString = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine(respString);
+                }
                 return true;
             }
         }
