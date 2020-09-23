@@ -113,8 +113,8 @@
             for (int i = 1; i < 11; i++)
             {
                 string fileName = "datacop_service_monitor_test_2019_12_" + (i > 9 ? $"{i}" : $"0{i}");
-                Console.WriteLine(CosmosClient.CheckExists(directoryPath + fileName + ".ss", out long a));
-                Console.WriteLine(a);
+                Console.WriteLine(CosmosClient.CheckExists(directoryPath + fileName + ".ss", out long rowCount));
+                Console.WriteLine(rowCount);
                 //CosmosClient.UploadFile(folderPath + fileName + ".ss", directoryPath + fileName + ".ss", 365);
             }
         }

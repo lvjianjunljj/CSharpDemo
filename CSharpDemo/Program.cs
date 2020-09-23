@@ -51,6 +51,9 @@
             //AzureActiveDirectoryToken.MainMethod();
             //AzureKeyVaultDemo.MainMethod();
 
+            ZipFileDemo.MainMethod();
+
+
 
             if (Debugger.IsAttached)
             {
