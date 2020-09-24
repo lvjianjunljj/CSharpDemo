@@ -91,6 +91,17 @@
             //string torusEndpoint = "https://cloudscope-ppe.table.cosmos.azure.com:443/";
             //string torusKey = "";
             //MigrateData("TablesDB", "TestPerf", microsoftEndPoint, microsoftKey, torusEndpoint, torusKey);
+
+
+            // for Torus datacop: "datacop-prod"
+            string KeyVaultName = "datacop-prod";
+            var secretProvider = KeyVaultSecretProvider.Instance;
+            string endpoint = secretProvider.GetSecretAsync(KeyVaultName, "CosmosDBEndPoint").Result;
+            string key = secretProvider.GetSecretAsync(KeyVaultName, "CosmosDBAuthKey").Result;
+            AzureCosmosDBClient.Endpoint = endpoint;
+            AzureCosmosDBClient.Key = key;
+            //DisableAllBuildDeploymentDataset();
+            UpdateSqlDatasetKeyVaultName();
         }
 
         // Disable all the CFR monitor dataset and datasetTest
@@ -921,6 +932,43 @@
                 //string documentLink = GetDocumentLink("DataCop", "Dataset", id);
                 //ResourceResponse<Document> resource = azureCosmosDBClient.DeleteDocumentAsync(documentLink).Result;
             }
+        }
+
+        public static void DisableAllBuildDeploymentDataset()
+        {
+            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "Dataset");
+            // Collation: asc and desc is ascending and descending
+            IList<JObject> datasets = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(
+                new SqlQuerySpec(@"SELECT * FROM c WHERE c.createdBy = 'BuildDeployment'")).Result;
+            foreach (JObject dataset in datasets)
+            {
+                Console.WriteLine(dataset["id"].ToString());
+                dataset["isEnabled"] = false;
+                azureCosmosDBClient.UpsertDocumentAsync(dataset).Wait();
+                //Console.WriteLine(dataset);
+
+                //string id = dataset["id"].ToString();
+                //Console.WriteLine(id);
+                //string documentLink = GetDocumentLink("DataCop", "Dataset", id);
+                //ResourceResponse<Document> resource = azureCosmosDBClient.DeleteDocumentAsync(documentLink).Result;
+            }
+            Console.WriteLine(datasets.Count);
+        }
+
+        public static void UpdateSqlDatasetKeyVaultName()
+        {
+            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "Dataset");
+            // Collation: asc and desc is ascending and descending
+            IList<JObject> datasets = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(
+                new SqlQuerySpec(@"SELECT * FROM c WHERE c.dataFabric = 'SQL'")).Result;
+            foreach (JObject dataset in datasets)
+            {
+                Console.WriteLine(dataset["id"].ToString());
+                Console.WriteLine(dataset["connectionInfo"]["auth"]["keyVaultName"]);
+                dataset["connectionInfo"]["auth"]["keyVaultName"] = "datacop-prod";
+                //azureCosmosDBClient.UpsertDocumentAsync(dataset).Wait();
+            }
+            Console.WriteLine(datasets.Count);
         }
 
         public static void EnableDataset()

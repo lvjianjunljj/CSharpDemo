@@ -8,17 +8,26 @@
 
     class Program
     {
+        static string tenantId;
         // We need the package from nuget Microsoft.Rest.ClientRuntime.Azure.Authentication and Microsoft.Azure.DataLake.Store
         static void Main(string[] args)
         {
             Console.WriteLine("Start...");
+
+            // For Microsoft tenant
+            //tenantId = @"72f988bf-86f1-41af-91ab-2d7cd011db47";
             //CheckAdlsFileExistsDemo();
             //GetIDEAsProdAdlsFileSizeDemo();
             //GetObdTestFileSizeDemo();
-            InsertAdlsFileDemo();
+            //InsertAdlsFileDemo();
             //DeleteAdlsFileDemo();
             //GetEnumerateAdlsMetadataEntityDemo();
 
+
+            // For Torus tenant
+            tenantId = @"cdc5aeea-15c5-4db6-b079-fcadd2505dc2";
+            // Check the file with the certificate in Torus tenant.
+            TorusAccessCFRFileDemo();
 
             Console.WriteLine("End...");
 
@@ -36,10 +45,26 @@
             string clientId = secretProvider.GetSecretAsync("datacopdev", "AdlsAadAuthAppId").Result;
             string clientKey = secretProvider.GetSecretAsync("datacopdev", "AdlsAadAuthAppSecret").Result;
 
-            var dataLakeClient = new DataLakeClient(clientId, clientKey);
+            var dataLakeClient = new DataLakeClient(tenantId, clientId, clientKey);
 
             Console.WriteLine(dataLakeClient.CheckExists("ideas-prod-c14.azuredatalakestore.net",
-                "/local/Scheduled/Datasets/Private/Users/DataQuality/ConsumerUserProfile/v1/2019/11/ConsumerUserFABBSProfile_CorrectnessStats_2019_11_25.ss"));
+                "/shares/IDEAs.Prod.Data/Publish/Profiles/Tenant/Commercial/Internal/IDEAsTenantProfile/PostValidation/Streams/v3/2020/09/TenantProfileStats_2020_09_16.ss"));
+            // We don't have access to store "ideas-ppe-c14.azuredatalakestore.net". It will throw exception: forbidden
+            //Console.WriteLine(dataLakeClient.CheckExists("ideas-ppe-c14.azuredatalakestore.net", "/local/build/user/dekashet/TeamsMeetingProdAfterTimeZoneFixApril18th/directViewCodeWithAdjustEndDate.csv"));
+        }
+
+        public static void TorusAccessCFRFileDemo()
+        {
+            ISecretProvider secretProvider = KeyVaultSecretProvider.Instance;
+
+            string clientId = secretProvider.GetSecretAsync("datacop-prod", "AdlsAadAuthAppId").Result;
+            string clientKey = secretProvider.GetSecretAsync("datacop-prod", "AdlsAadAuthAppSecret").Result;
+            Console.WriteLine(clientId);
+            var dataLakeClient = new DataLakeClient(tenantId, clientId, clientKey);
+
+            // Status code: Forbidden
+            Console.WriteLine(dataLakeClient.CheckExists("cfr-prod-c14.azuredatalakestore.net",
+                "/local/Cooked/StateUserYammer/StateUserYammer_2020_09_19.ss"));
             // We don't have access to store "ideas-ppe-c14.azuredatalakestore.net". It will throw exception: forbidden
             //Console.WriteLine(dataLakeClient.CheckExists("ideas-ppe-c14.azuredatalakestore.net", "/local/build/user/dekashet/TeamsMeetingProdAfterTimeZoneFixApril18th/directViewCodeWithAdjustEndDate.csv"));
         }
@@ -51,7 +76,7 @@
             string clientId = secretProvider.GetSecretAsync("datacopdev", "AdlsAadAuthAppId").Result;
             string clientKey = secretProvider.GetSecretAsync("datacopdev", "AdlsAadAuthAppSecret").Result;
 
-            var dataLakeClient = new DataLakeClient(clientId, clientKey);
+            var dataLakeClient = new DataLakeClient(tenantId, clientId, clientKey);
 
             Console.WriteLine(dataLakeClient.GetFileSize("ideas-prod-c14.azuredatalakestore.net",
                 "local/Scheduled/Datasets/Public/Profiles/OlsLicenses/v4/2020/06/20/LicensesCommercialHistory_2020-06-20.ss"));
@@ -71,7 +96,7 @@
             string clientId = secretProvider.GetSecretAsync("datacopdev", "AdlsAadAuthAppId").Result;
             string clientKey = secretProvider.GetSecretAsync("datacopdev", "AdlsAadAuthAppSecret").Result;
 
-            var dataLakeClient = new DataLakeClient(clientId, clientKey);
+            var dataLakeClient = new DataLakeClient(tenantId, clientId, clientKey);
 
             string folderPath = @"local/users/jianjlv/datacop_service_monitor/";
             for (int i = 1; i < 11; i++)
@@ -90,7 +115,7 @@
             string clientId = secretProvider.GetSecretAsync("datacopdev", "AdlsAadAuthAppId").Result;
             string clientKey = secretProvider.GetSecretAsync("datacopdev", "AdlsAadAuthAppSecret").Result;
 
-            var dataLakeClient = new DataLakeClient(clientId, clientKey);
+            var dataLakeClient = new DataLakeClient(tenantId, clientId, clientKey);
 
             string folderPath = @"/users/jianjlv/";
             for (int i = 1; i < 11; i++)
@@ -108,7 +133,7 @@
             string clientId = secretProvider.GetSecretAsync("datacopdev", "AdlsAadAuthAppId").Result;
             string clientKey = secretProvider.GetSecretAsync("datacopdev", "AdlsAadAuthAppSecret").Result;
 
-            var dataLakeClient = new DataLakeClient(clientId, clientKey);
+            var dataLakeClient = new DataLakeClient(tenantId, clientId, clientKey);
 
             IEnumerable<JObject> entities = dataLakeClient.EnumerateAdlsMetadataEntity("ideas-prod-c14.azuredatalakestore.net",
                 "local/users/jianjlv/");

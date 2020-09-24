@@ -9,23 +9,18 @@
     using System.Threading;
     using System.Collections.Generic;
     using Newtonsoft.Json.Linq;
-    using System.Linq;
 
     public class DataLakeClient
     {
-        /// <summary>
-        /// Microsoft Tenant Id for Active Directory
-        /// </summary>
-        const string TenantId = "72f988bf-86f1-41af-91ab-2d7cd011db47";
-
-        private string clientId, clientKey;
+        private string tenantId, clientId, clientKey;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DataLakeClient"/> class.
         /// </summary>
         /// <param name="client">The client.</param>
-        public DataLakeClient(string clientId, string clientKey)
+        public DataLakeClient(string tenantId, string clientId, string clientKey)
         {
+            this.tenantId = tenantId;
             this.clientId = clientId;
             this.clientKey = clientKey;
         }
@@ -46,7 +41,7 @@
             try
             {
                 // https://github.com/Azure/azure-data-lake-store-net/blob/a067d7c1d572c96c3b323cd7167132a19efe7235/AdlsDotNetSDK/ADLSClient.cs#L1462
-                var client = CreateAdlsClient(store, clientId, clientKey);
+                var client = CreateAdlsClient(store, tenantId, clientId, clientKey);
                 var entity = client.GetDirectoryEntry(path);
                 if (entity.Type == DirectoryEntryType.FILE)
                 {
@@ -78,7 +73,7 @@
         {
             try
             {
-                var client = CreateAdlsClient(store, clientId, clientKey);
+                var client = CreateAdlsClient(store, tenantId, clientId, clientKey);
                 return client.GetDirectoryEntry(path).Length;
             }
             catch (AdlsException adlsException)
@@ -92,7 +87,7 @@
         {
             try
             {
-                var client = CreateAdlsClient(store, clientId, clientKey);
+                var client = CreateAdlsClient(store, tenantId, clientId, clientKey);
                 var stream = client.CreateFile(path, IfExists.Overwrite);
                 // CanRead is false but function GetFileSize works for this path.
                 //Console.WriteLine(stream.CanRead);
@@ -112,7 +107,7 @@
         {
             try
             {
-                var client = CreateAdlsClient(store, clientId, clientKey);
+                var client = CreateAdlsClient(store, tenantId, clientId, clientKey);
                 var stream = client.Delete(path);
             }
             catch (AdlsException adlsException)
@@ -123,7 +118,7 @@
 
         public IEnumerable<JObject> EnumerateAdlsMetadataEntity(string store, string path)
         {
-            var client = CreateAdlsClient(store, clientId, clientKey);
+            var client = CreateAdlsClient(store, tenantId, clientId, clientKey);
             IEnumerator<DirectoryEntry> entities;
             try
             {
@@ -178,7 +173,7 @@
 
         public IEnumerable<JObject> EnumerateAdlsMetadataEntityFor(string store, string path)
         {
-            var client = CreateAdlsClient(store, clientId, clientKey);
+            var client = CreateAdlsClient(store, tenantId, clientId, clientKey);
             var entities = client.EnumerateDirectory(path);
 
             foreach (var entity in client.EnumerateDirectory(path))
@@ -211,9 +206,9 @@
         /// <param name="clientId">The client identifier.</param>
         /// <param name="clientKey">The client key.</param>
         /// <returns>AdlsClient.</returns>
-        private static AdlsClient CreateAdlsClient(string dataLakeStore, string clientId, string clientKey)
+        private static AdlsClient CreateAdlsClient(string dataLakeStore, string tenantId, string clientId, string clientKey)
         {
-            var adlsCreds = GetAdlsCreds(clientId, clientKey);
+            var adlsCreds = GetAdlsCreds(tenantId, clientId, clientKey);
             var client = AdlsClient.CreateClient(dataLakeStore, adlsCreds);
             // TODO - Cache the ADLS client to make it performant
             // This is tracked by https://o365exchange.visualstudio.com/O365%20Core/_workitems/edit/947943.
@@ -226,7 +221,7 @@
         /// <param name="clientId">The client identifier.</param>
         /// <param name="clientKey">The client key.</param>
         /// <returns>ServiceClientCredentials.</returns>
-        private static ServiceClientCredentials GetAdlsCreds(string clientId, string clientKey)
+        private static ServiceClientCredentials GetAdlsCreds(string tenantId, string clientId, string clientKey)
         {
             SynchronizationContext.SetSynchronizationContext(new SynchronizationContext());
             var serviceSettings = ActiveDirectoryServiceSettings.Azure;
@@ -234,7 +229,7 @@
 
             var creds =
                 ApplicationTokenProvider.LoginSilentAsync(
-                 TenantId,
+                 tenantId,
                  clientId,
                  clientKey,
                  serviceSettings).GetAwaiter().GetResult();
