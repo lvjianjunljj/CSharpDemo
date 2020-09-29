@@ -102,6 +102,36 @@
             AzureCosmosDBClient.Key = key;
             //DisableAllBuildDeploymentDataset();
             UpdateSqlDatasetKeyVaultName();
+            //CreateContainers();
+        }
+
+        private static void CreateContainers()
+        {
+            // Create some defualt containers
+            string[] collectionIds = new string[] {"ActiveAlertTrend",
+                                        "AdlsMetadataV2",
+                                        "Alert",
+                                        "AlertRule",
+                                        "AlertSettings",
+                                        "DataCopScore",
+                                        "Dataset",
+                                        "DatasetTest",
+                                        "RecentDataCopScoreDetails",
+                                        "Scenario",
+                                        "ScenarioReport",
+                                        "ScenarioRun",
+                                        "ServiceMonitorReport",
+                                        "Stats",
+                                        "TestContentOverride",
+                                        "TestRunResultForScore",
+                                        };
+            foreach (var collectionId in collectionIds)
+            {
+                AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", collectionId);
+                IList<JObject> items = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(
+                new SqlQuerySpec(@"SELECT * FROM c")).Result;
+                Console.WriteLine($"{collectionId}:{items.Count}");
+            }
         }
 
         // Disable all the CFR monitor dataset and datasetTest
@@ -966,9 +996,10 @@
                 Console.WriteLine(dataset["id"].ToString());
                 Console.WriteLine(dataset["connectionInfo"]["auth"]["keyVaultName"]);
                 dataset["connectionInfo"]["auth"]["keyVaultName"] = "datacop-prod";
-                //azureCosmosDBClient.UpsertDocumentAsync(dataset).Wait();
+                azureCosmosDBClient.UpsertDocumentAsync(dataset).Wait();
             }
             Console.WriteLine(datasets.Count);
+
         }
 
         public static void EnableDataset()
