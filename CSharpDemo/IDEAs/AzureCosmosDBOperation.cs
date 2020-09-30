@@ -94,15 +94,106 @@
 
 
             // for Torus datacop: "datacop-prod"
-            string KeyVaultName = "datacop-prod";
+            string KeyVaultName = "datacopprod";
             var secretProvider = KeyVaultSecretProvider.Instance;
             string endpoint = secretProvider.GetSecretAsync(KeyVaultName, "CosmosDBEndPoint").Result;
             string key = secretProvider.GetSecretAsync(KeyVaultName, "CosmosDBAuthKey").Result;
             AzureCosmosDBClient.Endpoint = endpoint;
             AzureCosmosDBClient.Key = key;
             //DisableAllBuildDeploymentDataset();
-            UpdateSqlDatasetKeyVaultName();
+            //UpdateSqlDatasetKeyVaultName();
             //CreateContainers();
+            //ShowADLSStreamPathPrefix();
+            ShowCosmosStreamPathPrefix();
+        }
+
+        public static void ShowADLSStreamPathPrefix()
+        {
+            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "Dataset");
+            // Collation: asc and desc is ascending and descending
+            IList<JObject> datasets = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(
+                new SqlQuerySpec(@"SELECT * FROM c WHERE c.dataFabric = 'ADLS' and c.isEnabled = true")).Result;
+            Dictionary<string, HashSet<string>> dict = new Dictionary<string, HashSet<string>>();
+
+
+            //Console.WriteLine($"dataset: {datasets.Count}");
+            foreach (JObject dataset in datasets)
+            {
+                string dataLakeStore = dataset["connectionInfo"]["dataLakeStore"].ToString().Trim(new char[] { '/' }).ToLower().Split(new char[] { '/' })[0];
+                string streamPath = dataset["connectionInfo"]["streamPath"].ToString().Trim(new char[] { '/' }).ToLower();
+                string pathPrefix;
+                var splits = streamPath.Split(new char[] { '/' });
+                if (streamPath.StartsWith("share"))
+                {
+                    pathPrefix = splits[0] + "/" + splits[1] + "/" + splits[2];
+                }
+                else
+                {
+                    pathPrefix = splits[0] + "/" + splits[1];
+                }
+
+                if (!dict.ContainsKey(dataLakeStore))
+                {
+                    dict.Add(dataLakeStore, new HashSet<string>());
+                }
+                dict[dataLakeStore].Add(pathPrefix);
+            }
+
+            foreach (var map in dict)
+            {
+                Console.WriteLine($"dataFabric: 'ADLS'");
+                Console.WriteLine($"dataLakeStore: {map.Key}");
+                List<string> pathPrefixs = new List<string>(map.Value);
+                pathPrefixs.Sort();
+                foreach (var pathPrefix in pathPrefixs)
+                {
+                    Console.WriteLine(pathPrefix);
+                }
+            }
+        }
+
+        public static void ShowCosmosStreamPathPrefix()
+        {
+            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "Dataset");
+            // Collation: asc and desc is ascending and descending
+            IList<JObject> datasets = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(
+                new SqlQuerySpec(@"SELECT * FROM c WHERE contains(c.dataFabric, 'Cosmos') and c.isEnabled = true")).Result;
+            Dictionary<string, HashSet<string>> dict = new Dictionary<string, HashSet<string>>();
+
+
+            //Console.WriteLine($"dataset: {datasets.Count}");
+            foreach (JObject dataset in datasets)
+            {
+                string dataFabric = dataset["dataFabric"].ToString();
+                string cosmosVC = dataFabric + " " + dataset["connectionInfo"]["cosmosVC"].ToString().Trim(new char[] { '/' }).ToLower();
+                string streamPath = dataset["connectionInfo"]["streamPath"].ToString().Trim(new char[] { '/' }).ToLower();
+                string pathPrefix;
+                var splits = streamPath.Split(new char[] { '/' });
+                if (streamPath.StartsWith("share"))
+                {
+                    pathPrefix = splits[0] + "/" + splits[1] + "/" + splits[2];
+                }
+                else
+                {
+                    pathPrefix = splits[0] + "/" + splits[1];
+                }
+
+                if (!dict.ContainsKey(cosmosVC))
+                {
+                    dict.Add(cosmosVC, new HashSet<string>());
+                }
+                dict[cosmosVC].Add(pathPrefix);
+            }
+
+            foreach (var map in dict)
+            {
+                Console.WriteLine($"dataFabric: '{map.Key.Split(' ')[0]}'");
+                Console.WriteLine($"cosmosVC: '{map.Key.Split(' ')[1]}'");
+                foreach (var pathPrefix in map.Value)
+                {
+                    Console.WriteLine(pathPrefix);
+                }
+            }
         }
 
         private static void CreateContainers()
@@ -999,7 +1090,6 @@
                 azureCosmosDBClient.UpsertDocumentAsync(dataset).Wait();
             }
             Console.WriteLine(datasets.Count);
-
         }
 
         public static void EnableDataset()

@@ -40,7 +40,7 @@
     {
         static void Main(string[] args)
         {
-            //AzureCosmosDBOperation.MainMethod();
+            AzureCosmosDBOperation.MainMethod();
             //AzureServiceBus.MainMethod();
             //AzureCosmosDB.MainMethod();
 
@@ -50,6 +50,7 @@
             //DatasetJsonFileOperation.MainMethod();
             //AzureActiveDirectoryToken.MainMethod();
             //AzureKeyVaultDemo.MainMethod();
+
 
 
             if (Debugger.IsAttached)
