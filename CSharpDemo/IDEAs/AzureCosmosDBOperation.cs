@@ -103,7 +103,7 @@
             //DisableAllBuildDeploymentDataset();
             //UpdateSqlDatasetKeyVaultName();
             //CreateContainers();
-            //ShowADLSStreamPathPrefix();
+            ShowADLSStreamPathPrefix();
             ShowCosmosStreamPathPrefix();
         }
 
@@ -142,7 +142,7 @@
             foreach (var map in dict)
             {
                 Console.WriteLine($"dataFabric: 'ADLS'");
-                Console.WriteLine($"dataLakeStore: {map.Key}");
+                Console.WriteLine($"dataLakeStore: '{map.Key}'");
                 List<string> pathPrefixs = new List<string>(map.Value);
                 pathPrefixs.Sort();
                 foreach (var pathPrefix in pathPrefixs)
