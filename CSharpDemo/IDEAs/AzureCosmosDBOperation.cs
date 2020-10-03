@@ -190,6 +190,7 @@
                 Console.WriteLine($"dataFabric: '{map.Key.Split(' ')[0]}'");
                 Console.WriteLine($"cosmosVC: '{map.Key.Split(' ')[1]}'");
                 List<string> pathPrefixs = new List<string>(map.Value);
+                pathPrefixs.Sort();
                 foreach (var pathPrefix in pathPrefixs)
                 {
                     Console.WriteLine(pathPrefix);
