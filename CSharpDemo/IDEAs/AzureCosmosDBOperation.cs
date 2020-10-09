@@ -94,7 +94,7 @@
 
 
             // for Torus datacop: "datacop-prod"
-            string KeyVaultName = "datacopprod";
+            string KeyVaultName = "datacop-prod";
             var secretProvider = KeyVaultSecretProvider.Instance;
             string endpoint = secretProvider.GetSecretAsync(KeyVaultName, "CosmosDBEndPoint").Result;
             string key = secretProvider.GetSecretAsync(KeyVaultName, "CosmosDBAuthKey").Result;
@@ -103,72 +103,93 @@
             //DisableAllBuildDeploymentDataset();
             //UpdateSqlDatasetKeyVaultName();
             //CreateContainers();
-            ShowADLSStreamPathPrefix();
-            ShowCosmosStreamPathPrefix();
+            //ShowADLSStreamPathPrefix();
+            //ShowCosmosStreamPathPrefix();
+            GetNonAuthPath();
+        }
+
+        public static void GetNonAuthPath()
+        {
+            string nonAuthTestRunsQueryStr = @"SELECT top 1000 * FROM c WHERE c.status = 'Aborted' and (c.dataFabric = 'ADLS' or contains(c.dataFabric, 'Cosmos')) and contains(c.message, 'HttpStatus:Forbidden') order by c.createTime desc";
+            //string testRunsQueryStr = @"SELECT top 1000 * FROM c WHERE c.status = 'Aborted' and (c.dataFabric = 'ADLS' or contains(c.dataFabric, 'Cosmos')) order by c.createTime desc";
+
+            string authTestRunsQueryStr = @"SELECT top 1000 * FROM c WHERE (c.status = 'Success' or c.status = 'Failed') and (c.dataFabric = 'ADLS' or contains(c.dataFabric, 'Cosmos')) order by c.createTime desc";
+            string datasetInfosQueryStr = @"SELECT * FROM c WHERE c.isEnabled = true and (c.dataFabric = 'ADLS' or contains(c.dataFabric, 'Cosmos'))";
+
+            JToken datasetInfos = GetStreamPathPrefixJson(datasetInfosQueryStr);
+            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "PartitionedTestRun");
+            IList<JObject> nonAuthTestRuns = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(nonAuthTestRunsQueryStr)).Result;
+            IList<JObject> authTestRuns = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(authTestRunsQueryStr)).Result;
+
+            Console.WriteLine("nonAuthTestRuns");
+            foreach (JObject nonAuthTestRun in nonAuthTestRuns)
+            {
+                string dataFabric = nonAuthTestRun["dataFabric"].ToString();
+                string dataLakeStore = nonAuthTestRun["testContent"]["dataLakeStore"]?.ToString();
+                string streamPath = nonAuthTestRun["testContent"]["streamPath"]?.ToString();
+
+                if (dataFabric.Equals("ADLS"))
+                {
+
+                }
+                Console.WriteLine(dataFabric);
+                Console.WriteLine(dataLakeStore);
+                Console.WriteLine(streamPath);
+            }
+
+            Console.WriteLine("authTestRuns");
+            foreach (JObject authTestRun in authTestRuns)
+            {
+                string dataFabric = authTestRun["dataFabric"].ToString();
+                string dataLakeStore = authTestRun["testContent"]["dataLakeStore"]?.ToString();
+                string streamPath = authTestRun["testContent"]["streamPath"]?.ToString();
+
+
+                Console.WriteLine(dataFabric);
+                Console.WriteLine(dataLakeStore);
+                Console.WriteLine(streamPath);
+            }
+
+            Console.WriteLine(nonAuthTestRuns.Count);
+
         }
 
         public static void ShowADLSStreamPathPrefix()
         {
-            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "Dataset");
-            // Collation: asc and desc is ascending and descending
-            IList<JObject> datasets = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(
-                new SqlQuerySpec(@"SELECT * FROM c WHERE c.dataFabric = 'ADLS' and c.isEnabled = true")).Result;
-            Dictionary<string, HashSet<string>> dict = new Dictionary<string, HashSet<string>>();
-
-
-            //Console.WriteLine($"dataset: {datasets.Count}");
-            foreach (JObject dataset in datasets)
-            {
-                string dataLakeStore = dataset["connectionInfo"]["dataLakeStore"].ToString().Trim(new char[] { '/' }).ToLower().Split(new char[] { '/' })[0];
-                string streamPath = dataset["connectionInfo"]["streamPath"].ToString().Trim(new char[] { '/' }).ToLower();
-                string pathPrefix;
-                var splits = streamPath.Split(new char[] { '/' });
-                if (streamPath.StartsWith("share"))
-                {
-                    pathPrefix = splits[0] + "/" + splits[1] + "/" + splits[2];
-                }
-                else
-                {
-                    pathPrefix = splits[0] + "/" + splits[1];
-                }
-
-                if (!dict.ContainsKey(dataLakeStore))
-                {
-                    dict.Add(dataLakeStore, new HashSet<string>());
-                }
-                dict[dataLakeStore].Add(pathPrefix);
-            }
-
-            foreach (var map in dict)
-            {
-                Console.WriteLine($"dataFabric: 'ADLS'");
-                Console.WriteLine($"dataLakeStore: '{map.Key}'");
-                List<string> pathPrefixs = new List<string>(map.Value);
-                pathPrefixs.Sort();
-                foreach (var pathPrefix in pathPrefixs)
-                {
-                    Console.WriteLine(pathPrefix);
-                }
-            }
+            Console.WriteLine(GetStreamPathPrefixJson(@"SELECT * FROM c WHERE c.dataFabric = 'ADLS' and c.isEnabled = true"));
         }
 
         public static void ShowCosmosStreamPathPrefix()
         {
+            Console.WriteLine(GetStreamPathPrefixJson(@"SELECT * FROM c WHERE contains(c.dataFabric, 'Cosmos') and c.isEnabled = true"));
+        }
+
+        private static JToken GetStreamPathPrefixJson(string queryStr)
+        {
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "Dataset");
-            // Collation: asc and desc is ascending and descending
             IList<JObject> datasets = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(
-                new SqlQuerySpec(@"SELECT * FROM c WHERE contains(c.dataFabric, 'Cosmos') and c.isEnabled = true")).Result;
+                new SqlQuerySpec(queryStr)).Result;
             Dictionary<string, HashSet<string>> dict = new Dictionary<string, HashSet<string>>();
 
-
-            //Console.WriteLine($"dataset: {datasets.Count}");
             foreach (JObject dataset in datasets)
             {
                 string dataFabric = dataset["dataFabric"].ToString();
-                string cosmosVC = dataFabric + " " + dataset["connectionInfo"]["cosmosVC"].ToString().Trim(new char[] { '/' }).ToLower();
+                string dataLakeStore = dataset["connectionInfo"]["dataLakeStore"]?.ToString().Trim(new char[] { '/' }).ToLower();
+                string cosmosVC = dataset["connectionInfo"]["cosmosVC"]?.ToString().Trim(new char[] { '/' }).ToLower();
+                string key;
+                if (dataFabric.Equals("ADLS"))
+                {
+                    key = dataFabric + " " + dataLakeStore;
+                }
+                else
+                {
+                    key = dataFabric + " " + cosmosVC;
+                }
+
                 string streamPath = dataset["connectionInfo"]["streamPath"].ToString().Trim(new char[] { '/' }).ToLower();
                 string pathPrefix;
                 var splits = streamPath.Split(new char[] { '/' });
+
                 if (streamPath.StartsWith("share"))
                 {
                     pathPrefix = splits[0] + "/" + splits[1] + "/" + splits[2];
@@ -178,24 +199,36 @@
                     pathPrefix = splits[0] + "/" + splits[1];
                 }
 
-                if (!dict.ContainsKey(cosmosVC))
+                if (!dict.ContainsKey(key))
                 {
-                    dict.Add(cosmosVC, new HashSet<string>());
+                    dict.Add(key, new HashSet<string>());
                 }
-                dict[cosmosVC].Add(pathPrefix);
+                dict[key].Add(pathPrefix);
             }
+            JArray result = new JArray();
 
             foreach (var map in dict)
             {
-                Console.WriteLine($"dataFabric: '{map.Key.Split(' ')[0]}'");
-                Console.WriteLine($"cosmosVC: '{map.Key.Split(' ')[1]}'");
+                JToken json = new JObject();
+                json["dataFabric"] = map.Key.Split(' ')[0];
+
+                if (json["dataFabric"].Equals("ADLS"))
+                {
+                    json["dataLakeStore"] = map.Key.Split(' ')[1];
+                }
+                else
+                {
+                    json["cosmosVC"] = map.Key.Split(' ')[1];
+                }
+
                 List<string> pathPrefixs = new List<string>(map.Value);
                 pathPrefixs.Sort();
-                foreach (var pathPrefix in pathPrefixs)
-                {
-                    Console.WriteLine(pathPrefix);
-                }
+                JArray paths = new JArray(pathPrefixs);
+                json["pathPrefixs"] = paths;
+                result.Add(json);
             }
+
+            return result;
         }
 
         private static void CreateContainers()

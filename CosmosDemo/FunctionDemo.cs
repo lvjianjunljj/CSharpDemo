@@ -20,7 +20,7 @@
 
             //CompareStreamInfoRowCount();
 
-            UploadFileDemo();
+            //UploadFileDemo();
 
             /*
              * Not work with the error message:
@@ -36,13 +36,14 @@
         {
             string stream = "https://cosmos14.osdinfra.net/cosmos/IDEAs.Prod/local/Scheduled/Datasets/Public/Profiles/Tenants/2019/07/12/TenantsHistory_2019_07_12.ss";
             //stream = "https://cosmos14.osdinfra.net/cosmos/IDEAs.Prod/local/Scheduled/Datasets/Public/Profiles/Tenants/TenantsHistory.ss";
-            stream = "https://cosmos14.osdinfra.net/cosmos/IDEAs.Prod/local/Scheduled/Datasets/Public/Profiles/Tenants";
+            //stream = "https://cosmos14.osdinfra.net/cosmos/IDEAs.Prod/local/Scheduled/Datasets/Public/Profiles/Tenants";
             //stream = "https://cosmos14.osdinfra.net/cosmos/IDEAs.Ppe/local/ParquetConverter.py";
 
             // This link is not able to be accessed
             //stream = "https://cosmos14.osdinfra.net/cosmos/IDEAs.Ppe/shares/CFR.ppe/local/Cooked/StateUserDirectory/StateUserDirectory_2019_07_24.ss";InnerException
 
-            stream = "https://cosmos14.osdinfra.net/cosmos/Ideas.prod//users/jianjlv/datacop_service_monitor_test_2019_12_07.ss";
+            //stream = "https://cosmos14.osdinfra.net/cosmos/Ideas.prod//users/jianjlv/datacop_service_monitor_test_2019_12_07.ss";
+            stream = @"https://cosmos14.osdinfra.net/cosmos/ideas.ppe/shares/bus.prod/local/office/Odin/Action/OfficeDataAction.view";
             Console.WriteLine(CosmosClient.CheckStreamExists(stream));
         }
 
@@ -131,7 +132,9 @@
         public static void CheckCosmosViewAvailability()
         {
             string viewPath = @"shares/IDEAs.Prod.Data/Publish/Profiles/Subscription/Consumer/IDEAsConsumerPerpetualProfile/Views/v2/IDEAsConsumerPerpetualProfile.view";
-            //string viewPath = @"https://cosmos14.osdinfra.net/cosmos/IDEAs.Prod/shares/IDEAs.Prod.Data/Publish/Usage/User/Commercial/ActiveUsage/A310/Views/v1/A310TenantActiveUsage.view";
+            viewPath = @"https://cosmos14.osdinfra.net/cosmos/IDEAs.Prod/shares/IDEAs.Prod.Data/Publish/Usage/User/Commercial/ActiveUsage/A310/Views/v1/A310TenantActiveUsage.view";
+            viewPath = @"https://cosmos14.osdinfra.net/cosmos/ideas.ppe/shares/bus.prod/local/office/Odin/Action/OfficeDataAction.view";
+
 
             //List<CosmosViewParameter> viewParameters = new List<CosmosViewParameter>
             //{
@@ -159,7 +162,7 @@
                                                             }
                                                         };
 
-            DateTime testDate = new DateTime(2020, 5, 29);
+            DateTime testDate = new DateTime(2020, 9, 29);
 
             string cosmosScriptContent = CosmosViewClient.BuildScriptForViewAvailabilityTest(viewPath, viewParameters);
             cosmosScriptContent = "ViewSamples = VIEW \"shares/IDEAs.Prod.Data/Publish/Profiles/Tenant/Commercial/IDEAsTenantServicePlanProfile/Views/v1/IDEAsTenantServicePlanProfile.view\"PARAMS(HistoryDate = DateTime.Parse(@@TestDate@@));OUTPUT ViewSamples TO \"/my/output.tsv\" USING DefaultTextOutputter();";
