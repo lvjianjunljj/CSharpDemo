@@ -9,7 +9,7 @@
     {
         public static void MainMethod()
         {
-            //CheckStreamExists();
+            CheckStreamExists();
             //CheckRowCount();
             //CheckDirectoryExists();
 

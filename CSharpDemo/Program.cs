@@ -52,11 +52,22 @@
             //AzureKeyVaultDemo.MainMethod();
 
 
+
+            //string str = "{'TT':'TT','TT':null,'TT':'TT@'}";
+            //var a = JsonConvert.DeserializeObject<TTT>(str);
+
+            //Console.WriteLine(a.TT);
+
             if (Debugger.IsAttached)
             {
                 Console.WriteLine("press enter key to exit...");
                 Console.ReadLine();
             }
         }
+    }
+
+    class TTT
+    {
+        public string TT;
     }
 }
