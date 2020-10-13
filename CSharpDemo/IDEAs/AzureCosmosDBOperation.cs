@@ -94,7 +94,7 @@
 
 
             // for Torus datacop: "datacop-prod"
-            string KeyVaultName = "datacopprod";
+            string KeyVaultName = "datacop-prod";
             var secretProvider = KeyVaultSecretProvider.Instance;
             string endpoint = secretProvider.GetSecretAsync(KeyVaultName, "CosmosDBEndPoint").Result;
             string key = secretProvider.GetSecretAsync(KeyVaultName, "CosmosDBAuthKey").Result;
@@ -117,14 +117,17 @@
 
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "PartitionedTestRun");
             IList<JObject> nonAuthTestRuns = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(nonAuthTestRunsQueryStr)).Result;
-            IList<JObject> authTestRuns = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(authTestRunsQueryStr)).Result;
             Dictionary<string, JObject> datasets = GetIdJTokenDict(datasetInfosQueryStr, "Dataset");
 
             Console.WriteLine("nonAuthTestRuns");
-            HashSet<string> nonAuthSet = new HashSet<string>();
+            Dictionary<string, HashSet<string>> nonAuthDict = new Dictionary<string, HashSet<string>>();
             foreach (JObject nonAuthTestRun in nonAuthTestRuns)
             {
                 string datasetId = nonAuthTestRun["datasetId"].ToString();
+                if (!datasets.ContainsKey(datasetId))
+                {
+                    continue;
+                }
                 var dataset = datasets[datasetId];
 
                 string dataFabric = dataset["dataFabric"].ToString();
@@ -147,11 +150,15 @@
                     throw new NotImplementedException($"Not support this dataFabric '{dataFabric}'");
                 }
 
-                nonAuthSet.Add(key);
+                if (!nonAuthDict.ContainsKey(key))
+                {
+                    nonAuthDict.Add(key, new HashSet<string>());
+                }
+                nonAuthDict[key].Add(datasetId);
             }
 
             var outPut = new List<string>();
-            foreach (var key in nonAuthSet)
+            foreach (var key in nonAuthDict.Keys)
             {
                 outPut.Add(key);
             }
@@ -159,11 +166,16 @@
             foreach (var key in outPut)
             {
                 Console.WriteLine(key);
+                foreach (var datasetId in nonAuthDict[key])
+                {
+                    Console.WriteLine(datasetId);
+                }
             }
             Console.WriteLine();
 
             Console.WriteLine("authTestRuns");
-            HashSet<string> authSet = new HashSet<string>();
+            IList<JObject> authTestRuns = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(authTestRunsQueryStr)).Result;
+            Dictionary<string, HashSet<string>> authDict = new Dictionary<string, HashSet<string>>();
             foreach (JObject authTestRun in authTestRuns)
             {
                 string datasetId = authTestRun["datasetId"].ToString();
@@ -193,17 +205,27 @@
                     throw new NotImplementedException($"Not support this dataFabric '{dataFabric}'");
                 }
 
-                authSet.Add(key);
+                if (!authDict.ContainsKey(key))
+                {
+                    authDict.Add(key, new HashSet<string>());
+                }
+                authDict[key].Add(datasetId);
             }
+
             outPut = new List<string>();
-            foreach (var key in authSet)
+            foreach (var key in authDict.Keys)
             {
                 outPut.Add(key);
             }
+
             outPut.Sort();
             foreach (var key in outPut)
             {
                 Console.WriteLine(key);
+                foreach (var datasetId in authDict[key])
+                {
+                    Console.WriteLine(datasetId);
+                }
             }
         }
 
