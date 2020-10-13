@@ -7,11 +7,12 @@
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
     using System;
+    using System.Collections.Generic;
     using System.IO;
 
     class DatasetJsonFileOperation
     {
-        private static string FolderPath = @"D:\IDEAs\repo\Ibiza\Source\DataCopMonitors";
+        private static string FolderPath = @"D:\IDEAs\repos\Ibiza\Source\DataCopMonitors";
 
 
         public static void MainMethod()
@@ -20,8 +21,9 @@
             //UpdateOldPathSchemaDatasetJsonForMergingADLSCosmos();
             //UpdateCFRDatasetJsonForMergingADLSCosmos();
             //DisableAllDatasets();
-            DisableAllDatasetTest();
-
+            //DisableAllDatasetTest();
+            //UpdateAllSqlKeyVaultName();
+            //UpdateCFRDatasetToAdls();
         }
         public static void DisableAllDatasets()
         {
@@ -56,25 +58,116 @@
             }
         }
 
-        public static void UpdateAllDatasetJsonForMergingADLSCosmos()
+        public static void UpdateAllSqlKeyVaultName()
         {
-            UpdateDatasetJsonForMergingADLSCosmosRecursively(FolderPath);
+            var datasetJsonFilePaths = ReadFile.GetAllFilePath(FolderPath);
+
+            foreach (var datasetJsonFilePath in datasetJsonFilePaths)
+            {
+                if (datasetJsonFilePath.ToLower().Contains("datasets"))
+                {
+                    string fileContent = ReadFile.ThirdMethod(datasetJsonFilePath);
+                    JsonSerializerSettings serializer = new JsonSerializerSettings
+                    {
+                        DateParseHandling = DateParseHandling.None
+                    };
+                    JObject gitDatasetJObject = JsonConvert.DeserializeObject<JObject>(fileContent, serializer);
+                    if (gitDatasetJObject["dataFabric"]?.ToString().ToLower().Equals("sql") == true)
+                    {
+                        if (gitDatasetJObject["connectionInfo"]["auth"]["keyVaultName"]?.ToString().ToLower().Equals("datacopprod") == true)
+                        {
+                            gitDatasetJObject["connectionInfo"]["auth"]["keyVaultName"] = "datacop-prod";
+                            WriteFile.FirstMethod(datasetJsonFilePath, gitDatasetJObject.ToString());
+                            Console.WriteLine(datasetJsonFilePath);
+                        }
+                        else if (gitDatasetJObject["connectionInfo"]["auth"]["keyVaultName"]?.ToString().ToLower().Equals("datacop-prod") == true)
+                        {
+                        }
+                        else
+                        {
+                            Console.WriteLine(gitDatasetJObject["id"]);
+                            Console.WriteLine(gitDatasetJObject["connectionInfo"]["auth"]["keyVaultName"]);
+
+                        }
+                    }
+
+                }
+            }
         }
 
-        private static void UpdateDatasetJsonForMergingADLSCosmosRecursively(string folderPath)
+        public static void UpdateCFRDatasetToAdls()
         {
-            var datasetJsonFiles = ReadFile.GetFolderSubPaths(folderPath, ReadType.File, PathType.Absolute);
-
-            foreach (var datasetJsonFile in datasetJsonFiles)
+            var datasetIds = new HashSet<string>()
             {
-                Console.WriteLine(datasetJsonFile);
-                UpdateDatasetConnectionInfoForMergingADLSCosmos(datasetJsonFile);
+                "CFR_GAL_ReportUXWeekly",
+                "CFR_WWPPE_Cubes_ProPlusUsage",
+                "CFR_WW_ReportUXWeekly",
+                "CFR_WW_ReportUXAndAPIWeekly",
+                "CFR_GAL_ReportUXAndAPIWeekly",
+                "CFR_CookedUXLog",
+                "CFR_CookedKustoAPILog",
+                "CFR_WWPPE_Cubes_FormsActivity",
+                "CFR_WWPPE_Cubes_FormsProActivity",
+                "CFR_ReportGraphAPIAndExportWeekly",
+                "CFR_ReportGraphAPIAndExportMonthly",
+                "CFR_GAL_ReportUXMonthly",
+                "CFR_WW_ReportUXMonthly",
+                "CFR_WW_ReportUXAndAPIMonthly",
+                "CFR_GAL_ReportUXAndAPIMonthly",
+                "CFR_WWPROD_Cubes_ProPlusUsage",
+                "CFR_WWPROD_Cubes_FormsActivity",
+                "CFR_WWPROD_Cubes_FormsProActivity",
+            };
+
+            var datasetJsonFilePaths = ReadFile.GetAllFilePath(FolderPath);
+
+            foreach (var datasetJsonFilePath in datasetJsonFilePaths)
+            {
+                if (datasetJsonFilePath.ToLower().Contains("datasets"))
+                {
+                    string fileContent = ReadFile.ThirdMethod(datasetJsonFilePath);
+                    JsonSerializerSettings serializer = new JsonSerializerSettings
+                    {
+                        DateParseHandling = DateParseHandling.None
+                    };
+                    JObject gitDatasetJObject = JsonConvert.DeserializeObject<JObject>(fileContent, serializer);
+                    string id = gitDatasetJObject["id"].ToString();
+                    Console.WriteLine(id);
+                    if (datasetIds.Contains(id))
+                    {
+                        var connectionInfo = JObject.Parse(gitDatasetJObject["connectionInfo"].ToString());
+                        connectionInfo.Remove("cosmosVC");
+                        string streamPath = connectionInfo["streamPath"].ToString().Trim(new char[] { '/' });
+                        var newConnectionInfo = new JObject();
+                        if (streamPath.ToLower().StartsWith("shares/cfr.ppe"))
+                        {
+                            newConnectionInfo["dataLakeStore"] = "cfr-ppe-c14.azuredatalakestore.net";
+                            newConnectionInfo["streamPath"] = streamPath.Substring(14);
+                        }
+                        else if (streamPath.ToLower().StartsWith("shares/cfr.prod"))
+                        {
+                            newConnectionInfo["dataLakeStore"] = "cfr-prod-c14.azuredatalakestore.net";
+                            newConnectionInfo["streamPath"] = streamPath.Substring(15);
+                        }
+
+                        gitDatasetJObject["connectionInfo"] = newConnectionInfo;
+                        gitDatasetJObject["dataFabric"] = "ADLS";
+
+
+                        WriteFile.FirstMethod(datasetJsonFilePath, gitDatasetJObject.ToString());
+                    }
+                }
             }
+        }
 
-            var subFolders = ReadFile.GetFolderSubPaths(folderPath, ReadType.Directory, PathType.Absolute);
-            foreach (var subFolder in subFolders)
+        public static void UpdateAllDatasetJsonForMergingADLSCosmos()
+        {
+            var datasetJsonFilePaths = ReadFile.GetAllFilePath(FolderPath);
+
+            foreach (var datasetJsonFilePath in datasetJsonFilePaths)
             {
-                UpdateDatasetJsonForMergingADLSCosmosRecursively(subFolder);
+                Console.WriteLine(datasetJsonFilePath);
+                UpdateDatasetConnectionInfoForMergingADLSCosmos(datasetJsonFilePath);
             }
         }
 

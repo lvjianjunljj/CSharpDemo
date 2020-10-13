@@ -20,12 +20,12 @@
         public static void MainMethod()
         {
             // for datacop: "datacopdev","ideasdatacopppe" or "datacopprod"
-            //string KeyVaultName = "datacopprod";
-            //var secretProvider = KeyVaultSecretProvider.Instance;
-            //string endpoint = secretProvider.GetSecretAsync(KeyVaultName, "CosmosDBEndPoint").Result;
-            //string key = secretProvider.GetSecretAsync(KeyVaultName, "CosmosDBAuthKey").Result;
-            //AzureCosmosDBClient.Endpoint = endpoint;
-            //AzureCosmosDBClient.Key = key;
+            string KeyVaultName = "datacopprod";
+            var secretProvider = KeyVaultSecretProvider.Instance;
+            string endpoint = secretProvider.GetSecretAsync(KeyVaultName, "CosmosDBEndPoint").Result;
+            string key = secretProvider.GetSecretAsync(KeyVaultName, "CosmosDBAuthKey").Result;
+            AzureCosmosDBClient.Endpoint = endpoint;
+            AzureCosmosDBClient.Key = key;
 
             //UpdateAllAlertSettingsDemo();
             //UpdateAllDatasetTestCreatedBy();
@@ -51,6 +51,7 @@
             //QueryMonitroReportDemo();
             //QueryServiceMonitorDemo();
             //QueryTestRunCount();
+            QueryKenshoDataset();
 
             //DeleteTestRunDemo();
             //DeleteWaitingOnDemandTestRuns();
@@ -58,7 +59,7 @@
             //DeleteCosmosTestRunByResultExpirePeriod();
             // We can use this function to delete instance without any limitation.
             //DeleteAlertsWithoutIncidentId();
-
+            //DeleteWrongAlertsFromDataCopTest();
 
             //string prodEndpoint = secretProvider.GetSecretAsync("datacopprod", "CosmosDBEndPoint").Result;
             //string prodKey = secretProvider.GetSecretAsync("datacopprod", "CosmosDBAuthKey").Result;
@@ -94,18 +95,18 @@
 
 
             // for Torus datacop: "datacop-prod"
-            string KeyVaultName = "datacop-prod";
-            var secretProvider = KeyVaultSecretProvider.Instance;
-            string endpoint = secretProvider.GetSecretAsync(KeyVaultName, "CosmosDBEndPoint").Result;
-            string key = secretProvider.GetSecretAsync(KeyVaultName, "CosmosDBAuthKey").Result;
-            AzureCosmosDBClient.Endpoint = endpoint;
-            AzureCosmosDBClient.Key = key;
+            //string KeyVaultName = "datacop-prod";
+            //var secretProvider = KeyVaultSecretProvider.Instance;
+            //string endpoint = secretProvider.GetSecretAsync(KeyVaultName, "CosmosDBEndPoint").Result;
+            //string key = secretProvider.GetSecretAsync(KeyVaultName, "CosmosDBAuthKey").Result;
+            //AzureCosmosDBClient.Endpoint = endpoint;
+            //AzureCosmosDBClient.Key = key;
             //DisableAllBuildDeploymentDataset();
             //UpdateSqlDatasetKeyVaultName();
             //CreateContainers();
             //ShowADLSStreamPathPrefix();
             //ShowCosmosStreamPathPrefix();
-            GetNonAuthPath();
+            //GetNonAuthPath();
         }
 
         public static void GetNonAuthPath()
@@ -407,7 +408,7 @@
             }
 
             string folderPath = @"D:\IDEAs\Ibiza\Source\DataCopMonitors\PROD\CFR";
-            var filePaths = ReadFile.GetAllFile(folderPath);
+            var filePaths = ReadFile.GetAllFilePath(folderPath);
             var updatedDatasets = new List<JObject>();
             var updatedDatasetTests = new List<JObject>();
             foreach (var filePath in filePaths)
@@ -1424,6 +1425,17 @@
             }
         }
 
+        public static void QueryKenshoDataset()
+        {
+            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "Dataset");
+            // Collation: asc and desc is ascending and descending
+            IList<JObject> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c where c.kenshoData != null and c.isEnabled = true")).Result;
+            foreach (JObject jObject in list)
+            {
+                Console.WriteLine(jObject);
+            }
+        }
+
         public enum Grain
         {
             /// <summary>
@@ -1579,6 +1591,21 @@
             }
         }
 
+        public static void DeleteWrongAlertsFromDataCopTest()
+        {
+            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "Alert");
+            // Collation: asc and desc is ascending and descending
+            IList<JObject> alerts = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT top 200 * FROM c WHERE c.owningTeamId = 'IDEAS\\IDEAsDataCopTest' and not is_defined(c.impactedTestRunIds) ORDER BY c._ts DESC")).Result;
+            foreach (JObject alert in alerts)
+            {
+                string id = alert["id"].ToString();
+                Console.WriteLine(id);
+                string documentLink = GetDocumentLink("DataCop", "Alert", id);
+                ResourceResponse<Document> resource = azureCosmosDBClient.DeleteDocumentAsync(documentLink).Result;
+                Console.WriteLine(resource);
+            }
+        }
+
         public static void UpdateAlertSettingToGitFolder()
         {
             AzureCosmosDBClient alertSettingsCosmosDBClient = new AzureCosmosDBClient("DataCop", "AlertSettings");
@@ -1611,7 +1638,7 @@
             //Console.WriteLine("...............");
 
 
-            var filePaths = ReadFile.GetAllFile(@"C:\Users\jianjlv\source\repos\Ibiza\Source\DataCopMonitors\PROD");
+            var filePaths = ReadFile.GetAllFilePath(@"D:\IDEAs\repos\Ibiza\Source\DataCopMonitors\PROD");
 
             Dictionary<string, Tuple<string, JObject>> gitAlertSettingDict = new Dictionary<string, Tuple<string, JObject>>();
             foreach (var filePath in filePaths)

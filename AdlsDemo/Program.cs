@@ -64,10 +64,14 @@
             // Status code: Forbidden
             Console.WriteLine(dataLakeClient.CheckExists("cfr-ppe-c14.azuredatalakestore.net",
                 "local/Cooked/ActivityUserYammer/ActivityUserYammer_2020_09_14.ss"));
-            Console.WriteLine(dataLakeClient.CheckExists("cfr-prod-c14.azuredatalakestore.net",
-                "/local/Cooked/StateUserYammer/StateUserYammer_2020_09_19.ss"));
             Console.WriteLine(dataLakeClient.CheckExists("ideas-ppe-c14.azuredatalakestore.net",
                 "/local/Publish/Profiles/Tenant/Commercial/Internal/IDEAsTenantProfile/PostValidation/Streams/v3/2020/09/TenantProfileStats_2020_09_16.ss"));
+            Console.WriteLine(dataLakeClient.CheckExists("ideas-ppe-c14.azuredatalakestore.net",
+               $"/local/UXlog/Report/Weekly/2020/06/gal/ReportWeekly_2020_06_21.ss"));
+            Console.WriteLine(dataLakeClient.CheckExists("cfr-prod-c14.azuredatalakestore.net",
+                "/local/Cooked/StateUserYammer/StateUserYammer_2020_09_19.ss"));
+            Console.WriteLine(dataLakeClient.CheckExists("cfr-prod-c14.azuredatalakestore.net",
+                "/local/Cubes/ProPlusUsage/ProPlusUsage_2020_09_06.ss"));
 
             // Access successfully
             Console.WriteLine(dataLakeClient.CheckExists("ideas-prod-c14.azuredatalakestore.net",

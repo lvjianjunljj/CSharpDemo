@@ -132,13 +132,13 @@
             return fileAbsolutePaths;
         }
 
-        public static List<string> GetAllFile(string folderAbsolutePath)
+        public static List<string> GetAllFilePath(string folderAbsolutePath)
         {
-            return GetAllFileBFS(new List<string>() { folderAbsolutePath });
+            return GetAllFilePathBFS(new List<string>() { folderAbsolutePath });
         }
 
 
-        private static List<string> GetAllFileBFS(List<string> folderAbsolutePaths)
+        private static List<string> GetAllFilePathBFS(List<string> folderAbsolutePaths)
         {
             var folderList = new List<string>();
             var fileList = new List<string>();
@@ -155,7 +155,7 @@
                     fileList.Add(subFile);
                 }
             }
-            fileList.AddRange(GetAllFileBFS(folderList));
+            fileList.AddRange(GetAllFilePathBFS(folderList));
             return fileList;
         }
     }
