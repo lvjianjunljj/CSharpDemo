@@ -61,9 +61,10 @@
             string clientKey = secretProvider.GetSecretAsync("datacop-prod", "AdlsAadAuthAppSecret").Result;
             var dataLakeClient = new DataLakeClient(tenantId, clientId, clientKey);
 
-            // Status code: Forbidden
             Console.WriteLine(dataLakeClient.CheckExists("cfr-ppe-c14.azuredatalakestore.net",
                 "local/Cooked/ActivityUserYammer/ActivityUserYammer_2020_09_14.ss"));
+            Console.WriteLine(dataLakeClient.CheckExists("cfr-ppe-c14.azuredatalakestore.net",
+                "local/CFRUsageDashboard/Report/UXAndAPIWeekly/2020/10/gal/ReportUXAndAPIWeekly_2020_10_09.ss"));
             Console.WriteLine(dataLakeClient.CheckExists("ideas-ppe-c14.azuredatalakestore.net",
                 "/local/Publish/Profiles/Tenant/Commercial/Internal/IDEAsTenantProfile/PostValidation/Streams/v3/2020/09/TenantProfileStats_2020_09_16.ss"));
             Console.WriteLine(dataLakeClient.CheckExists("ideas-ppe-c14.azuredatalakestore.net",
@@ -83,6 +84,12 @@
 
             // We don't have access to store "ideas-ppe-c14.azuredatalakestore.net". It will throw exception: forbidden
             //Console.WriteLine(dataLakeClient.CheckExists("ideas-ppe-c14.azuredatalakestore.net", "/local/build/user/dekashet/TeamsMeetingProdAfterTimeZoneFixApril18th/directViewCodeWithAdjustEndDate.csv"));
+
+            Console.WriteLine("EnumerateAdlsMetadataEntity:");
+            foreach (var item in dataLakeClient.EnumerateAdlsMetadataEntity("cfr-ppe-c14.azuredatalakestore.net", "local/"))
+            {
+
+            }
         }
 
         public static void GetIDEAsProdAdlsFileSizeDemo()

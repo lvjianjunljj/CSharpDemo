@@ -21,9 +21,9 @@
             //UpdateOldPathSchemaDatasetJsonForMergingADLSCosmos();
             //UpdateCFRDatasetJsonForMergingADLSCosmos();
             //DisableAllDatasetTests();
-            DisableSomeDatasets();
+            //DisableSomeDatasets();
             //DisableAllDatasetTest();
-            //UpdateAllSqlKeyVaultName();
+            UpdateAllSqlKeyVaultName();
             //UpdateCFRDatasetToAdls();
 
         }

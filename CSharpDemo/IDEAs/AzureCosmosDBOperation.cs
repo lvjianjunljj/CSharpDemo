@@ -51,7 +51,8 @@
             //QueryMonitroReportDemo();
             //QueryServiceMonitorDemo();
             //QueryTestRunCount();
-            QueryKenshoDataset();
+            //QueryKenshoDataset();
+            QueryMonthlyTestRunCount();
 
             //DeleteTestRunDemo();
             //DeleteWaitingOnDemandTestRuns();
@@ -1404,10 +1405,7 @@
         {
             int minute = 5;
             var startTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc);
-
             var startDate = DateTime.UtcNow.AddDays(-1);
-
-            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "PartitionedTestRun");
 
             for (int i = 0; i < 100; i++)
             {
@@ -1415,14 +1413,40 @@
                 var startTs = (startDate - startTime).TotalSeconds;
                 var endTs = (endDate - startTime).TotalSeconds;
                 startDate = endDate;
-                string sqlQueryString = $"SELECT value count(1) FROM c where c._ts > {startTs} and c._ts < {endTs} and c.lastModifiedBy = 'AlertService'";
-                IList<object> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<object>(new SqlQuerySpec(sqlQueryString)).Result;
-                foreach (var count in list)
-                {
-                    Console.WriteLine($"{startDate:o}: {count}");
-                }
 
+                var count = GetQueryCount(
+                    "DataCop",
+                    "PartitionedTestRun",
+                    new List<string> { $"c._ts > {startTs}", $"c._ts < {endTs}", "c.lastModifiedBy = 'AlertService'" });
+                Console.WriteLine($"{startDate:o}: {count}");
             }
+        }
+
+        public static void QueryMonthlyTestRunCount()
+        {
+            string databaseId = "DataCop";
+            string collectionId = "PartitionedTestRun";
+            for (int year = 19; year < 21; year++)
+            {
+                for (int month = 1; month < 13; month++)
+                {
+                    var count = GetQueryCount(
+                        databaseId,
+                        collectionId,
+                        new List<string> { $"c.createTime >= '20{year:00}-{month:00}-01'", $"c.createTime < '20{year:00}-{month + 1:00}-01'" });
+                    Console.WriteLine($"date: 20{year:00}-{month:00}\tcount: {count}");
+                }
+            }
+        }
+
+        private static long GetQueryCount(string databaseId, string collectionId, IList<string> filters)
+        {
+            // Cross partition query only supports 'VALUE <AggreateFunc>' for aggregates.
+            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient(databaseId, collectionId);
+            string queryStr = $"SELECT value count(1) FROM c where {string.Join(" and ", filters)}";
+            IList<JToken> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JToken>(new SqlQuerySpec(queryStr)).Result;
+            return long.Parse(list[0].ToString());
+
         }
 
         public static void QueryKenshoDataset()

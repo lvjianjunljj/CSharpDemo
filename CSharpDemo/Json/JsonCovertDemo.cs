@@ -16,7 +16,8 @@ namespace CSharpDemo.Json
             //DoubleDeserializeDemo();
             //EnumDeserializeDemo();
             //ParentClassDemo();
-            DictionaryDemo();
+            //DictionaryDemo();
+            //DuplicatedPropertyDemo();
         }
 
         public static void TypeDemo()
@@ -141,6 +142,14 @@ namespace CSharpDemo.Json
                 Console.WriteLine($"'{pair.Key}': '{pair.Value}'");
 
             }
+        }
+
+        public static void DuplicatedPropertyDemo()
+        {
+            string str = "{'TestStr':'TestStr1','TestStr':null,'TestStr':'TestStr2'}";
+            var demoOjbect = JsonConvert.DeserializeObject<StringConvertDemoClass>(str);
+
+            Console.WriteLine($"The value of property 'TestStr' for 'DuplicatedPropertyDemo' is: {demoOjbect.TestStr}");
         }
     }
 
