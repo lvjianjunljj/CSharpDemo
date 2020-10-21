@@ -1,5 +1,6 @@
 ﻿namespace CSharpDemo.FileOperation
 {
+    using SqlSugar;
     using System;
     using System.Collections.Generic;
     using System.IO;
@@ -157,6 +158,26 @@
             }
             fileList.AddRange(GetAllFilePathBFS(folderList));
             return fileList;
+        }
+
+        public static IEnumerable<string> GetAllFilePaths(string folderAbsolutePath)
+        {
+            DirectoryInfo folder = new DirectoryInfo(folderAbsolutePath);
+            foreach (var fileInfo in folder.GetFiles())
+            {
+                yield return fileInfo.FullName;
+            }
+
+            foreach (var directoryInfo in folder.GetDirectories())
+            {
+                foreach (var filePath in GetAllFilePaths(directoryInfo.FullName))
+                {
+                    yield return filePath;
+                }
+            }
+
+            // We can use this to replace these lines.
+            //Directory.EnumerateFiles(folderAbsolutePath, "*", SearchOption.AllDirectories);
         }
     }
     public enum ReadType

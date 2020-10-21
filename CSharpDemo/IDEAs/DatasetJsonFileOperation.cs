@@ -23,8 +23,8 @@
             //DisableAllDatasetTests();
             //DisableSomeDatasets();
             //DisableAllDatasetTest();
-            UpdateAllSqlKeyVaultName();
-            //UpdateCFRDatasetToAdls();
+            //UpdateAllSqlKeyVaultName();
+            //UpdateSomeCFRToAdls();
 
         }
         public static void DisableAllDatasetTests()
@@ -202,7 +202,7 @@
             }
         }
 
-        public static void UpdateCFRDatasetToAdls()
+        public static void UpdateSomeCFRToAdls()
         {
             var datasetIds = new HashSet<string>()
             {
@@ -226,20 +226,19 @@
                 "CFR_WWPROD_Cubes_FormsProActivity",
             };
 
-            var datasetJsonFilePaths = ReadFile.GetAllFilePath(FolderPath);
+            var jsonFilePaths = ReadFile.GetAllFilePath(FolderPath);
 
-            foreach (var datasetJsonFilePath in datasetJsonFilePaths)
+            foreach (var jsonFilePath in jsonFilePaths)
             {
-                if (datasetJsonFilePath.ToLower().Contains("datasets"))
+                if (jsonFilePath.ToLower().Contains(@"\datasets"))
                 {
-                    string fileContent = ReadFile.ThirdMethod(datasetJsonFilePath);
+                    string fileContent = ReadFile.ThirdMethod(jsonFilePath);
                     JsonSerializerSettings serializer = new JsonSerializerSettings
                     {
                         DateParseHandling = DateParseHandling.None
                     };
                     JObject gitDatasetJObject = JsonConvert.DeserializeObject<JObject>(fileContent, serializer);
                     string id = gitDatasetJObject["id"].ToString();
-                    Console.WriteLine(id);
                     if (datasetIds.Contains(id))
                     {
                         var connectionInfo = JObject.Parse(gitDatasetJObject["connectionInfo"].ToString());
@@ -256,12 +255,36 @@
                             newConnectionInfo["dataLakeStore"] = "cfr-prod-c14.azuredatalakestore.net";
                             newConnectionInfo["streamPath"] = streamPath.Substring(15);
                         }
+                        else
+                        {
+                            continue;
+                        }
 
                         gitDatasetJObject["connectionInfo"] = newConnectionInfo;
                         gitDatasetJObject["dataFabric"] = "ADLS";
 
+                        Console.WriteLine($"Update datasets: {id}");
+                        WriteFile.FirstMethod(jsonFilePath, gitDatasetJObject.ToString());
+                    }
+                }
 
-                        WriteFile.FirstMethod(datasetJsonFilePath, gitDatasetJObject.ToString());
+                // Update datasetTests
+                if (jsonFilePath.ToLower().Contains(@"\monitors"))
+                {
+                    string fileContent = ReadFile.ThirdMethod(jsonFilePath);
+                    JsonSerializerSettings serializer = new JsonSerializerSettings
+                    {
+                        DateParseHandling = DateParseHandling.None
+                    };
+                    JObject gitDatasetTestJObject = JsonConvert.DeserializeObject<JObject>(fileContent, serializer);
+                    string id = gitDatasetTestJObject["id"].ToString();
+                    string datasetId = gitDatasetTestJObject["datasetId"].ToString();
+                    if (datasetIds.Contains(datasetId))
+                    {
+                        gitDatasetTestJObject["testContentType"] = "AdlsAvailability";
+                        gitDatasetTestJObject["dataFabric"] = "ADLS";
+                        Console.WriteLine($"Update datasetTests: {id}");
+                        WriteFile.FirstMethod(jsonFilePath, gitDatasetTestJObject.ToString());
                     }
                 }
             }

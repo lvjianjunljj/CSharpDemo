@@ -2,6 +2,7 @@
 {
     using CosmosDemo.CosmosView;
     using Newtonsoft.Json.Linq;
+    using ScopeClient;
     using System;
     using System.Collections.Generic;
 
@@ -9,7 +10,7 @@
     {
         public static void MainMethod()
         {
-            CheckStreamExists();
+            //CheckStreamExists();
             //CheckRowCount();
             //CheckDirectoryExists();
 
