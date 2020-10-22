@@ -13,6 +13,7 @@
     using CSharpDemo.FileOperation;
     using System.Linq;
     using System.IO;
+    using System.Text;
 
     public class AzureCosmosDBOperation
     {
@@ -52,7 +53,8 @@
             //QueryServiceMonitorDemo();
             //QueryTestRunCount();
             //QueryKenshoDataset();
-            QueryMonthlyTestRunCount();
+            //QueryMonthlyTestRunCount();
+            QueryTestRunsByDatasetId();
 
             //DeleteTestRunDemo();
             //DeleteWaitingOnDemandTestRuns();
@@ -1434,17 +1436,45 @@
                         databaseId,
                         collectionId,
                         new List<string> { $"c.createTime >= '20{year:00}-{month:00}-01'", $"c.createTime < '20{year:00}-{month + 1:00}-01'" });
-                    Console.WriteLine($"date: 20{year:00}-{month:00}\tcount: {count}");
+                    Console.WriteLine($"Date: 20{year:00}-{month:00}\tcount: {count}");
                 }
+            }
+            var sum = GetQueryCount(databaseId, collectionId);
+            Console.WriteLine($"Sum: {sum}");
+        }
+
+        public static void QueryTestRunsByDatasetId()
+        {
+            //string datasetId = @"2217f0cc-d5e0-4935-afa6-01ea6b84056c";
+            string datasetId = @"92110282-bc44-418d-bb42-d776ff374b60";
+            //string partitionKey = @"2020-10-10T00:00:00";
+            string partitionKey = @"";
+            StringBuilder sqlQueryString = new StringBuilder($"SELECT top 100 * FROM c WHERE c.datasetId='{datasetId}'");
+            if (!string.IsNullOrEmpty(partitionKey))
+            {
+                sqlQueryString.Append($" and c.partitionKey = '{partitionKey}'");
+            }
+            sqlQueryString.Append(" order by c.createTime desc");
+
+            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "PartitionedTestRun");
+            IList<JObject> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(sqlQueryString.ToString())).Result;
+            foreach (JObject jObject in list)
+            {
+                Console.WriteLine(jObject);
             }
         }
 
-        private static long GetQueryCount(string databaseId, string collectionId, IList<string> filters)
+        private static long GetQueryCount(string databaseId, string collectionId, IList<string> filters = null)
         {
             // Cross partition query only supports 'VALUE <AggreateFunc>' for aggregates.
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient(databaseId, collectionId);
-            string queryStr = $"SELECT value count(1) FROM c where {string.Join(" and ", filters)}";
-            IList<JToken> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JToken>(new SqlQuerySpec(queryStr)).Result;
+            StringBuilder queryStr = new StringBuilder(@"SELECT value count(1) FROM c");
+            if (filters != null && filters.Count > 0)
+            {
+                queryStr.Append($" where {string.Join(" and ", filters)}");
+            }
+
+            IList<JToken> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JToken>(new SqlQuerySpec(queryStr.ToString())).Result;
             return long.Parse(list[0].ToString());
 
         }
