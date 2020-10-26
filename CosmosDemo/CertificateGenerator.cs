@@ -43,7 +43,7 @@
         public static X509Certificate2 GetCertificateFromBase64String()
         {
             ISecretProvider secretProvider = KeyVaultSecretProvider.Instance;
-            var bundle = secretProvider.GetSecretAsync("datacopprod", "CosmosRedmondClientCert").Result;
+            var bundle = secretProvider.GetSecretAsync("datacop-prod", "CosmosRedmondClientCert").Result;
             byte[] privateKeyBytes = Convert.FromBase64String(bundle);
             return new X509Certificate2(privateKeyBytes, (string)null, X509KeyStorageFlags.MachineKeySet);
         }

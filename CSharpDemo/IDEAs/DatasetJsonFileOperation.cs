@@ -29,7 +29,7 @@
         }
         public static void DisableAllDatasetTests()
         {
-            string keyVaultName = "datacopprod";
+            string keyVaultName = "datacop-prod";
             var secretProvider = KeyVaultSecretProvider.Instance;
             string endpoint = secretProvider.GetSecretAsync(keyVaultName, "CosmosDBEndPoint").Result;
             string key = secretProvider.GetSecretAsync(keyVaultName, "CosmosDBAuthKey").Result;

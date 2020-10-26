@@ -11,8 +11,8 @@
         public static void MainMethod()
         {
             string keyVaultName = "datacopdev";
-            //string keyVaultName = "ideasdatacopppe";
-            //string keyVaultName = "datacopprod";
+            //string keyVaultName = "datacop-ppe";
+            //string keyVaultName = "datacop-prod";
             string queueName = "cosmostest";
             //string queueName = "alert";
             //string queueName = "onboardingrequest";

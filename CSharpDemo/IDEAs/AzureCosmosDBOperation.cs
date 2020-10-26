@@ -20,8 +20,8 @@
 
         public static void MainMethod()
         {
-            // for datacop: "datacopdev","ideasdatacopppe" or "datacopprod"
-            string KeyVaultName = "datacopprod";
+            // for datacop: "datacop-ppe" and "datacop-prod"
+            string KeyVaultName = "datacop-prod";
             var secretProvider = KeyVaultSecretProvider.Instance;
             string endpoint = secretProvider.GetSecretAsync(KeyVaultName, "CosmosDBEndPoint").Result;
             string key = secretProvider.GetSecretAsync(KeyVaultName, "CosmosDBAuthKey").Result;
@@ -54,7 +54,7 @@
             //QueryTestRunCount();
             //QueryKenshoDataset();
             //QueryMonthlyTestRunCount();
-            QueryTestRunsByDatasetId();
+            //QueryTestRunsByDatasetId();
 
             //DeleteTestRunDemo();
             //DeleteWaitingOnDemandTestRuns();
@@ -64,10 +64,10 @@
             //DeleteAlertsWithoutIncidentId();
             //DeleteWrongAlertsFromDataCopTest();
 
-            //string prodEndpoint = secretProvider.GetSecretAsync("datacopprod", "CosmosDBEndPoint").Result;
-            //string prodKey = secretProvider.GetSecretAsync("datacopprod", "CosmosDBAuthKey").Result;
-            //string ppeEndpoint = secretProvider.GetSecretAsync("datacopprod", "CosmosDBEndPoint").Result;
-            //string ppeKey = secretProvider.GetSecretAsync("datacopprod", "CosmosDBAuthKey").Result;
+            //string prodEndpoint = secretProvider.GetSecretAsync("dataco-pprod", "CosmosDBEndPoint").Result;
+            //string prodKey = secretProvider.GetSecretAsync("datacop-prod", "CosmosDBAuthKey").Result;
+            //string ppeEndpoint = secretProvider.GetSecretAsync("datacop-ppe", "CosmosDBEndPoint").Result;
+            //string ppeKey = secretProvider.GetSecretAsync("datacop-ppe", "CosmosDBAuthKey").Result;
             //MigrateData("DataCop", "ServiceMonitorReport", prodEndpoint, prodKey, ppeEndpoint, ppeKey);
 
             //AddCompletenessMonitors4ADLS();
@@ -82,7 +82,13 @@
 
             //DisableAbortedTest();
 
-
+            //AzureCosmosDBClient.Endpoint = endpoint;
+            //AzureCosmosDBClient.Key = key;
+            //DisableAllBuildDeploymentDataset();
+            //UpdateSqlDatasetKeyVaultName();
+            //CreateContainers();
+            ShowADLSStreamPathPrefix();
+            //GetNonAuthPath();
 
 
 
@@ -97,19 +103,6 @@
             //MigrateData("TablesDB", "TestPerf", microsoftEndPoint, microsoftKey, torusEndpoint, torusKey);
 
 
-            // for Torus datacop: "datacop-prod"
-            //string KeyVaultName = "datacop-prod";
-            //var secretProvider = KeyVaultSecretProvider.Instance;
-            //string endpoint = secretProvider.GetSecretAsync(KeyVaultName, "CosmosDBEndPoint").Result;
-            //string key = secretProvider.GetSecretAsync(KeyVaultName, "CosmosDBAuthKey").Result;
-            //AzureCosmosDBClient.Endpoint = endpoint;
-            //AzureCosmosDBClient.Key = key;
-            //DisableAllBuildDeploymentDataset();
-            //UpdateSqlDatasetKeyVaultName();
-            //CreateContainers();
-            //ShowADLSStreamPathPrefix();
-            //ShowCosmosStreamPathPrefix();
-            //GetNonAuthPath();
         }
 
         public static void GetNonAuthPath()
@@ -235,18 +228,20 @@
 
         public static void ShowADLSStreamPathPrefix()
         {
-            Console.WriteLine(GetStreamPathPrefixJson(@"SELECT * FROM c WHERE c.dataFabric = 'ADLS' and c.isEnabled = true"));
+            Console.WriteLine(GetStreamPathPrefixJson(@"SELECT * FROM c WHERE (c.dataFabric = 'ADLS') and c.isEnabled = true",
+                                                        @"SELECT * FROM c WHERE contains(c.dataFabric, 'Cosmos') and c.isEnabled = true"));
         }
 
-        public static void ShowCosmosStreamPathPrefix()
-        {
-            Console.WriteLine(GetStreamPathPrefixJson(@"SELECT * FROM c WHERE contains(c.dataFabric, 'Cosmos') and c.isEnabled = true"));
-        }
 
-        private static JToken GetStreamPathPrefixJson(string queryStr)
+        private static JToken GetStreamPathPrefixJson(params string[] queryStrs)
         {
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "Dataset");
-            IList<JObject> datasets = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(queryStr)).Result;
+            List<JObject> datasets = new List<JObject>();
+            foreach (var queryStr in queryStrs)
+            {
+                IList<JObject> datasetsSub = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(queryStr)).Result;
+                datasets.AddRange(datasetsSub);
+            }
             Dictionary<string, HashSet<string>> dict = new Dictionary<string, HashSet<string>>();
 
             foreach (JObject dataset in datasets)
@@ -280,7 +275,7 @@
                 JToken json = new JObject();
                 json["dataFabric"] = map.Key.Split(' ')[0];
 
-                if (json["dataFabric"].Equals("ADLS"))
+                if (json["dataFabric"].ToString().Equals("ADLS"))
                 {
                     json["dataLakeStore"] = map.Key.Split(' ')[1];
                 }
@@ -1327,7 +1322,7 @@
         {
             string queueName = "cosmostest";
             ISecretProvider secretProvider = KeyVaultSecretProvider.Instance;
-            string serviceBusConnectionString = secretProvider.GetSecretAsync("datacopprod", "ServiceBusConnectionString").Result;
+            string serviceBusConnectionString = secretProvider.GetSecretAsync("datacop-prod", "ServiceBusConnectionString").Result;
             Dictionary<string, long> messageCountDetails = MicrosoftServiceBusLib.MicrosoftServiceBusClient.GetMessageCountDetails(serviceBusConnectionString, queueName);
             //foreach (var messageCountDetail in messageCountDetails)
             //{
@@ -1476,8 +1471,8 @@
 
             IList<JToken> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JToken>(new SqlQuerySpec(queryStr.ToString())).Result;
             return long.Parse(list[0].ToString());
-
         }
+
 
         public static void QueryKenshoDataset()
         {

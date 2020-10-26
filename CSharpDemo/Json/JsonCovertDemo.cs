@@ -15,6 +15,7 @@ namespace CSharpDemo.Json
             //DateTimeDeserializeDemo();
             //DoubleDeserializeDemo();
             //EnumDeserializeDemo();
+            HasValueDeserializeDemo();
             //ParentClassDemo();
             //DictionaryDemo();
             //DuplicatedPropertyDemo();
@@ -97,6 +98,32 @@ namespace CSharpDemo.Json
             Console.WriteLine(doubleConvertDemoClass.Num2);
         }
 
+        public static void HasValueDeserializeDemo()
+        {
+            Console.WriteLine("Test for not setting value");
+            string hasValueConvertDemoClassStr = "{'Num2':1234}";
+            HasValueConvertDemoClass hasValueConvertDemoClass = JsonConvert.DeserializeObject<HasValueConvertDemoClass>(hasValueConvertDemoClassStr);
+            Console.WriteLine($"Num1 hasValue: {hasValueConvertDemoClass.Num1.HasValue}, Num1: {hasValueConvertDemoClass.Num1}");
+            Console.WriteLine($"Num2 hasValue: {hasValueConvertDemoClass.Num2.HasValue}, Num2: {hasValueConvertDemoClass.Num2}");
+            Console.WriteLine($"Num: {hasValueConvertDemoClass.Num1 ?? hasValueConvertDemoClass.Num2}");
+
+            Console.WriteLine("``````````````````");
+            Console.WriteLine("Test for setting null value");
+            hasValueConvertDemoClassStr = "{'Num1':null，, 'Num2':1234}";
+            try
+            {
+                hasValueConvertDemoClass = JsonConvert.DeserializeObject<HasValueConvertDemoClass>(hasValueConvertDemoClassStr);
+                Console.WriteLine($"Num1 hasValue: {hasValueConvertDemoClass.Num1.HasValue}, Num1: {hasValueConvertDemoClass.Num1}");
+                Console.WriteLine($"Num2 hasValue: {hasValueConvertDemoClass.Num2.HasValue}, Num2: {hasValueConvertDemoClass.Num2}");
+                Console.WriteLine($"Num: {hasValueConvertDemoClass.Num1 ?? hasValueConvertDemoClass.Num2}");
+            }
+            catch (JsonReaderException e)
+            {
+                // Cannot set it as null
+                Console.WriteLine($"Error message: {e.Message}");
+            }
+        }
+
         public static void EnumDeserializeDemo()
         {
             var settings = new JsonSerializerSettings
@@ -105,9 +132,47 @@ namespace CSharpDemo.Json
                 MissingMemberHandling = MissingMemberHandling.Ignore,
             };
 
-            string doubleConvertDemoClassStr = "{'EnumTestProperty': 'TT'}";
-            EnumConvertDemoClass doubleConvertDemoClass = JsonConvert.DeserializeObject<EnumConvertDemoClass>(doubleConvertDemoClassStr, settings);
-            Console.WriteLine(doubleConvertDemoClass.EnumTestProperty);
+            // Wrong value for enum type
+            try
+            {
+                string doubleConvertDemoClassStr = "{'EnumTestProperty': 'TT'}";
+                // Newtonsoft.Json.JsonSerializationException: 
+                // 'Error converting value "TT" to type 'CSharpDemo.Json.EnumTest'. Path 'EnumTestProperty', line 1, position 25.'
+                EnumConvertDemoClass doubleConvertDemoClass = JsonConvert.DeserializeObject<EnumConvertDemoClass>(doubleConvertDemoClassStr, settings);
+                Console.WriteLine(doubleConvertDemoClass.EnumTestProperty);
+            }
+            catch (JsonSerializationException e)
+            {
+                Console.WriteLine($"Error message: {e.Message}");
+            }
+
+            // Null value for enum type
+            try
+            {
+                string doubleConvertDemoClassStr = "{'EnumTestProperty': null}";
+                // Newtonsoft.Json.JsonSerializationException: 
+                // 'Error converting value "TT" to type 'CSharpDemo.Json.EnumTest'. Path 'EnumTestProperty', line 1, position 25.'
+                EnumConvertDemoClass doubleConvertDemoClass = JsonConvert.DeserializeObject<EnumConvertDemoClass>(doubleConvertDemoClassStr, settings);
+                Console.WriteLine(doubleConvertDemoClass.EnumTestProperty);
+            }
+            catch (JsonSerializationException e)
+            {
+                Console.WriteLine($"Error message: {e.Message}");
+            }
+
+            // Not set for enum type
+            try
+            {
+                string doubleConvertDemoClassStr = "{'EnumTestProperty2': null}";
+                // Newtonsoft.Json.JsonSerializationException: 
+                // 'Error converting value "TT" to type 'CSharpDemo.Json.EnumTest'. Path 'EnumTestProperty', line 1, position 25.'
+                EnumConvertDemoClass doubleConvertDemoClass = JsonConvert.DeserializeObject<EnumConvertDemoClass>(doubleConvertDemoClassStr, settings);
+                Console.WriteLine(doubleConvertDemoClass.EnumTestProperty);
+            }
+            catch (JsonSerializationException e)
+            {
+                Console.WriteLine($"Error message: {e.Message}");
+            }
         }
 
         // It is impossible to deserialize to parent class and then convert it to target class,
@@ -178,6 +243,12 @@ namespace CSharpDemo.Json
     {
         public double Num1 { get; set; }
         public double Num2 { get; set; }
+    }
+
+    class HasValueConvertDemoClass
+    {
+        public long? Num1 { get; set; }
+        public long? Num2 { get; set; }
     }
 
     class TypeConvertDemoClass

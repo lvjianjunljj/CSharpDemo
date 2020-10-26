@@ -12,7 +12,7 @@
         static void Main(string[] args)
         {
             ISecretProvider secretProvider = KeyVaultSecretProvider.Instance;
-            //string connectionString = secretProvider.GetSecretAsync("datacopprod", "IDEAsPortalPPEConnectionString").Result;
+            //string connectionString = secretProvider.GetSecretAsync("datacop-prod", "IDEAsPortalPPEConnectionString").Result;
             string connectionString = secretProvider.GetSecretAsync("csharpmvcwebapikeyvault", "SQLConnectionString").Result;
             var sqlDal = new SqlDataAccessLayer(connectionString);
             //string cmdText = "SELECT Date, CONVERT(decimal, SUM([Value])) AS MetricValue FROM [DataQuality].[CommercialActiveUsageStats] WITH (NOLOCK) WHERE Date = @Date AND DataRefreshState = 'Stable' AND DateAggregationType = 'RL28' AND [Key] IN ('Platform_web_Count') AND [Workload] IN ('Exchange') GROUP BY Date ORDER BY Date DESC";
