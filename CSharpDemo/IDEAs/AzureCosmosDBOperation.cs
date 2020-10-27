@@ -14,6 +14,8 @@
     using System.Linq;
     using System.IO;
     using System.Text;
+    using Microsoft.Cis.Monitoring.Wad.PublicConfigConverter;
+    using System.Diagnostics;
 
     public class AzureCosmosDBOperation
     {
@@ -89,7 +91,7 @@
             //CreateContainers();
             ShowADLSStreamPathPrefix();
             //GetNonAuthPath();
-
+            //GetTimeCostDemo();
 
 
             // For cloudscope
@@ -233,8 +235,8 @@
             //Console.WriteLine(streamPathPrefixJson);
             //WriteFile.FirstMethod(@"D:\data\company_work\M365\IDEAs\path.json", streamPathPrefixJson.ToString());
 
-            //Console.WriteLine(GetQueryCount("DataCop", "Dataset"));
-            //Console.WriteLine(GetQueryResult("DataCop", "Dataset").Count);
+            Console.WriteLine(GetQueryCount("DataCop", "Dataset"));
+            Console.WriteLine(GetQueryResult("DataCop", "Dataset").Count);
         }
 
 
@@ -1464,21 +1466,6 @@
             }
         }
 
-        private static long GetQueryCount(string databaseId, string collectionId, IList<string> filters = null)
-        {
-            // Cross partition query only supports 'VALUE <AggreateFunc>' for aggregates.
-            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient(databaseId, collectionId);
-            StringBuilder queryStr = new StringBuilder(@"SELECT value count(1) FROM c");
-            if (filters != null && filters.Count > 0)
-            {
-                queryStr.Append($" where {string.Join(" and ", filters)}");
-            }
-
-            // The reuslt schema is not json, so we cannot use JObject, or it will throw a serialization error.
-            IList<JToken> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JToken>(new SqlQuerySpec(queryStr.ToString())).Result;
-            return long.Parse(list[0].ToString());
-        }
-
         ///  <summary>
         /// This function cannot work as our expection.
         /// The step of this query is: 
@@ -1517,11 +1504,131 @@
             return result;
         }
 
-        private static List<JObject> GetQueryResult(string databaseId, string collectionId, IList<string> filters = null)
+        /// <summary>
+        /// Realize the function to break the query into smaller chunks.
+        /// </summary>
+        /// <param name="databaseId"></param>
+        /// <param name="collectionId"></param>
+        /// <param name="filters"></param>
+        /// <param name="startTs"></param>
+        /// <param name="endTs"></param>
+        /// <returns></returns>
+        private static List<JObject> GetQueryResult(string databaseId,
+                                                    string collectionId,
+                                                    IList<string> filters = null,
+                                                    long startTs = 0,
+                                                    long endTs = long.MaxValue)
         {
             int maxLimit = 1000;
+            IList<string> newFilters;
+            if (filters == null)
+            {
+                newFilters = new List<string>();
+            }
+            else
+            {
+                newFilters = new List<string>(filters);
+            }
+
+            newFilters.Add($"c._ts >= {startTs}");
+            newFilters.Add($"c._ts < {endTs}");
+            long count = GetQueryCount(databaseId, collectionId, newFilters);
+            if (count == 0)
+            {
+                return null;
+            }
+            List<JObject> result;
+            if (count > maxLimit)
+            {
+                var midTs = startTs + (endTs - startTs) / 2;
+                result = GetQueryResult(databaseId, collectionId, filters, startTs, midTs);
+                List<JObject> right = GetQueryResult(databaseId, collectionId, filters, midTs, endTs);
+                result.AddRange(right);
+            }
+            else
+            {
+                result = GetQueryResult(databaseId, collectionId, newFilters);
+            }
+
+            return result;
+        }
+
+        private static long GetQueryCount(string databaseId, string collectionId, IList<string> filters = null)
+        {
+            // Cross partition query only supports 'VALUE <AggreateFunc>' for aggregates.
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient(databaseId, collectionId);
-            throw new NotImplementedException();
+            StringBuilder queryStr = new StringBuilder(@"SELECT value count(1) FROM c");
+            if (filters != null && filters.Count > 0)
+            {
+                queryStr.Append($" where {string.Join(" and ", filters)}");
+            }
+
+            // The reuslt schema is not json, so we cannot use JObject, or it will throw a serialization error.
+            IList<JToken> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JToken>(new SqlQuerySpec(queryStr.ToString())).Result;
+            return long.Parse(list[0].ToString());
+        }
+
+        private static IList<JObject> GetQueryResultAux(string databaseId, string collectionId, IList<string> filters = null)
+        {
+            // Cross partition query only supports 'VALUE <AggreateFunc>' for aggregates.
+            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient(databaseId, collectionId);
+            StringBuilder queryStr = new StringBuilder(@"SELECT * FROM c");
+            if (filters != null && filters.Count > 0)
+            {
+                queryStr.Append($" where {string.Join(" and ", filters)}");
+            }
+
+            // The reuslt schema is not json, so we cannot use JObject, or it will throw a serialization error.
+            return azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(queryStr.ToString())).Result;
+        }
+
+        /// <summary>
+        /// Test to get the time cost of using try-catch/select-value-count(0) for the function "GetQueryResult"
+        /// Make sure which way is better
+        /// Time cost of try-catch is more than 10 times that of select-value-count(0), 
+        /// select-value-count(0) is much better.
+        /// </summary>
+        /// <returns></returns>
+        public static void GetTimeCostDemo()
+        {
+            // Same as: 
+            // var watch = Stopwatch.StartNew();
+            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "Dataset");
+
+            int len = 10;
+            string tryQuey = @"SELECT * FROM c";
+            string countQuery = @"SELECT value count(0) FROM c";
+            string errorMessage = @"Too many documents found in the query specified. Please break your query into smaller chunks.";
+
+            Stopwatch watch = new Stopwatch();
+            watch.Start();
+            for (int i = 0; i < len; i++)
+            {
+                try
+                {
+                    IList<JObject> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(tryQuey)).Result;
+                }
+                catch (AggregateException ae)
+                {
+                    if (ae.InnerException is InvalidOperationException && ae.InnerException.Message.ToString().Equals(errorMessage))
+                    {
+                        continue;
+                    }
+
+                    throw;
+                }
+            }
+
+            Console.WriteLine($"try-catch time cost: {watch.ElapsedMilliseconds} ms");
+
+            watch = new Stopwatch();
+            watch.Start();
+            for (int i = 0; i < len; i++)
+            {
+                IList<JToken> counts = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JToken>(new SqlQuerySpec(countQuery)).Result;
+            }
+
+            Console.WriteLine($"select count time cost: {watch.ElapsedMilliseconds} ms");
         }
 
         public static void QueryKenshoDataset()
