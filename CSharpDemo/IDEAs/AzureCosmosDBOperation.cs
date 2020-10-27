@@ -228,27 +228,14 @@
             }
         }
 
+
         public static void ShowADLSStreamPathPrefix()
         {
-            //var streamPathPrefixJson = GetStreamPathPrefixJson(@"SELECT * FROM c WHERE (c.dataFabric = 'ADLS') and c.isEnabled = true",
-            //                                                        @"SELECT * FROM c WHERE contains(c.dataFabric, 'Cosmos') and c.isEnabled = true");
-            //Console.WriteLine(streamPathPrefixJson);
-            //WriteFile.FirstMethod(@"D:\data\company_work\M365\IDEAs\path.json", streamPathPrefixJson.ToString());
-
-            Console.WriteLine(GetQueryCount("DataCop", "Dataset"));
-            Console.WriteLine(GetQueryResult("DataCop", "Dataset").Count);
-        }
-
-
-        private static JToken GetStreamPathPrefixJson(params string[] queryStrs)
-        {
-            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "Dataset");
-            List<JObject> datasets = new List<JObject>();
-            foreach (var queryStr in queryStrs)
+            List<string> filters = new List<string>
             {
-                IList<JObject> datasetsSub = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(queryStr)).Result;
-                datasets.AddRange(datasetsSub);
-            }
+                @"(c.dataFabric = 'ADLS' or contains(c.dataFabric, 'Cosmos')) and c.isEnabled = true"
+            };
+            List<JObject> datasets = GetQueryResult("DataCop", "Dataset", filters);
             Dictionary<string, HashSet<string>> dict = new Dictionary<string, HashSet<string>>();
 
             foreach (JObject dataset in datasets)
@@ -298,7 +285,8 @@
                 result.Add(json);
             }
 
-            return result;
+            Console.WriteLine(result);
+            WriteFile.FirstMethod(@"D:\data\company_work\M365\IDEAs\path.json", result.ToString());
         }
 
         private static Dictionary<string, JObject> GetIdJTokenDict(string queryStr, string collectionId)
@@ -1516,11 +1504,13 @@
         private static List<JObject> GetQueryResult(string databaseId,
                                                     string collectionId,
                                                     IList<string> filters = null,
-                                                    long startTs = 0,
-                                                    long endTs = long.MaxValue)
+                                                    long? startTs = null,
+                                                    long? endTs = null,
+                                                    AzureCosmosDBClient azureCosmosDBClient = null)
         {
             int maxLimit = 1000;
             IList<string> newFilters;
+
             if (filters == null)
             {
                 newFilters = new List<string>();
@@ -1530,24 +1520,43 @@
                 newFilters = new List<string>(filters);
             }
 
+            if (azureCosmosDBClient == null)
+            {
+                azureCosmosDBClient = new AzureCosmosDBClient(databaseId, collectionId);
+            }
+            if (!startTs.HasValue)
+            {
+                startTs = GetQueryKeyWord(azureCosmosDBClient, "min", "_ts", filters);
+            }
+
+            if (!endTs.HasValue)
+            {
+                endTs = GetQueryKeyWord(azureCosmosDBClient, "max", "_ts", filters) + 1;
+            }
+
             newFilters.Add($"c._ts >= {startTs}");
             newFilters.Add($"c._ts < {endTs}");
-            long count = GetQueryCount(databaseId, collectionId, newFilters);
+            long count = GetQueryCount(azureCosmosDBClient, newFilters);
             if (count == 0)
             {
-                return null;
+                return new List<JObject>();
             }
             List<JObject> result;
             if (count > maxLimit)
             {
-                var midTs = startTs + (endTs - startTs) / 2;
-                result = GetQueryResult(databaseId, collectionId, filters, startTs, midTs);
-                List<JObject> right = GetQueryResult(databaseId, collectionId, filters, midTs, endTs);
+                var midTs = (startTs + endTs) / 2;
+                result = GetQueryResult(databaseId, collectionId, filters, startTs, midTs, azureCosmosDBClient);
+                List<JObject> right = GetQueryResult(databaseId, collectionId, filters, midTs, endTs, azureCosmosDBClient);
                 result.AddRange(right);
             }
             else
             {
-                result = GetQueryResult(databaseId, collectionId, newFilters);
+                result = GetQueryResultAux(azureCosmosDBClient, newFilters).ToList();
+            }
+
+            if (result.Count != count)
+            {
+                throw new Exception($"wrong result with count: {result.Count}, the count should be: {count}.");
             }
 
             return result;
@@ -1555,8 +1564,26 @@
 
         private static long GetQueryCount(string databaseId, string collectionId, IList<string> filters = null)
         {
-            // Cross partition query only supports 'VALUE <AggreateFunc>' for aggregates.
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient(databaseId, collectionId);
+            return GetQueryCount(azureCosmosDBClient, filters);
+        }
+
+        private static IList<JObject> GetQueryResultAux(string databaseId, string collectionId, IList<string> filters = null)
+        {
+            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient(databaseId, collectionId);
+            return GetQueryResultAux(azureCosmosDBClient, filters);
+        }
+
+        private static long GetQueryKeyWord(string databaseId, string collectionId, string keyWord, string propertyName, IList<string> filters = null)
+        {
+            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient(databaseId, collectionId);
+            return GetQueryKeyWord(azureCosmosDBClient, keyWord, propertyName, filters);
+        }
+
+
+        private static long GetQueryCount(AzureCosmosDBClient azureCosmosDBClient, IList<string> filters = null)
+        {
+            // Cross partition query only supports 'VALUE <AggreateFunc>' for aggregates.
             StringBuilder queryStr = new StringBuilder(@"SELECT value count(1) FROM c");
             if (filters != null && filters.Count > 0)
             {
@@ -1568,10 +1595,9 @@
             return long.Parse(list[0].ToString());
         }
 
-        private static IList<JObject> GetQueryResultAux(string databaseId, string collectionId, IList<string> filters = null)
+        private static IList<JObject> GetQueryResultAux(AzureCosmosDBClient azureCosmosDBClient, IList<string> filters = null)
         {
             // Cross partition query only supports 'VALUE <AggreateFunc>' for aggregates.
-            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient(databaseId, collectionId);
             StringBuilder queryStr = new StringBuilder(@"SELECT * FROM c");
             if (filters != null && filters.Count > 0)
             {
@@ -1582,6 +1608,22 @@
             return azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(queryStr.ToString())).Result;
         }
 
+
+        private static long GetQueryKeyWord(AzureCosmosDBClient azureCosmosDBClient, string keyWord, string propertyName, IList<string> filters = null)
+        {
+            // Cross partition query only supports 'VALUE <AggreateFunc>' for aggregates.
+            StringBuilder queryStr = new StringBuilder($"SELECT value {keyWord}(c.{propertyName}) FROM c");
+            if (filters != null && filters.Count > 0)
+            {
+                queryStr.Append($" where {string.Join(" and ", filters)}");
+            }
+
+            // The reuslt schema is not json, so we cannot use JObject, or it will throw a serialization error.
+            IList<JToken> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JToken>(new SqlQuerySpec(queryStr.ToString())).Result;
+            return long.Parse(list[0].ToString());
+        }
+
+
         /// <summary>
         /// Test to get the time cost of using try-catch/select-value-count(0) for the function "GetQueryResult"
         /// Make sure which way is better
@@ -1591,8 +1633,6 @@
         /// <returns></returns>
         public static void GetTimeCostDemo()
         {
-            // Same as: 
-            // var watch = Stopwatch.StartNew();
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "Dataset");
 
             int len = 10;
@@ -1600,6 +1640,8 @@
             string countQuery = @"SELECT value count(0) FROM c";
             string errorMessage = @"Too many documents found in the query specified. Please break your query into smaller chunks.";
 
+            // Same as: 
+            // var watch = Stopwatch.StartNew();
             Stopwatch watch = new Stopwatch();
             watch.Start();
             for (int i = 0; i < len; i++)
