@@ -64,6 +64,35 @@
             }
         }
 
+        public bool CheckPermission(string store, string path)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                throw new ArgumentException("Path is null or empty");
+            }
+
+            try
+            {
+                var client = CreateAdlsClient(store, tenantId, clientId, clientKey);
+                client.GetDirectoryEntry(path);
+                return true;
+            }
+            catch (AdlsException e)
+            {
+                if (e.HttpStatus == HttpStatusCode.NotFound)
+                {
+                    return true;
+                }
+
+                if (e.HttpStatus == HttpStatusCode.Forbidden)
+                {
+                    return false;
+                }
+
+                throw;
+            }
+        }
+
         /// <summary>
         /// Gets the size of the file.
         /// </summary>

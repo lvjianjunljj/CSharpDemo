@@ -13,7 +13,7 @@ namespace AzureLib.KeyVault
 
     public class AzureKeyVaultDemo
     {
-        // string connectionString = AzureKeyVault.GetSecret("datacopdev", "ServiceBusConnectionString");
+        // string connectionString = AzureKeyVault.GetSecret("datacop-prod", "ServiceBusConnectionString");
         // string connectionString = AzureKeyVault.GetSecret("csharpmvcwebapikeyvault", "AppSecret");
 
         public static void MainMethod()

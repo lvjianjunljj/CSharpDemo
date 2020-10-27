@@ -15,7 +15,7 @@
         {
             ISecretProvider secretProvider = KeyVaultSecretProvider.Instance;
             client_id = "83ac8948-e5e1-4bbd-97ea-798a13dc8bc6";
-            client_secret = secretProvider.GetSecretAsync("datacopdev", "AADDataCopClientSecret").Result;
+            client_secret = secretProvider.GetSecretAsync("datacop-prod", "AADDataCopClientSecret").Result;
             resource = "83ac8948-e5e1-4bbd-97ea-798a13dc8bc6";
 
             HttpClientDemo();

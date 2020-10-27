@@ -50,9 +50,6 @@
             //_adlaAccountName = "ideas-ppe-c14";
             //_adlsAccountName = "ideas-ppe-c14";
 
-            //_adlaAccountName = "datacopdev";
-            //_adlsAccountName = "datacopdev";
-
             //_adlaAccountName = "sandbox-c08";
             //_adlsAccountName = "sandbox-c08";
 

@@ -18,7 +18,7 @@ namespace AzureKustoDemo
         {
             ISecretProvider secretProvider = KeyVaultSecretProvider.Instance;
 
-            string kustoAppId = secretProvider.GetSecretAsync("datacopdev", "KustoAppId").Result;
+            string kustoAppId = secretProvider.GetSecretAsync("datacop-prod", "KustoAppId").Result;
             string kustoAppKey = secretProvider.GetSecretAsync("datacopdev", "KustoAppKey").Result;
             string kustoAuthorityId = secretProvider.GetSecretAsync("datacopdev", "KustoAuthorityId").Result;
 

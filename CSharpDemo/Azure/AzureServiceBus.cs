@@ -10,8 +10,7 @@
     {
         public static void MainMethod()
         {
-            string keyVaultName = "datacopdev";
-            //string keyVaultName = "datacop-ppe";
+            string keyVaultName = "datacop-ppe";
             //string keyVaultName = "datacop-prod";
             string queueName = "cosmostest";
             //string queueName = "alert";

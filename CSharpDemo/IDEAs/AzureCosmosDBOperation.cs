@@ -228,8 +228,13 @@
 
         public static void ShowADLSStreamPathPrefix()
         {
-            Console.WriteLine(GetStreamPathPrefixJson(@"SELECT * FROM c WHERE (c.dataFabric = 'ADLS') and c.isEnabled = true",
-                                                        @"SELECT * FROM c WHERE contains(c.dataFabric, 'Cosmos') and c.isEnabled = true"));
+            //var streamPathPrefixJson = GetStreamPathPrefixJson(@"SELECT * FROM c WHERE (c.dataFabric = 'ADLS') and c.isEnabled = true",
+            //                                                        @"SELECT * FROM c WHERE contains(c.dataFabric, 'Cosmos') and c.isEnabled = true");
+            //Console.WriteLine(streamPathPrefixJson);
+            //WriteFile.FirstMethod(@"D:\data\company_work\M365\IDEAs\path.json", streamPathPrefixJson.ToString());
+
+            //Console.WriteLine(GetQueryCount("DataCop", "Dataset"));
+            //Console.WriteLine(GetQueryResult("DataCop", "Dataset").Count);
         }
 
 
@@ -1469,10 +1474,55 @@
                 queryStr.Append($" where {string.Join(" and ", filters)}");
             }
 
+            // The reuslt schema is not json, so we cannot use JObject, or it will throw a serialization error.
             IList<JToken> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JToken>(new SqlQuerySpec(queryStr.ToString())).Result;
             return long.Parse(list[0].ToString());
         }
 
+        ///  <summary>
+        /// This function cannot work as our expection.
+        /// The step of this query is: 
+        /// 1. select top ***
+        /// 2. order by c.XXX
+        /// </summary>
+        private static List<JObject> GetQueryResultAborted(string databaseId, string collectionId, IList<string> filters = null)
+        {
+            int maxLimit = 1000;
+            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient(databaseId, collectionId);
+            StringBuilder querySb = new StringBuilder($"SELECT top {maxLimit} * FROM c where ");
+            if (filters != null && filters.Count > 0)
+            {
+                querySb.Append(string.Join(" and ", filters));
+                querySb.Append(" and ");
+            }
+
+            querySb.Append(@"c._ts > {0} order by c._ts");
+
+            // We need set the _ts in cosmos DB as long type.
+            long ts = 0;
+            List<JObject> result = new List<JObject>();
+            while (true)
+            {
+                var queryStr = string.Format(querySb.ToString(), ts);
+                IList<JObject> resultSub = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(queryStr)).Result;
+                if (resultSub == null || resultSub.Count() < 1)
+                {
+                    break;
+                }
+                result.AddRange(resultSub);
+                ts = long.Parse(resultSub[resultSub.Count - 1]["_ts"].ToString());
+
+            }
+
+            return result;
+        }
+
+        private static List<JObject> GetQueryResult(string databaseId, string collectionId, IList<string> filters = null)
+        {
+            int maxLimit = 1000;
+            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient(databaseId, collectionId);
+            throw new NotImplementedException();
+        }
 
         public static void QueryKenshoDataset()
         {
