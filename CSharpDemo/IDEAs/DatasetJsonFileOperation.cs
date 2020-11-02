@@ -25,6 +25,7 @@
             //DisableAllDatasetTest();
             //UpdateAllSqlKeyVaultName();
             //UpdateSomeCFRToAdls();
+            UpdateCosmosViewScripts();
 
         }
         public static void DisableAllDatasetTests()
@@ -141,7 +142,6 @@
         }
         private static void DisableDatasets(HashSet<string> datasetIds)
         {
-
             var datasetJsonFilePaths = ReadFile.GetAllFilePath(FolderPath);
 
             foreach (var datasetJsonFilePath in datasetJsonFilePaths)
@@ -194,10 +194,8 @@
                         {
                             Console.WriteLine(gitDatasetJObject["id"]);
                             Console.WriteLine(gitDatasetJObject["connectionInfo"]["auth"]["keyVaultName"]);
-
                         }
                     }
-
                 }
             }
         }
@@ -288,6 +286,36 @@
                     }
                 }
             }
+        }
+
+        public static void UpdateCosmosViewScripts()
+        {
+            var datasetJsonFilePaths = ReadFile.GetAllFilePath(FolderPath);
+            int count = 0;
+
+            foreach (var datasetJsonFilePath in datasetJsonFilePaths)
+            {
+                if (datasetJsonFilePath.ToLower().Contains("\\monitor"))
+                {
+                    string fileContent = ReadFile.ThirdMethod(datasetJsonFilePath);
+                    JsonSerializerSettings serializer = new JsonSerializerSettings
+                    {
+                        DateParseHandling = DateParseHandling.None
+                    };
+                    JObject gitDatasetJObject = JsonConvert.DeserializeObject<JObject>(fileContent, serializer);
+                    if (gitDatasetJObject["dataFabric"]?.ToString().ToLower().Equals("cosmosview") == true)
+                    {
+                        count++;
+                        var cosmosScriptContent = gitDatasetJObject["testContent"]["cosmosScriptContent"].ToString();
+                        var index = cosmosScriptContent.IndexOf("OUTPUT ViewSamples");
+                        cosmosScriptContent = cosmosScriptContent.Substring(0, index);
+                        cosmosScriptContent += " Count = SELECT COUNT() AS NumSessions FROM ViewSamples; OUTPUT Count TO SSTREAM \"/my/output.ss\"";
+                        gitDatasetJObject["testContent"]["cosmosScriptContent"] = cosmosScriptContent;
+                        WriteFile.FirstMethod(datasetJsonFilePath, gitDatasetJObject.ToString());
+                    }
+                }
+            }
+            Console.WriteLine($"count: {count}");
         }
 
         public static void UpdateAllDatasetJsonForMergingADLSCosmos()

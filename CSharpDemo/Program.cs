@@ -51,8 +51,6 @@
             //AzureActiveDirectoryToken.MainMethod();
             //AzureKeyVaultDemo.MainMethod();
 
-
-
             if (Debugger.IsAttached)
             {
                 Console.WriteLine("press enter key to exit...");

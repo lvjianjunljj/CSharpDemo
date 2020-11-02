@@ -238,6 +238,7 @@
     <Compile Include="LINQ\TestClassForLINQ.cs" />
     <Compile Include="LINQ\ToIEnumerableDemo.cs" />
     <Compile Include="NullablePropertyDemo.cs" />
+    <Compile Include="Parallel\TaskTimeOut.cs" />
     <Compile Include="PropertyComparable.cs" />
     <Compile Include="QPSTestDemo.cs" />
     <Compile Include="RegexDemo.cs" />
