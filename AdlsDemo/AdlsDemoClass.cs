@@ -22,6 +22,7 @@
             ["https://cosmos14.osdinfra.net/cosmos/exchange.storage.prod"] = "exchange-storage-prod-c14.azuredatalakestore.net",
             ["https://cosmos14.osdinfra.net/cosmos/ideas.private.data"] = "ideas-private-data-c14.azuredatalakestore.net",
             ["https://cosmos14.osdinfra.net/cosmos/ideas.prod"] = "ideas-prod-c14.azuredatalakestore.net",
+            ["https://cosmos14.osdinfra.net/cosmos/ideas.prod.build"] = "ideas-prod-build-c14.azuredatalakestore.net",
             ["https://cosmos14.osdinfra.net/cosmos/ideas.prod.data"] = "ideas-prod-data-c14.azuredatalakestore.net",
         };
 
@@ -30,7 +31,7 @@
         {
             ISecretProvider secretProvider = KeyVaultSecretProvider.Instance;
             //tenantId = @"72f988bf-86f1-41af-91ab-2d7cd011db47";// For tenant Microsoft
-            string tenantId = @"cdc5aeea-15c5-4db6-b079-fcadd2505dc2";
+            string tenantId = @"cdc5aeea-15c5-4db6-b079-fcadd2505dc2";// For tenant Torus
             string clientId = secretProvider.GetSecretAsync("datacop-prod", "AdlsAadAuthAppId").Result;
             string clientKey = secretProvider.GetSecretAsync("datacop-prod", "AdlsAadAuthAppSecret").Result;
 

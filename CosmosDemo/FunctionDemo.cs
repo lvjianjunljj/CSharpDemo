@@ -12,7 +12,7 @@
         {
             //CheckStreamExists();
             //CheckRowCount();
-            //CheckDirectoryExists();
+            CheckDirectoryExists();
 
             //GetRowCountIteratively("2019-07-10T00:00:00.0000000Z");
 
@@ -56,7 +56,6 @@
             //string stream = @"https://cosmos14.osdinfra.net/cosmos/IDEAs.Prod/shares/IDEAs.Prod.Data/Publish/Profiles/Tenant/Commercial/ExoAdTenantConfigUnitGallatin/TenantConfigUnitRaw/Streams/v1/2020/04/TenantConfigUnitRaw_2020_04_10.ss";
             //stream = @"https://cosmos14.osdinfra.net/cosmos/IDEAs.Prod//shares/IDEAs.Prod.Data/Publish/Profiles/User/Commercial/ExoAdUserWorldwide/TenantUserSnapshot/Streams/v1/2020/04/TenantUserSnapshot_2020_04_14.ss";
             stream = @"https://cosmos14.osdinfra.net/cosmos/IDEAs.Prod/shares/IDEAs.Prod.Data/local/Publish/Acquisitions/User/Neutral/Clickstream/Raw/Streams/v1/2020/01/RawClickstream_2020_01_25.ss";
-
             long? rowCount = CosmosClient.GetRowCount(stream);
             Console.WriteLine($"rowCount: {rowCount}");
         }
@@ -66,6 +65,7 @@
             string directoryPath = "https://cosmos14.osdinfra.net/cosmos/IDEAs.Prod/";
             directoryPath = "https://cosmos14.osdinfra.net/cosmos/IDEAs.Prod.Data/";
             directoryPath = @"https://cosmos14.osdinfra.net/cosmos/Ideas.prod//shares/IDEAs.Prod.Data/Publish/Usage/User/Commercial/CountedActions/TeamsApps/Streams/v1/";
+            directoryPath = @"https://cosmos14.osdinfra.net/cosmos/Ideas.prod.build/local/";
 
             Console.WriteLine(CosmosClient.CheckDirectoryExists(directoryPath));
         }
