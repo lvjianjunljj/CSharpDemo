@@ -20,8 +20,9 @@
         static Dictionary<string, string> vcAdlaAdlsAccountDict = new Dictionary<string, string>
         {
             ["https://cosmos14.osdinfra.net/cosmos/exchange.storage.prod"] = "exchange-storage-prod-c14.azuredatalakestore.net",
+            ["https://cosmos14.osdinfra.net/cosmos/ideas.ppe"] = "ideas-ppe-c14.azuredatalakestore.net",
             ["https://cosmos14.osdinfra.net/cosmos/ideas.private.data"] = "ideas-private-data-c14.azuredatalakestore.net",
-            ["https://cosmos14.osdinfra.net/cosmos/ideas.prod"] = "ideas-prod-c14.azuredatalakestore.net",
+            ["https://cosmos14.osdinfra.net/cosmos/ideas.prod"] = "ideas-prod-build-c14.azuredatalakestore.net",
             ["https://cosmos14.osdinfra.net/cosmos/ideas.prod.build"] = "ideas-prod-build-c14.azuredatalakestore.net",
             ["https://cosmos14.osdinfra.net/cosmos/ideas.prod.data"] = "ideas-prod-data-c14.azuredatalakestore.net",
         };
@@ -48,7 +49,43 @@
             // For Torus tenant
             // Check the file with the certificate in Torus tenant.
             //TorusAccessCFRFileDemo();
-            CheckAdlsPermissionByJson();
+            //CheckAdlsPermissionByJson();
+            CheckIDEAsPPEPermissionByJson();
+
+        }
+
+        public static void CheckIDEAsPPEPermissionByJson()
+        {
+            string dataLakeStore = @"ideas-prod-build-c14.azuredatalakestore.net";
+            var pathPrefixs = new List<string>()
+            {
+                "shares/IDEAs.Prod.Data/Publish/Usage/Device/Neutral/Metrics/Field/ModernLife/WindowsEdu/Streams/v1/2020/10/",
+                "shares/IDEAs.Prod.Data/Publish/Usage/Device/Neutral/Metrics/Field/ModernLife/Win10EduActivationsByTPId/Streams/v1/2020/10/",
+                "shares/IDEAs.Prod.Data/Publish/Usage/Device/Neutral/Metrics/Field/ModernLife/Win10EduDailyActivations/Streams/v1/2020/10/",
+                "shares/IDEAs.Prod.Data/Publish/Usage/Device/Neutral/Metrics/Field/ModernLife/WindowsOEMPro/Streams/v1/2020/10/",
+                "shares/IDEAs.Prod.Data/Publish/Usage/Device/Neutral/Metrics/Field/ModernLife/Win10OEMProActivationsByTPId/Streams/v1/2020/10/",
+                "shares/IDEAs.Prod.Data/Publish/Usage/Device/Neutral/Metrics/Field/ModernLife/Win10ConsumerOEMProDaily/Streams/v1/2020/10/",
+                "shares/IDEAs.Prod.Data/Publish/Usage/Device/Neutral/Metrics/Field/ModernLife/WindowsModern/Streams/v1/2020/10/",
+                "shares/IDEAs.Prod.Data/Publish/Usage/Device/Neutral/Metrics/Field/ModernLife/Win10ModernActivationsByGeo/Streams/v1/2020/10/",
+                "shares/IDEAs.Prod.Data/Publish/Usage/Device/Neutral/Metrics/Field/ModernLife/Win0ModernDailyActivations/Streams/v1/2020/10/",
+                "shares/IDEAs.Prod.Data/Publish/Usage/Device/Neutral/Metrics/Field/ModernLife/WindowsConsumer/Streams/v1/2020/10/",
+                "shares/IDEAs.Prod.Data/Publish/Usage/Device/Neutral/Metrics/Field/ModernLife/Win10ConsumerActivationsByGeo/Streams/v1/2020/10/",
+                "shares/IDEAs.Prod.Data/Publish/Usage/Tenant/Commercial/Metrics/Field/ModernWorkplace/",
+                "shares/IDEAs.Prod.Data/Publish/Usage/Tenant/Commercial/Metrics/Field/SecurityAndCompliance/",
+                "shares/IDEAs.Prod.Data/Publish/Usage/Tenant/Commercial/Metrics/FieldLG/",
+                "shares/IDEAs.Prod.Data/Publish/Usage/Tenant/Commercial/Metrics/Partner/",
+                "shares/IDEAs.Prod.Data/Publish/Usage/Tenant/Commercial/Metrics/PartnerLG/",
+                "shares/IDEAs.Prod.Data/Publish/Usage/Device/Neutral/Metrics/Field/ModernLife/",
+                "shares/ideas.prod.data/private/Usage/Device/Neutral/Metrics/Field/ModernLife/"
+            };
+
+            foreach (var pathPrefix in pathPrefixs)
+            {
+                if (!dataLakeClient.CheckPermission(dataLakeStore, pathPrefix + "/Test/Test.ss"))
+                {
+                    Console.WriteLine($"Have no permission for pathPrefix: '{pathPrefix}'");
+                }
+            }
         }
 
         public static void CheckAdlsPermissionByJson()

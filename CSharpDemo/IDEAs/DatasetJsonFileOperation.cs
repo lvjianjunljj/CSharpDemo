@@ -25,8 +25,8 @@
             //DisableAllDatasetTest();
             //UpdateAllSqlKeyVaultName();
             //UpdateSomeCFRToAdls();
-            UpdateCosmosViewScripts();
-
+            //UpdateCosmosViewScripts();
+            UpdateCosmosVCToBuild();
         }
         public static void DisableAllDatasetTests()
         {
@@ -295,7 +295,7 @@
 
             foreach (var datasetJsonFilePath in datasetJsonFilePaths)
             {
-                if (datasetJsonFilePath.ToLower().Contains("\\monitor"))
+                if (datasetJsonFilePath.ToLower().Contains(@"\monitor"))
                 {
                     string fileContent = ReadFile.ThirdMethod(datasetJsonFilePath);
                     JsonSerializerSettings serializer = new JsonSerializerSettings
@@ -316,6 +316,44 @@
                 }
             }
             Console.WriteLine($"count: {count}");
+        }
+
+        public static void UpdateCosmosVCToBuild()
+        {
+            var datasetJsonFilePaths = ReadFile.GetAllFilePath(FolderPath);
+
+            foreach (var datasetJsonFilePath in datasetJsonFilePaths)
+            {
+                if (datasetJsonFilePath.ToLower().Contains(@"dataset"))
+                {
+                    string fileContent = ReadFile.ThirdMethod(datasetJsonFilePath);
+                    JsonSerializerSettings serializer = new JsonSerializerSettings
+                    {
+                        DateParseHandling = DateParseHandling.None
+                    };
+                    JObject gitDatasetJObject = JsonConvert.DeserializeObject<JObject>(fileContent, serializer);
+                    if (gitDatasetJObject["dataFabric"]?.ToString().ToLower().Equals("cosmosstream") == true)
+                    {
+                        if (gitDatasetJObject["connectionInfo"]["cosmosVC"]?.ToString().ToLower().Trim('/').Equals("https://cosmos14.osdinfra.net/cosmos/ideas.prod.build") == true)
+                        {
+                            continue;
+                        }
+                        else if (gitDatasetJObject["connectionInfo"]["cosmosVC"]?.ToString().ToLower().Trim('/').Equals("https://cosmos14.osdinfra.net/cosmos/ideas.prod") == true)
+                        {
+                            gitDatasetJObject["connectionInfo"]["cosmosVC"] = gitDatasetJObject["connectionInfo"]["cosmosVC"]?.ToString().Trim('/') + ".Build/";
+                            WriteFile.FirstMethod(datasetJsonFilePath, gitDatasetJObject.ToString());
+                            Console.WriteLine($"Update dataset: {gitDatasetJObject["id"]?.ToString()}");
+                        }
+                        else
+                        {
+                            gitDatasetJObject["connectionInfo"]["cosmosVC"] = @"https://cosmos14.osdinfra.net/cosmos/IDEAs.Prod.Build/";
+                            WriteFile.FirstMethod(datasetJsonFilePath, gitDatasetJObject.ToString());
+                            Console.WriteLine(gitDatasetJObject["id"]?.ToString());
+                            Console.WriteLine(gitDatasetJObject["connectionInfo"]["cosmosVC"]?.ToString());
+                        }
+                    }
+                }
+            }
         }
 
         public static void UpdateAllDatasetJsonForMergingADLSCosmos()

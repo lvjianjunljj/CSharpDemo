@@ -66,6 +66,8 @@
             directoryPath = "https://cosmos14.osdinfra.net/cosmos/IDEAs.Prod.Data/";
             directoryPath = @"https://cosmos14.osdinfra.net/cosmos/Ideas.prod//shares/IDEAs.Prod.Data/Publish/Usage/User/Commercial/CountedActions/TeamsApps/Streams/v1/";
             directoryPath = @"https://cosmos14.osdinfra.net/cosmos/Ideas.prod.build/local/";
+            directoryPath = @"https://cosmos14.osdinfra.net/cosmos/IDEAs.ppe/shares/IDEAs.Prod.Data/Publish/Usage/Device/Neutral/Metrics/Field/ModernLife/WindowsModern/Streams/v1/2020/10/";
+
 
             Console.WriteLine(CosmosClient.CheckDirectoryExists(directoryPath));
         }

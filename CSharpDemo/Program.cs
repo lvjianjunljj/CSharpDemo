@@ -47,7 +47,7 @@
             //QueryIncidents.MainMethod();
             //FireIncident.MainMethod();
 
-            //DatasetJsonFileOperation.MainMethod();
+            DatasetJsonFileOperation.MainMethod();
             //AzureActiveDirectoryToken.MainMethod();
             //AzureKeyVaultDemo.MainMethod();
 

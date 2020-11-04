@@ -38,6 +38,7 @@
             //UpdateAllCosmosTestCreateTime();
             //UpdateAlertSettingToGitFolder();
             //UpsertServiceMonitorDemo();
+            UpdateVcToBuild();
 
             //DisableAllCFRMonitor();
             //InsertCFRMonitorConfig();
@@ -89,7 +90,7 @@
             //DisableAllBuildDeploymentDataset();
             //UpdateSqlDatasetKeyVaultName();
             //CreateContainers();
-            ShowADLSStreamPathPrefix();
+            //ShowADLSStreamPathPrefix();
             //GetNonAuthPath();
             //GetTimeCostDemo();
 
@@ -227,7 +228,6 @@
                 }
             }
         }
-
 
         public static void ShowADLSStreamPathPrefix()
         {
@@ -1160,6 +1160,24 @@
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "ServiceMonitor");
             var jObject = JObject.Parse(@"{'datasetId': 'a4353e4b-1611-4965-8334-4c81fd824dad', 'expectedTestRunStatus': 'Success','isEnabled': true}");
             azureCosmosDBClient.UpsertDocumentAsync(jObject).Wait();
+        }
+
+        public static void UpdateVcToBuild()
+        {
+            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "Dataset");
+            // Collation: asc and desc is ascending and descending
+            IList<JObject> datasets = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c where c.dataFabric = 'CosmosStream' and c.isEnabled = true")).Result;
+            foreach (JObject dataset in datasets)
+            {
+                Console.WriteLine(dataset["id"].ToString());
+                //azureCosmosDBClient.UpsertDocumentAsync(dataset).Wait();
+
+                //string id = dataset["id"].ToString();
+                //Console.WriteLine(id);
+                //string documentLink = GetDocumentLink("DataCop", "Dataset", id);
+                //ResourceResponse<Document> resource = azureCosmosDBClient.DeleteDocumentAsync(documentLink).Result;
+            }
+            Console.WriteLine(datasets.Count);
         }
 
         public static void DisableAllDataset()
