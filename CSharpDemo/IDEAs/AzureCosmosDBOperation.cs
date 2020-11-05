@@ -14,7 +14,6 @@
     using System.Linq;
     using System.IO;
     using System.Text;
-    using Microsoft.Cis.Monitoring.Wad.PublicConfigConverter;
     using System.Diagnostics;
 
     public class AzureCosmosDBOperation
@@ -60,18 +59,25 @@
             QueryTestRuns();
 
             //DeleteTestRunDemo();
-            //DeleteWaitingOnDemandTestRuns();
+            //DeleteTestRuns();
             //DeleteWaitingOrchestrateTestRuns();
             //DeleteCosmosTestRunByResultExpirePeriod();
             // We can use this function to delete instance without any limitation.
             //DeleteAlertsWithoutIncidentId();
             //DeleteWrongAlertsFromDataCopTest();
 
-            //string prodEndpoint = secretProvider.GetSecretAsync("dataco-pprod", "CosmosDBEndPoint").Result;
+            //string prodEndpoint = secretProvider.GetSecretAsync("datacop-prod", "CosmosDBEndPoint").Result;
             //string prodKey = secretProvider.GetSecretAsync("datacop-prod", "CosmosDBAuthKey").Result;
             //string ppeEndpoint = secretProvider.GetSecretAsync("datacop-ppe", "CosmosDBEndPoint").Result;
             //string ppeKey = secretProvider.GetSecretAsync("datacop-ppe", "CosmosDBAuthKey").Result;
-            //MigrateData("DataCop", "ServiceMonitorReport", prodEndpoint, prodKey, ppeEndpoint, ppeKey);
+            //IList<string> filters = new List<string>
+            //{
+            //    @"c.level = 'DataCop'",
+            //    @"c.reportStartTimeStamp > '2020-02-22T15:00:00'"
+            //};
+            //MigrateData("DataCop", "ServiceMonitorReport", filters, prodEndpoint, prodKey, ppeEndpoint, ppeKey);
+            //MigrateData("DataCop", "Dataset", @"SELECT * FROM c where c.dataFabric = 'CosmosStream'", prodEndpoint, prodKey, ppeEndpoint, ppeKey);
+            //MigrateData("DataCop", "DatasetTest", @"SELECT * FROM c where (c.testContentType = 'CosmosAvailability' or c.testContentType = 'CosmosCompleteness') and c.status = 'Enabled'", prodEndpoint, prodKey, ppeEndpoint, ppeKey);
 
             //AddCompletenessMonitors4ADLS();
 
@@ -85,10 +91,9 @@
 
             //DisableAbortedTest();
 
-            //AzureCosmosDBClient.Endpoint = endpoint;
-            //AzureCosmosDBClient.Key = key;
             //DisableAllBuildDeploymentDataset();
             //UpdateSqlDatasetKeyVaultName();
+            //UpdateCosmosVCToBuild();
             //CreateContainers();
             //ShowADLSStreamPathPrefix();
             //GetNonAuthPath();
@@ -103,7 +108,7 @@
             //string microsoftKey = "";
             //string torusEndpoint = "https://cloudscope-ppe.table.cosmos.azure.com:443/";
             //string torusKey = "";
-            //MigrateData("TablesDB", "TestPerf", microsoftEndPoint, microsoftKey, torusEndpoint, torusKey);
+            //MigrateData("TablesDB", "TestPerf", null, microsoftEndPoint, microsoftKey, torusEndpoint, torusKey);
 
 
         }
@@ -784,13 +789,28 @@
             }
         }
 
-        //public static void MigrateData(string collectionId, string fromKeyVaultName, string toKeyVaultName)
-        public static void MigrateData(string databaseId, string collectionId, string fromEndPoint, string fromKey, string toEndPoint, string toKey)
+        public static void MigrateData(string databaseId, string collectionId, IList<string> filters, string fromEndPoint, string fromKey, string toEndPoint, string toKey)
+        {
+            StringBuilder sqlQuerySb = new StringBuilder(@"SELECT * FROM c");
+            if (filters?.Count > 0 == true)
+            {
+                sqlQuerySb.Append($" where {filters[0]}");
+                for (int i = 1; i < filters.Count; i++)
+                {
+                    sqlQuerySb.Append($" and {filters[i]}");
+                }
+            }
+
+            MigrateData(databaseId, collectionId, sqlQuerySb.ToString(), fromEndPoint, fromKey, toEndPoint, toKey);
+        }
+
+        public static void MigrateData(string databaseId, string collectionId, string queryStr, string fromEndPoint, string fromKey, string toEndPoint, string toKey)
         {
             AzureCosmosDBClient.Endpoint = fromEndPoint;
             AzureCosmosDBClient.Key = fromKey;
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient(databaseId, collectionId);
-            IList<JObject> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c where c.level = 'DataCop' and c.reportStartTimeStamp > '2020-02-22T15:00:00'")).Result;
+
+            IList<JObject> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(queryStr)).Result;
 
             // This is a funny thing. azureCosmosDBClient has not been changed.
             // Root cause is that we use the single module
@@ -1167,18 +1187,23 @@
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "Dataset");
             // Collation: asc and desc is ascending and descending
             IList<JObject> datasets = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c where c.dataFabric = 'CosmosStream' and c.isEnabled = true")).Result;
+            var count = 0;
             foreach (JObject dataset in datasets)
             {
                 if (dataset["connectionInfo"]["cosmosVC"].ToString().ToLower().Trim('/').Equals("https://cosmos14.osdinfra.net/cosmos/ideas.prod") &&
                     dataset["connectionInfo"]["streamPath"].ToString().ToLower().Trim('/').StartsWith("share"))
                 {
                     //dataset["connectionInfo"]["cosmosVC"] = "https://cosmos14.osdinfra.net/cosmos/IDEAs.Prod.Build/";
-                    Console.WriteLine(dataset);
+                    //Console.WriteLine(dataset);
+                    Console.WriteLine(dataset["id"]);
+                    Console.WriteLine(dataset["kenshoData"]);
                     //azureCosmosDBClient.UpsertDocumentAsync(dataset).Wait();
+                    count++;
                 }
 
             }
             Console.WriteLine(datasets.Count);
+            Console.WriteLine(count);
         }
 
         public static void DisableAllDataset()
@@ -1232,6 +1257,44 @@
                 Console.WriteLine(dataset["connectionInfo"]["auth"]["keyVaultName"]);
                 dataset["connectionInfo"]["auth"]["keyVaultName"] = "datacop-prod";
                 azureCosmosDBClient.UpsertDocumentAsync(dataset).Wait();
+            }
+            Console.WriteLine(datasets.Count);
+        }
+
+        public static void UpdateCosmosVCToBuild()
+        {
+            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "Dataset");
+            // Collation: asc and desc is ascending and descending
+            IList<JObject> datasets = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(
+                new SqlQuerySpec(@"SELECT * FROM c WHERE c.dataFabric = 'CosmosStream' and (c.kenshoData = null or not is_defined(c.kenshoData))")).Result;
+            foreach (JObject dataset in datasets)
+            {
+                if (dataset["connectionInfo"]["cosmosVC"]?.ToString().ToLower().Trim('/').Equals("https://cosmos14.osdinfra.net/cosmos/ideas.prod.build") == true)
+                {
+                    continue;
+                }
+                else if (dataset["connectionInfo"]["cosmosVC"]?.ToString().ToLower().Trim('/').Equals("https://cosmos14.osdinfra.net/cosmos/ideas.prod") == true ||
+                    dataset["connectionInfo"]["cosmosVC"]?.ToString().ToLower().Trim('/').Equals("https://cosmos14.osdinfra.net/cosmos/ideas.private.data") == true)
+                {
+                    if (dataset["connectionInfo"]["streamPath"].ToString().ToLower().Trim('/').StartsWith("share"))
+                    {
+                        dataset["connectionInfo"]["cosmosVC"] = dataset["connectionInfo"]["cosmosVC"]?.ToString().Trim('/') + ".Build/";
+                        Console.WriteLine($"Update dataset: {dataset["id"]?.ToString()}");
+                        azureCosmosDBClient.UpsertDocumentAsync(dataset).Wait();
+                    }
+                    else
+                    {
+                        var streamPath = dataset["connectionInfo"]["streamPath"].ToString();
+                        Console.WriteLine($"Not update dataset: {dataset["id"]?.ToString()}, streamPath: {streamPath}");
+                    }
+                }
+                else
+                {
+                    //dataset["connectionInfo"]["cosmosVC"] = @"https://cosmos14.osdinfra.net/cosmos/IDEAs.Prod.Build/";
+                    //azureCosmosDBClient.UpsertDocumentAsync(dataset).Wait();
+                    var cosmosVC = dataset["connectionInfo"]["cosmosVC"].ToString();
+                    Console.WriteLine($"Not update dataset: {dataset["id"]?.ToString()}, cosmosVC: {cosmosVC}");
+                }
             }
             Console.WriteLine(datasets.Count);
         }
@@ -1454,18 +1517,33 @@
 
         public static void QueryTestRuns()
         {
+            string id = @"";
             string datasetId = @"";
             string partitionKey = @"";
             string dataFabric = @"";
-            string status = @"Success";
+            string status = @"";
+            string createTimeMin = @"";
 
-            int count = 100;
-            datasetId = @"CFR_PPE_ActivityGroupYammer";
+            int count = 1000;
+            //id = @"3b706e04-446b-40eb-9dbb-802fae54373c";
+            datasetId = @"c52adab4-41c4-41ff-a543-e18480a75305";
             //partitionKey = @"2020-10-10T00:00:00";
             dataFabric = "CosmosStream";
+            //status = "Success";
+            createTimeMin = @"2020-11-05";
 
             var start = true;
             StringBuilder sqlQueryString = new StringBuilder($"SELECT top {count} * FROM c");
+
+            if (!string.IsNullOrEmpty(id))
+            {
+                if (start)
+                    sqlQueryString.Append(" WHERE");
+                else
+                    sqlQueryString.Append(" and");
+                sqlQueryString.Append($" c.id = '{id}'");
+                start = false;
+            }
 
             if (!string.IsNullOrEmpty(datasetId))
             {
@@ -1494,6 +1572,7 @@
                 else
                     sqlQueryString.Append(" and");
                 sqlQueryString.Append($" c.dataFabric = '{dataFabric}'");
+                start = false;
             }
 
             if (!string.IsNullOrEmpty(status))
@@ -1503,6 +1582,16 @@
                 else
                     sqlQueryString.Append(" and");
                 sqlQueryString.Append($" c.status = '{status}'");
+                start = false;
+            }
+
+            if (!string.IsNullOrEmpty(createTimeMin))
+            {
+                if (start)
+                    sqlQueryString.Append(" WHERE");
+                else
+                    sqlQueryString.Append(" and");
+                sqlQueryString.Append($" c.createTime >= '{createTimeMin}'");
             }
 
             sqlQueryString.Append(" order by c.createTime desc");
@@ -1812,28 +1901,94 @@
             Console.WriteLine(resource);
         }
 
-        public static void DeleteWaitingOnDemandTestRuns()
+        public static void DeleteTestRuns()
         {
+            string datasetId = @"";
+            string partitionKey = @"";
+            string dataFabric = @"";
+            string status = @"";
+            string createTimeMin = @"";
+
+            int count = 1000;
+            //datasetId = @"CFR_PPE_ActivityGroupYammer";
+            //partitionKey = @"2020-10-10T00:00:00";
+            dataFabric = "CosmosStream";
+            status = @"Waiting";
+            //createTimeMin = @"2020-11-01";
+
+            var start = true;
+            StringBuilder sqlQueryString = new StringBuilder($"SELECT top {count} * FROM c");
+
+            if (!string.IsNullOrEmpty(datasetId))
+            {
+                if (start)
+                    sqlQueryString.Append(" WHERE");
+                else
+                    sqlQueryString.Append(" and");
+                sqlQueryString.Append($" c.datasetId = '{datasetId}'");
+                start = false;
+            }
+
+            if (!string.IsNullOrEmpty(partitionKey))
+            {
+                if (start)
+                    sqlQueryString.Append(" WHERE");
+                else
+                    sqlQueryString.Append(" and");
+                sqlQueryString.Append($" c.partitionKey = '{partitionKey}'");
+                start = false;
+            }
+
+            if (!string.IsNullOrEmpty(dataFabric))
+            {
+                if (start)
+                    sqlQueryString.Append(" WHERE");
+                else
+                    sqlQueryString.Append(" and");
+                sqlQueryString.Append($" c.dataFabric = '{dataFabric}'");
+                start = false;
+            }
+
+            if (!string.IsNullOrEmpty(status))
+            {
+                if (start)
+                    sqlQueryString.Append(" WHERE");
+                else
+                    sqlQueryString.Append(" and");
+                sqlQueryString.Append($" c.status = '{status}'");
+                start = false;
+            }
+
+            if (!string.IsNullOrEmpty(createTimeMin))
+            {
+                if (start)
+                    sqlQueryString.Append(" WHERE");
+                else
+                    sqlQueryString.Append(" and");
+                sqlQueryString.Append($" c.createTime >= '{createTimeMin}'");
+            }
+
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "PartitionedTestRun");
             // Collation: asc and desc is ascending and descending
-            IList<JObject> testRuns = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT top 1000 * FROM c WHERE c.status = 'Waiting' and not contains(c.partitionKey, 'T00:00:00') order by c.createTime desc")).Result;
+            IList<JObject> testRuns = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(sqlQueryString.ToString())).Result;
             while (testRuns.Count > 0)
             {
                 foreach (JObject testRun in testRuns)
                 {
                     string id = testRun["id"].ToString();
-                    string partitionKey = testRun["partitionKey"].ToString();
+                    string partitionKeyInJson = testRun["partitionKey"].ToString();
                     Console.WriteLine(id);
                     try
                     {
                         string documentLink = UriFactory.CreateDocumentUri("DataCop", "PartitionedTestRun", id).ToString();
-                        var reqOptions = new RequestOptions { PartitionKey = new PartitionKey(partitionKey) };
+                        var reqOptions = new RequestOptions { PartitionKey = new PartitionKey(partitionKeyInJson) };
                         ResourceResponse<Document> resource = azureCosmosDBClient.DeleteDocumentAsync(documentLink, reqOptions).Result;
                         Console.WriteLine(resource);
                     }
                     catch (Exception e)
                     {
-                        Console.WriteLine(e.Message);
+                        Console.WriteLine($"Removing testRun '{id}' has error:");
+                        Console.WriteLine(JsonConvert.SerializeObject(e));
                     }
                 }
                 testRuns = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT top 1000 * FROM c WHERE c.status = 'Waiting' and not contains(c.partitionKey, 'T00:00:00') order by c.createTime desc")).Result;

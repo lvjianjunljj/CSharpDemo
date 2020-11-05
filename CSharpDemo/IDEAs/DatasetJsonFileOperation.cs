@@ -320,13 +320,14 @@
 
         public static void UpdateCosmosVCToBuild()
         {
-            var datasetJsonFilePaths = ReadFile.GetAllFilePath(FolderPath);
+            var kenshoDatasetIds = GetKenshoDatasetIds();
+            var jsonFilePaths = ReadFile.GetAllFilePath(FolderPath);
 
-            foreach (var datasetJsonFilePath in datasetJsonFilePaths)
+            foreach (var jsonFilePath in jsonFilePaths)
             {
-                if (datasetJsonFilePath.ToLower().Contains(@"\datasets"))
+                if (jsonFilePath.ToLower().Contains(@"\datasets"))
                 {
-                    string fileContent = ReadFile.ThirdMethod(datasetJsonFilePath);
+                    string fileContent = ReadFile.ThirdMethod(jsonFilePath);
                     JsonSerializerSettings serializer = new JsonSerializerSettings
                     {
                         DateParseHandling = DateParseHandling.None
@@ -334,16 +335,23 @@
                     JObject gitDatasetJObject = JsonConvert.DeserializeObject<JObject>(fileContent, serializer);
                     if (gitDatasetJObject["dataFabric"]?.ToString().ToLower().Equals("cosmosstream") == true)
                     {
+                        if (kenshoDatasetIds.Contains(gitDatasetJObject["id"].ToString()))
+                        {
+                            Console.WriteLine($"Not update kensho dataset: {gitDatasetJObject["id"]?.ToString()}");
+                            continue;
+                        }
+
                         if (gitDatasetJObject["connectionInfo"]["cosmosVC"]?.ToString().ToLower().Trim('/').Equals("https://cosmos14.osdinfra.net/cosmos/ideas.prod.build") == true)
                         {
                             continue;
                         }
-                        else if (gitDatasetJObject["connectionInfo"]["cosmosVC"]?.ToString().ToLower().Trim('/').Equals("https://cosmos14.osdinfra.net/cosmos/ideas.prod") == true)
+                        else if (gitDatasetJObject["connectionInfo"]["cosmosVC"]?.ToString().ToLower().Trim('/').Equals("https://cosmos14.osdinfra.net/cosmos/ideas.prod") == true ||
+                                gitDatasetJObject["connectionInfo"]["cosmosVC"]?.ToString().ToLower().Trim('/').Equals("https://cosmos14.osdinfra.net/cosmos/ideas.private.data") == true)
                         {
                             gitDatasetJObject["connectionInfo"]["cosmosVC"] = gitDatasetJObject["connectionInfo"]["cosmosVC"]?.ToString().Trim('/') + ".Build/";
-                            if (!gitDatasetJObject["connectionInfo"]["streamPath"].ToString().ToLower().Trim('/').StartsWith("share"))
+                            if (gitDatasetJObject["connectionInfo"]["streamPath"].ToString().ToLower().Trim('/').StartsWith("share"))
                             {
-                                WriteFile.FirstMethod(datasetJsonFilePath, gitDatasetJObject.ToString());
+                                WriteFile.FirstMethod(jsonFilePath, gitDatasetJObject.ToString());
                                 Console.WriteLine($"Update dataset: {gitDatasetJObject["id"]?.ToString()}");
                             }
                             else
@@ -362,6 +370,28 @@
                     }
                 }
             }
+        }
+
+        private static HashSet<string> GetKenshoDatasetIds()
+        {
+            var kenshoDatasetIds = new HashSet<string>();
+            var jsonFilePaths = ReadFile.GetAllFilePath(FolderPath);
+
+            foreach (var jsonFilePath in jsonFilePaths)
+            {
+                if (jsonFilePath.ToLower().Contains(@"\kenshodata"))
+                {
+                    string fileContent = ReadFile.ThirdMethod(jsonFilePath);
+                    JsonSerializerSettings serializer = new JsonSerializerSettings
+                    {
+                        DateParseHandling = DateParseHandling.None
+                    };
+
+                    JObject gitKenshoJObject = JsonConvert.DeserializeObject<JObject>(fileContent, serializer);
+                    kenshoDatasetIds.Add(gitKenshoJObject["datasetId"].ToString());
+                }
+            }
+            return kenshoDatasetIds;
         }
 
         public static void UpdateAllDatasetJsonForMergingADLSCosmos()
