@@ -23,7 +23,7 @@
         public static void MainMethod()
         {
             // for datacop: "datacop-ppe" and "datacop-prod"
-            string KeyVaultName = "datacop-prod";
+            string KeyVaultName = "datacop-ppe";
             var secretProvider = KeyVaultSecretProvider.Instance;
             string endpoint = secretProvider.GetSecretAsync(KeyVaultName, "CosmosDBEndPoint").Result;
             string key = secretProvider.GetSecretAsync(KeyVaultName, "CosmosDBAuthKey").Result;
@@ -38,7 +38,7 @@
             //UpdateAllCosmosTestCreateTime();
             //UpdateAlertSettingToGitFolder();
             //UpsertServiceMonitorDemo();
-            UpdateVcToBuild();
+            //UpdateVcToBuild();
 
             //DisableAllCFRMonitor();
             //InsertCFRMonitorConfig();
@@ -57,7 +57,7 @@
             //QueryTestRunCount();
             //QueryKenshoDataset();
             //QueryMonthlyTestRunCount();
-            //QueryTestRunsByDatasetId();
+            QueryTestRuns();
 
             //DeleteTestRunDemo();
             //DeleteWaitingOnDemandTestRuns();
@@ -1169,13 +1169,14 @@
             IList<JObject> datasets = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c where c.dataFabric = 'CosmosStream' and c.isEnabled = true")).Result;
             foreach (JObject dataset in datasets)
             {
-                Console.WriteLine(dataset["id"].ToString());
-                //azureCosmosDBClient.UpsertDocumentAsync(dataset).Wait();
+                if (dataset["connectionInfo"]["cosmosVC"].ToString().ToLower().Trim('/').Equals("https://cosmos14.osdinfra.net/cosmos/ideas.prod") &&
+                    dataset["connectionInfo"]["streamPath"].ToString().ToLower().Trim('/').StartsWith("share"))
+                {
+                    //dataset["connectionInfo"]["cosmosVC"] = "https://cosmos14.osdinfra.net/cosmos/IDEAs.Prod.Build/";
+                    Console.WriteLine(dataset);
+                    //azureCosmosDBClient.UpsertDocumentAsync(dataset).Wait();
+                }
 
-                //string id = dataset["id"].ToString();
-                //Console.WriteLine(id);
-                //string documentLink = GetDocumentLink("DataCop", "Dataset", id);
-                //ResourceResponse<Document> resource = azureCosmosDBClient.DeleteDocumentAsync(documentLink).Result;
             }
             Console.WriteLine(datasets.Count);
         }
@@ -1451,17 +1452,59 @@
             Console.WriteLine($"Sum: {sum}");
         }
 
-        public static void QueryTestRunsByDatasetId()
+        public static void QueryTestRuns()
         {
-            //string datasetId = @"2217f0cc-d5e0-4935-afa6-01ea6b84056c";
-            string datasetId = @"92110282-bc44-418d-bb42-d776ff374b60";
-            //string partitionKey = @"2020-10-10T00:00:00";
+            string datasetId = @"";
             string partitionKey = @"";
-            StringBuilder sqlQueryString = new StringBuilder($"SELECT top 100 * FROM c WHERE c.datasetId='{datasetId}'");
+            string dataFabric = @"";
+            string status = @"Success";
+
+            int count = 100;
+            datasetId = @"CFR_PPE_ActivityGroupYammer";
+            //partitionKey = @"2020-10-10T00:00:00";
+            dataFabric = "CosmosStream";
+
+            var start = true;
+            StringBuilder sqlQueryString = new StringBuilder($"SELECT top {count} * FROM c");
+
+            if (!string.IsNullOrEmpty(datasetId))
+            {
+                if (start)
+                    sqlQueryString.Append(" WHERE");
+                else
+                    sqlQueryString.Append(" and");
+                sqlQueryString.Append($" c.datasetId = '{datasetId}'");
+                start = false;
+            }
+
             if (!string.IsNullOrEmpty(partitionKey))
             {
-                sqlQueryString.Append($" and c.partitionKey = '{partitionKey}'");
+                if (start)
+                    sqlQueryString.Append(" WHERE");
+                else
+                    sqlQueryString.Append(" and");
+                sqlQueryString.Append($" c.partitionKey = '{partitionKey}'");
+                start = false;
             }
+
+            if (!string.IsNullOrEmpty(dataFabric))
+            {
+                if (start)
+                    sqlQueryString.Append(" WHERE");
+                else
+                    sqlQueryString.Append(" and");
+                sqlQueryString.Append($" c.dataFabric = '{dataFabric}'");
+            }
+
+            if (!string.IsNullOrEmpty(status))
+            {
+                if (start)
+                    sqlQueryString.Append(" WHERE");
+                else
+                    sqlQueryString.Append(" and");
+                sqlQueryString.Append($" c.status = '{status}'");
+            }
+
             sqlQueryString.Append(" order by c.createTime desc");
 
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "PartitionedTestRun");

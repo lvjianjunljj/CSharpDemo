@@ -324,7 +324,7 @@
 
             foreach (var datasetJsonFilePath in datasetJsonFilePaths)
             {
-                if (datasetJsonFilePath.ToLower().Contains(@"dataset"))
+                if (datasetJsonFilePath.ToLower().Contains(@"\datasets"))
                 {
                     string fileContent = ReadFile.ThirdMethod(datasetJsonFilePath);
                     JsonSerializerSettings serializer = new JsonSerializerSettings
@@ -341,15 +341,23 @@
                         else if (gitDatasetJObject["connectionInfo"]["cosmosVC"]?.ToString().ToLower().Trim('/').Equals("https://cosmos14.osdinfra.net/cosmos/ideas.prod") == true)
                         {
                             gitDatasetJObject["connectionInfo"]["cosmosVC"] = gitDatasetJObject["connectionInfo"]["cosmosVC"]?.ToString().Trim('/') + ".Build/";
-                            WriteFile.FirstMethod(datasetJsonFilePath, gitDatasetJObject.ToString());
-                            Console.WriteLine($"Update dataset: {gitDatasetJObject["id"]?.ToString()}");
+                            if (!gitDatasetJObject["connectionInfo"]["streamPath"].ToString().ToLower().Trim('/').StartsWith("share"))
+                            {
+                                WriteFile.FirstMethod(datasetJsonFilePath, gitDatasetJObject.ToString());
+                                Console.WriteLine($"Update dataset: {gitDatasetJObject["id"]?.ToString()}");
+                            }
+                            else
+                            {
+                                var streamPath = gitDatasetJObject["connectionInfo"]["streamPath"].ToString();
+                                Console.WriteLine($"Not update dataset: {gitDatasetJObject["id"]?.ToString()}, streamPath: {streamPath}");
+                            }
                         }
                         else
                         {
-                            gitDatasetJObject["connectionInfo"]["cosmosVC"] = @"https://cosmos14.osdinfra.net/cosmos/IDEAs.Prod.Build/";
-                            WriteFile.FirstMethod(datasetJsonFilePath, gitDatasetJObject.ToString());
-                            Console.WriteLine(gitDatasetJObject["id"]?.ToString());
-                            Console.WriteLine(gitDatasetJObject["connectionInfo"]["cosmosVC"]?.ToString());
+                            //gitDatasetJObject["connectionInfo"]["cosmosVC"] = @"https://cosmos14.osdinfra.net/cosmos/IDEAs.Prod.Build/";
+                            //WriteFile.FirstMethod(datasetJsonFilePath, gitDatasetJObject.ToString());
+                            var cosmosVC = gitDatasetJObject["connectionInfo"]["cosmosVC"].ToString();
+                            Console.WriteLine($"Not update dataset: {gitDatasetJObject["id"]?.ToString()}, cosmosVC: {cosmosVC}");
                         }
                     }
                 }
