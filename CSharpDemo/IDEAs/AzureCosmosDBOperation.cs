@@ -22,7 +22,7 @@
         public static void MainMethod()
         {
             // for datacop: "datacop-ppe" and "datacop-prod"
-            string KeyVaultName = "datacop-ppe";
+            string KeyVaultName = "datacop-prod";
             var secretProvider = KeyVaultSecretProvider.Instance;
             string endpoint = secretProvider.GetSecretAsync(KeyVaultName, "CosmosDBEndPoint").Result;
             string key = secretProvider.GetSecretAsync(KeyVaultName, "CosmosDBAuthKey").Result;
@@ -56,7 +56,11 @@
             //QueryTestRunCount();
             //QueryKenshoDataset();
             //QueryMonthlyTestRunCount();
-            QueryTestRuns();
+            //QueryTestRuns();
+            //QueryForbiddenTestRuns();
+            QueryDataCopScores();
+            //QueryDatasets();
+            //QueryTestRunCountByDatasetId();
 
             //DeleteTestRunDemo();
             //DeleteTestRuns();
@@ -109,8 +113,6 @@
             //string torusEndpoint = "https://cloudscope-ppe.table.cosmos.azure.com:443/";
             //string torusKey = "";
             //MigrateData("TablesDB", "TestPerf", null, microsoftEndPoint, microsoftKey, torusEndpoint, torusKey);
-
-
         }
 
         public static void GetNonAuthPath()
@@ -246,7 +248,7 @@
             foreach (JObject dataset in datasets)
             {
                 string dataFabric = dataset["dataFabric"].ToString();
-                string dataLakeStore = dataset["connectionInfo"]["dataLakeStore"]?.ToString().Trim(new char[] { '/' }).ToLower();
+                string dataLakeStore = dataset["connectionInfo"]["dataLakeStore"]?.ToString().Trim(new char[] { '/' });
                 string cosmosVC = dataset["connectionInfo"]["cosmosVC"]?.ToString().Trim(new char[] { '/' }).ToLower();
                 string key;
                 if (dataFabric.Equals("ADLS"))
@@ -258,7 +260,9 @@
                     key = dataFabric + " " + cosmosVC;
                 }
 
-                string streamPath = dataset["connectionInfo"]["streamPath"].ToString().Trim(new char[] { '/' }).ToLower();
+                // Take care of letter case in stream path
+                // The access result will be different if letter case of  stream path changes
+                string streamPath = dataset["connectionInfo"]["streamPath"].ToString().Trim(new char[] { '/' });
                 string pathPrefix = GetPathPrefix(streamPath);
                 if (!dict.ContainsKey(key))
                 {
@@ -1271,6 +1275,11 @@
             {
                 if (dataset["connectionInfo"]["cosmosVC"]?.ToString().ToLower().Trim('/').Equals("https://cosmos14.osdinfra.net/cosmos/ideas.prod.build") == true)
                 {
+                    if (dataset["connectionInfo"]["streamPath"]?.ToString().ToLower().Trim('/').StartsWith("shares/ad_dataanalytics/ad_dataanalytics") == true)
+                    {
+                        Console.WriteLine("~~~~~~~~~~~~~~~~~~~~~~");
+                        Console.WriteLine($"Build vc for stream path: {dataset["connectionInfo"]["streamPath"]}, datasetId: {dataset["id"]}");
+                    }
                     continue;
                 }
                 else if (dataset["connectionInfo"]["cosmosVC"]?.ToString().ToLower().Trim('/').Equals("https://cosmos14.osdinfra.net/cosmos/ideas.prod") == true ||
@@ -1280,7 +1289,7 @@
                     {
                         dataset["connectionInfo"]["cosmosVC"] = dataset["connectionInfo"]["cosmosVC"]?.ToString().Trim('/') + ".Build/";
                         Console.WriteLine($"Update dataset: {dataset["id"]?.ToString()}");
-                        azureCosmosDBClient.UpsertDocumentAsync(dataset).Wait();
+                        //azureCosmosDBClient.UpsertDocumentAsync(dataset).Wait();
                     }
                     else
                     {
@@ -1517,91 +1526,92 @@
 
         public static void QueryTestRuns()
         {
-            string id = @"";
-            string datasetId = @"";
-            string partitionKey = @"";
-            string dataFabric = @"";
-            string status = @"";
-            string createTimeMin = @"";
 
-            int count = 1000;
-            //id = @"3b706e04-446b-40eb-9dbb-802fae54373c";
-            datasetId = @"c52adab4-41c4-41ff-a543-e18480a75305";
-            //partitionKey = @"2020-10-10T00:00:00";
-            dataFabric = "CosmosStream";
-            //status = "Success";
-            createTimeMin = @"2020-11-05";
-
-            var start = true;
-            StringBuilder sqlQueryString = new StringBuilder($"SELECT top {count} * FROM c");
-
-            if (!string.IsNullOrEmpty(id))
+            IList<string> filters = new List<string>
             {
-                if (start)
-                    sqlQueryString.Append(" WHERE");
-                else
-                    sqlQueryString.Append(" and");
-                sqlQueryString.Append($" c.id = '{id}'");
-                start = false;
-            }
+                "c.id = ''",
+                "c.datasetId = ''",
+                "c.partitionKey = ''",
+                "c.dataFabric = ''",
+                "c.status = ''",
+                "c.createTime > ''",
+            };
 
-            if (!string.IsNullOrEmpty(datasetId))
-            {
-                if (start)
-                    sqlQueryString.Append(" WHERE");
-                else
-                    sqlQueryString.Append(" and");
-                sqlQueryString.Append($" c.datasetId = '{datasetId}'");
-                start = false;
-            }
-
-            if (!string.IsNullOrEmpty(partitionKey))
-            {
-                if (start)
-                    sqlQueryString.Append(" WHERE");
-                else
-                    sqlQueryString.Append(" and");
-                sqlQueryString.Append($" c.partitionKey = '{partitionKey}'");
-                start = false;
-            }
-
-            if (!string.IsNullOrEmpty(dataFabric))
-            {
-                if (start)
-                    sqlQueryString.Append(" WHERE");
-                else
-                    sqlQueryString.Append(" and");
-                sqlQueryString.Append($" c.dataFabric = '{dataFabric}'");
-                start = false;
-            }
-
-            if (!string.IsNullOrEmpty(status))
-            {
-                if (start)
-                    sqlQueryString.Append(" WHERE");
-                else
-                    sqlQueryString.Append(" and");
-                sqlQueryString.Append($" c.status = '{status}'");
-                start = false;
-            }
-
-            if (!string.IsNullOrEmpty(createTimeMin))
-            {
-                if (start)
-                    sqlQueryString.Append(" WHERE");
-                else
-                    sqlQueryString.Append(" and");
-                sqlQueryString.Append($" c.createTime >= '{createTimeMin}'");
-            }
-
-            sqlQueryString.Append(" order by c.createTime desc");
-
-            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "PartitionedTestRun");
-            IList<JObject> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(sqlQueryString.ToString())).Result;
+            IList<JObject> list = GetQueryResult("DataCop", "PartitionedTestRun", filters);
             foreach (JObject jObject in list)
             {
                 Console.WriteLine(jObject);
             }
+        }
+
+        public static void QueryForbiddenTestRuns()
+        {
+            IList<string> filters = new List<string>
+            {
+                "(c.dataFabric = 'CosmosStream' or c.dataFabric = 'Adls' or c.dataFabric = 'ADLS')",
+                "c.status = 'Aborted'",
+                "contains(c.message, 'Forbidden')",
+                "c.createTime > '2020-10-01'",
+            };
+
+            IList<JObject> list = GetQueryResult("DataCop", "PartitionedTestRun", filters);
+            foreach (JObject jObject in list)
+            {
+                Console.WriteLine(jObject);
+            }
+            Console.WriteLine($"ForbiddenTestRunsCount: {list.Count}");
+            WriteFile.FirstMethod(@"D:\data\company_work\M365\IDEAs\ForbiddenTestRuns.json", JsonConvert.SerializeObject(list));
+        }
+
+        public static void QueryDataCopScores()
+        {
+            var azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "DataCopScore");
+            var counts = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT count(1) FROM c")).Result;
+            foreach (var count in counts)
+            {
+                Console.WriteLine($"count: {count}");
+            }
+            var dataCopScores = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT count(1) FROM c")).Result;
+            Console.WriteLine("DataCopScores: ");
+            foreach (var dataCopScore in dataCopScores)
+            {
+                Console.WriteLine(dataCopScore);
+            }
+        }
+
+        public static void QueryTestRunCountByDatasetId()
+        {
+            string filePath = @"D:\data\company_work\M365\IDEAs\BuildDeploymentDatasets.json";
+            var content = File.ReadAllText(filePath, Encoding.UTF8);
+            var datasets = JArray.Parse(content);
+            var jArray = new JArray();
+            foreach (var dataset in datasets)
+            {
+                string datasetId = dataset["id"].ToString();
+                var azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "PartitionedTestRun");
+                var count = GetQueryCount(azureCosmosDBClient, new List<string> { $"c.datasetId = '{datasetId}'" });
+                var abortedCount = GetQueryCount(azureCosmosDBClient, new List<string> { "c.status = 'Aborted'", $"c.datasetId = '{datasetId}'" });
+                var successCount = GetQueryCount(azureCosmosDBClient, new List<string> { "c.status = 'Success'", $"c.datasetId = '{datasetId}'" });
+                Console.WriteLine($"DatasetId: {datasetId}\t Count: {count}\t AbortedCount: {abortedCount}\t SuccessCount: {successCount}");
+                var json = new JObject();
+                json["datasetId"] = datasetId;
+                json["count"] = count;
+                json["abortedCount"] = abortedCount;
+                json["successCount"] = successCount;
+                jArray.Add(json);
+            }
+            WriteFile.FirstMethod(@"D:\data\company_work\M365\IDEAs\BuildDeploymentTestRunSummary.json", jArray.ToString());
+        }
+
+        private static void QueryDatasets()
+        {
+            IList<JObject> list = GetQueryResult("DataCop", "Dataset", new List<string> { "(c.createdBy = 'BuildDeployment' or c.createdBy = 'BuildTestExecution')" });
+            //IList<JObject> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(sqlQueryString.ToString())).Result;
+            //foreach (JObject jObject in list)
+            //{
+            //    Console.WriteLine(jObject);
+            //}
+            WriteFile.FirstMethod(@"D:\data\company_work\M365\IDEAs\BuildDeploymentDatasets.json", JsonConvert.SerializeObject(list));
         }
 
         ///  <summary>
@@ -1658,9 +1668,15 @@
                                                     long? endTs = null,
                                                     AzureCosmosDBClient azureCosmosDBClient = null)
         {
+            // Cannot get the min ts or max ts if there is no document based on the fitlers, so we need to check the count is not zero.
+            long count = GetQueryCount(azureCosmosDBClient, filters);
+            if (count == 0)
+            {
+                return new List<JObject>();
+            }
+
             int maxLimit = 1000;
             IList<string> newFilters;
-
             if (filters == null)
             {
                 newFilters = new List<string>();
@@ -1686,11 +1702,8 @@
 
             newFilters.Add($"c._ts >= {startTs}");
             newFilters.Add($"c._ts < {endTs}");
-            long count = GetQueryCount(azureCosmosDBClient, newFilters);
-            if (count == 0)
-            {
-                return new List<JObject>();
-            }
+            count = GetQueryCount(azureCosmosDBClient, filters);
+
             List<JObject> result;
             if (count > maxLimit)
             {

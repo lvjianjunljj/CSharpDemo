@@ -22,7 +22,7 @@
             ["https://cosmos14.osdinfra.net/cosmos/exchange.storage.prod"] = "exchange-storage-prod-c14.azuredatalakestore.net",
             ["https://cosmos14.osdinfra.net/cosmos/ideas.ppe"] = "ideas-ppe-c14.azuredatalakestore.net",
             ["https://cosmos14.osdinfra.net/cosmos/ideas.private.data"] = "ideas-private-data-c14.azuredatalakestore.net",
-            ["https://cosmos14.osdinfra.net/cosmos/ideas.prod"] = "ideas-prod-build-c14.azuredatalakestore.net",
+            ["https://cosmos14.osdinfra.net/cosmos/ideas.prod"] = "ideas-prod-c14.azuredatalakestore.net",
             ["https://cosmos14.osdinfra.net/cosmos/ideas.prod.build"] = "ideas-prod-build-c14.azuredatalakestore.net",
             ["https://cosmos14.osdinfra.net/cosmos/ideas.prod.data"] = "ideas-prod-data-c14.azuredatalakestore.net",
         };
@@ -35,6 +35,8 @@
             string tenantId = @"cdc5aeea-15c5-4db6-b079-fcadd2505dc2";// For tenant Torus
             string clientId = secretProvider.GetSecretAsync("datacop-prod", "AdlsAadAuthAppId").Result;
             string clientKey = secretProvider.GetSecretAsync("datacop-prod", "AdlsAadAuthAppSecret").Result;
+            //clientId = secretProvider.GetSecretAsync("datacop-prod", "IDEAsBuildVNextAppId").Result;
+            //clientKey = secretProvider.GetSecretAsync("datacop-prod", "IDEAsBuildVNextAppSecret").Result;
 
             dataLakeClient = new DataLakeClient(tenantId, clientId, clientKey);
 
@@ -56,34 +58,48 @@
 
         public static void CheckIDEAsPPEPermissionByJson()
         {
-            string dataLakeStore = @"ideas-prod-build-c14.azuredatalakestore.net";
+            var dataLakeStores = new List<string>
+            {
+                @"ideas-ppe-c14.azuredatalakestore.net",
+                @"ideas-prod-c14.azuredatalakestore.net",
+                @"ideas-prod-data-c14.azuredatalakestore.net",
+                @"ideas-prod-build-c14.azuredatalakestore.net",
+            };
             var pathPrefixs = new List<string>()
             {
-                "shares/IDEAs.Prod.Data/Publish/Usage/Device/Neutral/Metrics/Field/ModernLife/WindowsEdu/Streams/v1/2020/10/",
-                "shares/IDEAs.Prod.Data/Publish/Usage/Device/Neutral/Metrics/Field/ModernLife/Win10EduActivationsByTPId/Streams/v1/2020/10/",
-                "shares/IDEAs.Prod.Data/Publish/Usage/Device/Neutral/Metrics/Field/ModernLife/Win10EduDailyActivations/Streams/v1/2020/10/",
-                "shares/IDEAs.Prod.Data/Publish/Usage/Device/Neutral/Metrics/Field/ModernLife/WindowsOEMPro/Streams/v1/2020/10/",
-                "shares/IDEAs.Prod.Data/Publish/Usage/Device/Neutral/Metrics/Field/ModernLife/Win10OEMProActivationsByTPId/Streams/v1/2020/10/",
-                "shares/IDEAs.Prod.Data/Publish/Usage/Device/Neutral/Metrics/Field/ModernLife/Win10ConsumerOEMProDaily/Streams/v1/2020/10/",
-                "shares/IDEAs.Prod.Data/Publish/Usage/Device/Neutral/Metrics/Field/ModernLife/WindowsModern/Streams/v1/2020/10/",
-                "shares/IDEAs.Prod.Data/Publish/Usage/Device/Neutral/Metrics/Field/ModernLife/Win10ModernActivationsByGeo/Streams/v1/2020/10/",
-                "shares/IDEAs.Prod.Data/Publish/Usage/Device/Neutral/Metrics/Field/ModernLife/Win0ModernDailyActivations/Streams/v1/2020/10/",
-                "shares/IDEAs.Prod.Data/Publish/Usage/Device/Neutral/Metrics/Field/ModernLife/WindowsConsumer/Streams/v1/2020/10/",
-                "shares/IDEAs.Prod.Data/Publish/Usage/Device/Neutral/Metrics/Field/ModernLife/Win10ConsumerActivationsByGeo/Streams/v1/2020/10/",
-                "shares/IDEAs.Prod.Data/Publish/Usage/Tenant/Commercial/Metrics/Field/ModernWorkplace/",
-                "shares/IDEAs.Prod.Data/Publish/Usage/Tenant/Commercial/Metrics/Field/SecurityAndCompliance/",
-                "shares/IDEAs.Prod.Data/Publish/Usage/Tenant/Commercial/Metrics/FieldLG/",
-                "shares/IDEAs.Prod.Data/Publish/Usage/Tenant/Commercial/Metrics/Partner/",
-                "shares/IDEAs.Prod.Data/Publish/Usage/Tenant/Commercial/Metrics/PartnerLG/",
-                "shares/IDEAs.Prod.Data/Publish/Usage/Device/Neutral/Metrics/Field/ModernLife/",
-                "shares/ideas.prod.data/private/Usage/Device/Neutral/Metrics/Field/ModernLife/"
+                //"shares/IDEAs.Prod.Data/Publish/Usage/Device/Neutral/Metrics/Field/ModernLife/WindowsEdu/Streams/v1/2020/10/",
+                //"shares/IDEAs.Prod.Data/Publish/Usage/Device/Neutral/Metrics/Field/ModernLife/Win10EduActivationsByTPId/Streams/v1/2020/10/",
+                //"shares/IDEAs.Prod.Data/Publish/Usage/Device/Neutral/Metrics/Field/ModernLife/Win10EduDailyActivations/Streams/v1/2020/10/",
+                //"shares/IDEAs.Prod.Data/Publish/Usage/Device/Neutral/Metrics/Field/ModernLife/WindowsOEMPro/Streams/v1/2020/10/",
+                //"shares/IDEAs.Prod.Data/Publish/Usage/Device/Neutral/Metrics/Field/ModernLife/Win10OEMProActivationsByTPId/Streams/v1/2020/10/",
+                //"shares/IDEAs.Prod.Data/Publish/Usage/Device/Neutral/Metrics/Field/ModernLife/Win10ConsumerOEMProDaily/Streams/v1/2020/10/",
+                //"shares/IDEAs.Prod.Data/Publish/Usage/Device/Neutral/Metrics/Field/ModernLife/WindowsModern/Streams/v1/2020/10/",
+                //"shares/IDEAs.Prod.Data/Publish/Usage/Device/Neutral/Metrics/Field/ModernLife/Win10ModernActivationsByGeo/Streams/v1/2020/10/",
+                //"shares/IDEAs.Prod.Data/Publish/Usage/Device/Neutral/Metrics/Field/ModernLife/Win0ModernDailyActivations/Streams/v1/2020/10/",
+                //"shares/IDEAs.Prod.Data/Publish/Usage/Device/Neutral/Metrics/Field/ModernLife/WindowsConsumer/Streams/v1/2020/10/",
+                //"shares/IDEAs.Prod.Data/Publish/Usage/Device/Neutral/Metrics/Field/ModernLife/Win10ConsumerActivationsByGeo/Streams/v1/2020/10/",
+                //"shares/IDEAs.Prod.Data/Publish/Usage/Tenant/Commercial/Metrics/Field/ModernWorkplace/",
+                //"shares/IDEAs.Prod.Data/Publish/Usage/Tenant/Commercial/Metrics/Field/SecurityAndCompliance/",
+                //"shares/IDEAs.Prod.Data/Publish/Usage/Tenant/Commercial/Metrics/FieldLG/",
+                //"shares/IDEAs.Prod.Data/Publish/Usage/Tenant/Commercial/Metrics/Partner/",
+                //"shares/IDEAs.Prod.Data/Publish/Usage/Tenant/Commercial/Metrics/PartnerLG/",
+                //"shares/IDEAs.Prod.Data/Publish/Usage/Device/Neutral/Metrics/Field/ModernLife/",
+                //"local/Collect/General/DBDigitalAnalytics/KAS/v1/",
+                //"local/Publish/Acquisitions/User/Neutral/LinkedInAudience/Streams/v1/",
+                //"local/Variant/Profiles/Subscription/Consumer/Metrics/Dimensions/DimAcquisitionChannel/Streams/v1/"
+                //"shares/ideas.prod.data/private/Usage/Device/Neutral/Metrics/Field/ModernLife/",
+                "shares/AD_DataAnalytics/AD_DataAnalytics/",
+                "shares/AD_DataAnalytics/TenantSaasAppUsage/"
             };
-
-            foreach (var pathPrefix in pathPrefixs)
+            foreach (var dataLakeStore in dataLakeStores)
             {
-                if (!dataLakeClient.CheckPermission(dataLakeStore, pathPrefix + "/Test/Test.ss"))
+                Console.WriteLine($"DataLakeStore: {dataLakeStore}");
+                foreach (var pathPrefix in pathPrefixs)
                 {
-                    Console.WriteLine($"Have no permission for pathPrefix: '{pathPrefix}'");
+                    if (!dataLakeClient.CheckPermission(dataLakeStore, pathPrefix + "/Test/Test.ss"))
+                    {
+                        Console.WriteLine($"Have no permission for pathPrefix: '{pathPrefix}'");
+                    }
                 }
             }
         }
@@ -105,7 +121,7 @@
                 {
                     dataLakeStore = json["dataLakeStore"].ToString();
                 }
-                else if (dataFabric.Equals("CosmosStream"))
+                else if (dataFabric.Equals("CosmosStream") || dataFabric.Equals("CosmosView"))
                 {
                     dataLakeStore = vcAdlaAdlsAccountDict[json["cosmosVC"].ToString()];
                 }
