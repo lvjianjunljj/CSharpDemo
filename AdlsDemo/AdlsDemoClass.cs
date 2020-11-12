@@ -88,8 +88,11 @@
                 //"local/Publish/Acquisitions/User/Neutral/LinkedInAudience/Streams/v1/",
                 //"local/Variant/Profiles/Subscription/Consumer/Metrics/Dimensions/DimAcquisitionChannel/Streams/v1/"
                 //"shares/ideas.prod.data/private/Usage/Device/Neutral/Metrics/Field/ModernLife/",
+                "shares/exchange.storage.prod/local/Aggregated/Datasets/Private/FocusedInbox/FISuccessfulUser/FI_SuccessfulUser_Commercial",
                 "shares/AD_DataAnalytics/AD_DataAnalytics/",
-                "shares/AD_DataAnalytics/TenantSaasAppUsage/"
+                "shares/AD_DataAnalytics/TenantSaasAppUsage/",
+                "shares/adPlatform.AudienceIntelligence.Scoring.proxy/PublicShare/UserSegment/Snapshots/IBT/",
+                "shares/adPlatform.AudienceIntelligence.Scoring.proxy/PublicShare"
             };
             foreach (var dataLakeStore in dataLakeStores)
             {

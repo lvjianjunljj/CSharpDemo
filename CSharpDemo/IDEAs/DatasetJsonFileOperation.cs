@@ -325,7 +325,7 @@
 
             foreach (var jsonFilePath in jsonFilePaths)
             {
-                if (jsonFilePath.ToLower().Contains(@"\datasets"))
+                if (jsonFilePath.ToLower().Contains(@"\dataset"))
                 {
                     string fileContent = ReadFile.ThirdMethod(jsonFilePath);
                     JsonSerializerSettings serializer = new JsonSerializerSettings
@@ -341,18 +341,17 @@
                             continue;
                         }
 
+                        bool update = false;
                         if (gitDatasetJObject["connectionInfo"]["cosmosVC"]?.ToString().ToLower().Trim('/').Equals("https://cosmos14.osdinfra.net/cosmos/ideas.prod.build") == true)
                         {
-                            continue;
+                            update = true;
                         }
                         else if (gitDatasetJObject["connectionInfo"]["cosmosVC"]?.ToString().ToLower().Trim('/').Equals("https://cosmos14.osdinfra.net/cosmos/ideas.prod") == true ||
                                 gitDatasetJObject["connectionInfo"]["cosmosVC"]?.ToString().ToLower().Trim('/').Equals("https://cosmos14.osdinfra.net/cosmos/ideas.private.data") == true)
                         {
-                            gitDatasetJObject["connectionInfo"]["cosmosVC"] = gitDatasetJObject["connectionInfo"]["cosmosVC"]?.ToString().Trim('/') + ".Build/";
                             if (gitDatasetJObject["connectionInfo"]["streamPath"].ToString().ToLower().Trim('/').StartsWith("share"))
                             {
-                                WriteFile.FirstMethod(jsonFilePath, gitDatasetJObject.ToString());
-                                Console.WriteLine($"Update dataset: {gitDatasetJObject["id"]?.ToString()}");
+                                update = true;
                             }
                             else
                             {
@@ -362,10 +361,18 @@
                         }
                         else
                         {
-                            //gitDatasetJObject["connectionInfo"]["cosmosVC"] = @"https://cosmos14.osdinfra.net/cosmos/IDEAs.Prod.Build/";
-                            //WriteFile.FirstMethod(datasetJsonFilePath, gitDatasetJObject.ToString());
                             var cosmosVC = gitDatasetJObject["connectionInfo"]["cosmosVC"].ToString();
                             Console.WriteLine($"Not update dataset: {gitDatasetJObject["id"]?.ToString()}, cosmosVC: {cosmosVC}");
+                        }
+
+                        if (update)
+                        {
+                            gitDatasetJObject["connectionInfo"]["cosmosVC"] = "https://cosmos14.osdinfra.net/cosmos/IDEAs.Prod.Build/";
+                            if (gitDatasetJObject["connectionInfo"]["dataLakeStore"]?.ToString().Length > 0)
+                            {
+                                gitDatasetJObject["connectionInfo"]["dataLakeStore"] = "ideas-prod-build-c14.azuredatalakestore.net";
+                            }
+                            WriteFile.FirstMethod(jsonFilePath, gitDatasetJObject.ToString());
                         }
                     }
                 }
