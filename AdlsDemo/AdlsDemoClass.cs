@@ -51,8 +51,8 @@
             // For Torus tenant
             // Check the file with the certificate in Torus tenant.
             //TorusAccessCFRFileDemo();
-            //CheckAdlsPermissionByJson();
-            CheckIDEAsPPEPermissionByJson();
+            CheckAdlsPermissionByJson();
+            //CheckIDEAsPPEPermissionByJson();
 
         }
 
@@ -111,7 +111,7 @@
         {
             JArray result = new JArray();
             Console.WriteLine("Path prefixs without permission: ");
-            string jsonPath = @"D:\data\company_work\M365\IDEAs\path.json";
+            string jsonPath = @"D:\data\company_work\M365\IDEAs\pathsWithoutDate.json";
             var JsonStr = File.ReadAllText(jsonPath, Encoding.UTF8);
             JArray jArray = JArray.Parse(JsonStr);
             foreach (var json in jArray)

@@ -99,6 +99,7 @@
             //CreateContainers();
             //ShowADLSStreamPathPrefix();
             ShowADLSStreamPathWithoutDate();
+            //ShowStreamPathsWithoutDate();
             //GetNonAuthPath();
             //GetTimeCostDemo();
 
@@ -246,6 +247,33 @@
             WriteFile.FirstMethod(@"D:\data\company_work\M365\IDEAs\pathsWithoutDate.json", result);
         }
 
+        public static void ShowStreamPathsWithoutDate()
+        {
+            IList<string> properties = new List<string>
+            {
+                "dataFabric",
+                "connectionInfo"
+            };
+            IList<string> filters = new List<string>
+            {
+                @"(c.dataFabric = 'ADLS' or contains(c.dataFabric, 'Cosmos'))"
+            };
+            List<JObject> datasets = GetQueryResult("DataCop", "Dataset", properties, filters);
+            StringBuilder sb = new StringBuilder();
+            foreach (var dataset in datasets)
+            {
+                string streamPath = GetPathWithoutDateInfo(dataset["connectionInfo"]["streamPath"].ToString().Trim(new char[] { '/' }));
+                var line = dataset["dataFabric"] + "\t" +
+                    dataset["connectionInfo"]["dataLakeStore"] + "\t" +
+                    dataset["connectionInfo"]["cosmosVC"] + "\t" +
+                    streamPath + "\n";
+                Console.WriteLine(line);
+                sb.Append(line);
+            }
+            File.WriteAllText(@"D:\data\company_work\M365\IDEAs\pathsWithoutDate2.json", sb.ToString());
+            Console.WriteLine(datasets.Count);
+        }
+
         public static string GetADLSStreamPaths(Func<string, string> getPathFunc)
         {
             IList<string> properties = new List<string>
@@ -255,7 +283,7 @@
             };
             IList<string> filters = new List<string>
             {
-                @"(c.dataFabric = 'ADLS' or contains(c.dataFabric, 'Cosmos')) and c.isEnabled = true"
+                @"(c.dataFabric = 'ADLS' or contains(c.dataFabric, 'Cosmos'))"
             };
             List<JObject> datasets = GetQueryResult("DataCop", "Dataset", null, filters);
             Dictionary<string, HashSet<string>> dict = new Dictionary<string, HashSet<string>>();
@@ -263,28 +291,37 @@
             foreach (JObject dataset in datasets)
             {
                 string dataFabric = dataset["dataFabric"].ToString();
-                string dataLakeStore = dataset["connectionInfo"]["dataLakeStore"]?.ToString().Trim(new char[] { '/' }).ToLower();
-                string cosmosVC = dataset["connectionInfo"]["cosmosVC"]?.ToString().Trim(new char[] { '/' }).ToLower();
                 string key;
-                if (dataFabric.Equals("ADLS"))
+                try
                 {
-                    key = dataFabric + " " + dataLakeStore;
-                }
-                else
-                {
-                    key = dataFabric + " " + cosmosVC;
-                }
 
-                // Take care of letter case in stream path
-                // The access result will be different if letter case of  stream path changes
-                string streamPath = dataset["connectionInfo"]["streamPath"].ToString().Trim(new char[] { '/' });
-                string pathPrefix = getPathFunc(streamPath);
-                if (!dict.ContainsKey(key))
-                {
-                    dict.Add(key, new HashSet<string>());
-                }
+                    if (dataFabric.Equals("ADLS"))
+                    {
+                        string dataLakeStore = dataset["connectionInfo"]["dataLakeStore"]?.ToString().Trim(new char[] { '/' }).ToLower();
+                        key = dataFabric + " " + dataLakeStore;
+                    }
+                    else
+                    {
+                        string cosmosVC = dataset["connectionInfo"]["cosmosVC"]?.ToString().Trim(new char[] { '/' }).ToLower();
+                        key = dataFabric + " " + cosmosVC;
+                    }
 
-                dict[key].Add(pathPrefix);
+                    // Take care of letter case in stream path
+                    // The access result will be different if letter case of  stream path changes
+                    string streamPath = dataset["connectionInfo"]["streamPath"]?.ToString().Trim(new char[] { '/' });
+                    string pathPrefix = getPathFunc(streamPath);
+                    if (!dict.ContainsKey(key))
+                    {
+                        dict.Add(key, new HashSet<string>());
+                    }
+
+                    dict[key].Add(pathPrefix);
+                }
+                catch (InvalidOperationException e)
+                {
+                    Console.WriteLine("Error dataset: ");
+                    Console.WriteLine(dataset);
+                }
             }
             JArray result = new JArray();
 
@@ -327,6 +364,11 @@
 
         private static string GetPathPrefix(string streamPath)
         {
+            if (string.IsNullOrEmpty(streamPath))
+            {
+                return string.Empty;
+            }
+
             string pathPrefix;
             var splits = streamPath.Split(new char[] { '/' });
 
@@ -342,9 +384,28 @@
             return pathPrefix;
         }
 
-        private static string GetPathWithoutDateInfo(string streamPath)
+
+        public static string GetPathWithoutDateInfo(string streamPath)
         {
-            return streamPath.Split(new char[] { '%' })[0];
+            if (string.IsNullOrEmpty(streamPath))
+            {
+                return string.Empty;
+            }
+            var segments = streamPath.Split('/');
+            var segmentsToEnumerate = new List<string>();
+            foreach (var segment in segments)
+            {
+                if (segment.Contains("%"))
+                {
+                    // Find the "%" mark, so the path to enumerate should be the parent of this segment
+                    break;
+                }
+
+                segmentsToEnumerate.Add(segment);
+            }
+
+            // Append slash to mark the end of the path
+            return string.Join("/", segmentsToEnumerate.ToArray()) + "/";
         }
 
         private static void CreateContainers()
@@ -1657,6 +1718,8 @@
                                                     long? endTs = null,
                                                     AzureCosmosDBClient azureCosmosDBClient = null)
         {
+            int maxLimit = 1000;
+
             if (azureCosmosDBClient == null)
             {
                 azureCosmosDBClient = new AzureCosmosDBClient(databaseId, collectionId);
@@ -1668,8 +1731,6 @@
                 return new List<JObject>();
             }
 
-            int maxLimit = 1000;
-
             if (!startTs.HasValue)
             {
                 startTs = GetQueryKeyWord(azureCosmosDBClient, "min", "_ts", filters);
@@ -1680,7 +1741,26 @@
                 endTs = GetQueryKeyWord(azureCosmosDBClient, "max", "_ts", filters) + 1;
             }
 
-            count = GetQueryCount(azureCosmosDBClient, filters);
+            IList<string> newFilters = null, newProperties = null;
+            if (filters != null && filters.Count > 0)
+            {
+                newFilters = new List<string>(filters)
+                {
+                    $"c._ts >= {startTs}",
+                    $"c._ts < {endTs}"
+                };
+            }
+
+            if (properties != null && properties.Count > 0)
+            {
+                newProperties = new List<string>(properties)
+                {
+                    "_ts"
+                };
+            }
+
+
+            count = GetQueryCount(azureCosmosDBClient, newFilters);
 
             List<JObject> result;
             if (count > maxLimit)
@@ -1692,28 +1772,6 @@
             }
             else
             {
-                IList<string> newFilters, newProperties;
-                if (filters == null)
-                {
-                    newFilters = new List<string>();
-                }
-                else
-                {
-                    newFilters = new List<string>(filters);
-                }
-
-                if (properties == null)
-                {
-                    newProperties = new List<string>();
-                }
-                else
-                {
-                    newProperties = new List<string>(properties);
-                }
-
-                newFilters.Add($"c._ts >= {startTs}");
-                newFilters.Add($"c._ts < {endTs}");
-                newProperties.Add("_ts");
                 result = GetQueryResultAux(azureCosmosDBClient, newProperties, newFilters, suffix).ToList();
             }
 
