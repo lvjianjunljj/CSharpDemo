@@ -40,7 +40,7 @@
     {
         static void Main(string[] args)
         {
-            AzureCosmosDBOperation.MainMethod();
+            //AzureCosmosDBOperation.MainMethod();
             //AzureServiceBus.MainMethod();
             //AzureCosmosDB.MainMethod();
 
@@ -52,6 +52,16 @@
             //AzureKeyVaultDemo.MainMethod();
 
 
+            DateTime now = DateTime.UtcNow;
+            Console.WriteLine(now.Date.ToString("yyyy/MM/dd"));
+            Console.WriteLine($"{now.Date:yyyy/MM/dd}");
+
+            JObject json = new JObject();
+            json["date"] = now.Date;
+            Console.WriteLine(JsonConvert.SerializeObject(json));
+            Console.WriteLine(now.Date.ToString("s"));
+            Console.WriteLine(now.Date.ToString("o"));
+            Console.WriteLine($"{now.Date:s}");
 
             if (Debugger.IsAttached)
             {

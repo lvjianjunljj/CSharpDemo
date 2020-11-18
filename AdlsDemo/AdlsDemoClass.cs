@@ -1,13 +1,11 @@
 ﻿namespace AdlsDemo
 {
     using AzureLib.KeyVault;
-    using Microsoft.Azure.DataLake.Store;
     using Newtonsoft.Json.Linq;
     using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
-    using System.Net;
     using System.Text;
 
     public class AdlsDemoClass
@@ -40,7 +38,7 @@
 
             dataLakeClient = new DataLakeClient(tenantId, clientId, clientKey);
 
-            //CheckAdlsFileExistsDemo();
+            CheckAdlsFileExistsDemo();
             //GetIDEAsProdAdlsFileSizeDemo();
             //GetObdTestFileSizeDemo();
             //InsertAdlsFileDemo();
@@ -51,7 +49,7 @@
             // For Torus tenant
             // Check the file with the certificate in Torus tenant.
             //TorusAccessCFRFileDemo();
-            CheckAdlsPermissionByJson();
+            //CheckAdlsPermissionByJson();
             //CheckIDEAsPPEPermissionByJson();
 
         }
@@ -136,7 +134,16 @@
 
                 foreach (var pathPrefix in json["pathPrefixs"].ToArray())
                 {
-                    if (!dataLakeClient.CheckPermission(dataLakeStore, pathPrefix + "/Test/Test.ss"))
+                    string path;
+                    if (pathPrefix.ToString().EndsWith(".ss") || pathPrefix.ToString().EndsWith(".view"))
+                    {
+                        path = pathPrefix.ToString();
+                    }
+                    else
+                    {
+                        path = pathPrefix.ToString() + "/Test/Test.ss";
+                    }
+                    if (!dataLakeClient.CheckPermission(dataLakeStore, path))
                     {
                         if (!hasVaule)
                         {
@@ -159,10 +166,18 @@
             Console.WriteLine(result);
         }
 
+
+
         public static void CheckAdlsFileExistsDemo()
         {
             Console.WriteLine(dataLakeClient.CheckExists("ideas-prod-c14.azuredatalakestore.net",
                 "/shares/IDEAs.Prod.Data/Publish/Profiles/Tenant/Commercial/Internal/IDEAsTenantProfile/PostValidation/Streams/v3/2020/09/TenantProfileStats_2020_09_16.ss"));
+            Console.WriteLine(dataLakeClient.CheckExists("ideas-prod-build-c14.azuredatalakestore.net",
+                "shares/ffo.prod/local/Aggregated/Datasets/Private/MIGMetrics/MIGFeaturesMapping.ss"));
+            Console.WriteLine(dataLakeClient.CheckExists("ideas-prod-c14.azuredatalakestore.net",
+                "shares/ffo.prod/local/Aggregated/Datasets/Private/MIGMetrics/MIGFeaturesMapping.ss"));
+
+
             // We don't have access to store "ideas-ppe-c14.azuredatalakestore.net". It will throw exception: forbidden
             //Console.WriteLine(dataLakeClient.CheckExists("ideas-ppe-c14.azuredatalakestore.net", "/local/build/user/dekashet/TeamsMeetingProdAfterTimeZoneFixApril18th/directViewCodeWithAdjustEndDate.csv"));
         }
@@ -238,8 +253,18 @@
 
         public static void GetEnumerateAdlsMetadataEntityDemo()
         {
-            IEnumerable<JObject> entities = dataLakeClient.EnumerateAdlsMetadataEntity("ideas-prod-c14.azuredatalakestore.net",
-                "local/users/jianjlv/");
+            //IEnumerable<JObject> entities = dataLakeClient.EnumerateAdlsMetadataEntity("ideas-prod-c14.azuredatalakestore.net",
+            //    "local/users/");
+
+            //foreach (var entity in entities)
+            //{
+            //    Console.WriteLine(entity);
+            //}
+            //Console.WriteLine();
+
+            // Not found error.
+            var entities = dataLakeClient.EnumerateAdlsMetadataEntity("ideas-prod-build-c14.azuredatalakestore.net",
+                "shares/ffo.prod/");
 
             foreach (var entity in entities)
             {
@@ -247,13 +272,14 @@
             }
             Console.WriteLine();
 
-            //entities = dataLakeClient.EnumerateAdlsMetadataEntity("ideas-prod-c14.azuredatalakestore.net",
-            //    "");
+            //entities = dataLakeClient.EnumerateAdlsMetadataEntity("ideas-prod-build-c14.azuredatalakestore.net",
+            //    "/shares/IDEAs.Prod.Data/Publish/Profiles/Tenant/Commercial/Internal/IDEAsTenantProfile/PostValidation/Streams/v3/2020/09/");
 
             //foreach (var entity in entities)
             //{
             //    Console.WriteLine(entity);
             //}
+            //Console.WriteLine();
         }
     }
 }

@@ -60,6 +60,8 @@
             //QueryForbiddenTestRuns();
             //QueryDataCopScores();
             //QueryDatasets();
+            QueryServiceMonitorReports();
+            //QueryDatasetCount();
             //QueryTestRunCountByDatasetId();
 
             //DeleteTestRunDemo();
@@ -98,7 +100,7 @@
             //UpdateSqlDatasetKeyVaultName();
             //CreateContainers();
             //ShowADLSStreamPathPrefix();
-            ShowADLSStreamPathWithoutDate();
+            //ShowADLSStreamPathWithoutDate();
             //ShowStreamPathsWithoutDate();
             //GetNonAuthPath();
             //GetTimeCostDemo();
@@ -256,7 +258,8 @@
             };
             IList<string> filters = new List<string>
             {
-                @"(c.dataFabric = 'ADLS' or contains(c.dataFabric, 'Cosmos'))"
+                @"(c.dataFabric = 'ADLS' or contains(c.dataFabric, 'Cosmos'))",
+                @"c.isEnabled = true",
             };
             List<JObject> datasets = GetQueryResult("DataCop", "Dataset", properties, filters);
             StringBuilder sb = new StringBuilder();
@@ -283,7 +286,8 @@
             };
             IList<string> filters = new List<string>
             {
-                @"(c.dataFabric = 'ADLS' or contains(c.dataFabric, 'Cosmos'))"
+                @"(c.dataFabric = 'ADLS' or contains(c.dataFabric, 'Cosmos'))",
+                @"c.isEnabled = true"
             };
             List<JObject> datasets = GetQueryResult("DataCop", "Dataset", null, filters);
             Dictionary<string, HashSet<string>> dict = new Dictionary<string, HashSet<string>>();
@@ -339,7 +343,9 @@
                     json["cosmosVC"] = map.Key.Split(' ')[1];
                 }
 
-                JArray paths = new JArray(map.Value);
+                List<string> pathList = new List<string>(map.Value);
+                pathList.Sort();
+                JArray paths = new JArray(pathList);
                 json["pathPrefixs"] = paths;
                 result.Add(json);
             }
@@ -405,7 +411,7 @@
             }
 
             // Append slash to mark the end of the path
-            return string.Join("/", segmentsToEnumerate.ToArray()) + "/";
+            return string.Join("/", segmentsToEnumerate.ToArray());
         }
 
         private static void CreateContainers()
@@ -1573,11 +1579,11 @@
             IList<string> filters = new List<string>
             {
                 //"c.id = '03630344-73a4-4079-a8a1-0c9764af49d9'",
-                "c.datasetId = '332313fc-0bba-4521-a964-33ca379c245d'",
+                "c.datasetId = 'eb5af06c-43c3-45d6-9226-1fb5e8ecac56'",
                 //"c.partitionKey = ''",
                 //"c.dataFabric = ''",
-                "c.status != 'Waiting'",
-                "c.createTime > '2020-10-01'",
+                //"c.status != 'Waiting'",
+                "c.createTime > '2020-11-16'",
             };
 
             IList<JObject> list = GetQueryResult("DataCop", "PartitionedTestRun", null, filters);
@@ -1648,9 +1654,12 @@
 
         private static void QueryDatasets()
         {
-            var filters = new List<string> {
-                //"(c.createdBy = 'BuildDeployment' or c.createdBy = 'BuildTestExecution')",
-                "c. id = '332313fc-0bba-4521-a964-33ca379c245d'"
+            var filters = new List<string>
+            {
+                "(c.createdBy = 'BuildDeployment' or c.createdBy = 'BuildTestExecution')",
+                //"c. id = 'eb5af06c-43c3-45d6-9226-1fb5e8ecac56'"
+                //@"(c.dataFabric = 'Adls' or c.dataFabric = 'ADLS')",
+                //@"c.isEnabled = true"
 
             };
             IList<JObject> list = GetQueryResult("DataCop", "Dataset", null, filters);
@@ -1659,7 +1668,50 @@
             {
                 Console.WriteLine(jObject);
             }
+            Console.WriteLine(list.Count);
             //WriteFile.FirstMethod(@"D:\data\company_work\M365\IDEAs\BuildDeploymentDatasets.json", JsonConvert.SerializeObject(list));
+        }
+
+        public static void QueryServiceMonitorReports()
+        {
+            var filters = new List<string>
+            {
+                //"c. id = 'eb5af06c-43c3-45d6-9226-1fb5e8ecac56'"
+                @"(c.dataFabric = 'Adls' or c.dataFabric = 'ADLS')",
+                @"c.reportStartTimeStamp > '2020-11-11'",
+                //@"c.isEnabled = true"
+
+            };
+            IList<JObject> list = GetQueryResult("DataCop", "ServiceMonitorReport", null, filters);
+            //IList<JObject> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(sqlQueryString.ToString())).Result;
+            foreach (JObject jObject in list)
+            {
+                Console.WriteLine(jObject);
+            }
+            Console.WriteLine(list.Count);
+            //WriteFile.FirstMethod(@"D:\data\company_work\M365\IDEAs\BuildDeploymentDatasets.json", JsonConvert.SerializeObject(list));
+        }
+
+        public static void QueryDatasetCount()
+        {
+            var filters = new List<string>
+            {
+                "(c.createdBy = 'BuildDeployment' or c.createdBy = 'BuildTestExecution')",
+                @"(c.dataFabric = 'Adls' or c.dataFabric = 'ADLS')",
+
+            };
+            var buildAdlsCount = GetQueryCount("DataCop", "Dataset", filters);
+            Console.WriteLine($"buildAdlsCount：{buildAdlsCount}");
+
+            filters = new List<string>
+            {
+                "(c.createdBy = 'BuildDeployment' or c.createdBy = 'BuildTestExecution')",
+                @"contains(c.dataFabric, 'Cosmos')",
+
+            };
+            var buildCosmosCount = GetQueryCount("DataCop", "Dataset", filters);
+            Console.WriteLine($"buildCosmosCount：{buildCosmosCount}");
+
         }
 
         ///  <summary>
