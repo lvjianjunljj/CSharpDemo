@@ -64,6 +64,39 @@
             }
         }
 
+        public bool CheckDirectoryExists(string store, string path)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                throw new ArgumentException("Path is null or empty");
+            }
+
+            try
+            {
+                // https://github.com/Azure/azure-data-lake-store-net/blob/a067d7c1d572c96c3b323cd7167132a19efe7235/AdlsDotNetSDK/ADLSClient.cs#L1462
+                var client = CreateAdlsClient(store, tenantId, clientId, clientKey);
+                var entity = client.GetDirectoryEntry(path);
+                if (entity.Type == DirectoryEntryType.DIRECTORY)
+                {
+                    // Only return true when the entity is a file
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            catch (AdlsException e)
+            {
+                if (e.HttpStatus == HttpStatusCode.NotFound)
+                {
+                    return false;
+                }
+
+                throw;
+            }
+        }
+
         public bool CheckPermission(string store, string path)
         {
             if (string.IsNullOrEmpty(path))

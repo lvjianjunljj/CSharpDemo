@@ -22,7 +22,7 @@
         public static void MainMethod()
         {
             // for datacop: "datacop-ppe" and "datacop-prod"
-            string KeyVaultName = "datacop-prod";
+            string KeyVaultName = "datacop-ppe";
             var secretProvider = KeyVaultSecretProvider.Instance;
             string endpoint = secretProvider.GetSecretAsync(KeyVaultName, "CosmosDBEndPoint").Result;
             string key = secretProvider.GetSecretAsync(KeyVaultName, "CosmosDBAuthKey").Result;
@@ -38,6 +38,8 @@
             //UpdateAlertSettingToGitFolder();
             //UpsertServiceMonitorDemo();
             //UpdateVcToBuild();
+            //UpdateScheduleMonitorReportSampleDemo();
+            ResetIncidentIdForMonitorReportDemo();
 
             //DisableAllCFRMonitor();
             //InsertCFRMonitorConfig();
@@ -49,6 +51,8 @@
             //EnableAllCosmosDatasetTestWhenNoActiveMessage();
 
             //QueryAlertSettingDemo();
+            //QueryScheduleMonitorReportDemo();
+            //QueryAlertSettingInDatasetTestsDemo();
             //QueryDataSetDemo();
             //QueryTestRunTestContentDemo();
             //QueryMonitroReportDemo();
@@ -60,7 +64,7 @@
             //QueryForbiddenTestRuns();
             //QueryDataCopScores();
             //QueryDatasets();
-            QueryServiceMonitorReports();
+            //QueryServiceMonitorReports();
             //QueryDatasetCount();
             //QueryTestRunCountByDatasetId();
 
@@ -1470,14 +1474,169 @@
 
         public static void QueryAlertSettingDemo()
         {
+            Console.WriteLine("QueryAlertSettingDemo:");
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "AlertSettings");
             // Collation: asc and desc is ascending and descending
-            IList<JObject> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT distinct c.owningTeamId FROM c")).Result;
+            IList<JObject> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(
+                @"SELECT distinct c.owningTeamId,c.targetIcMConnector,c.containerPublicId, c.routingId FROM c")).Result;
             foreach (JObject jObject in list)
             {
-                if (jObject["owningTeamId"] != null)
-                    Console.WriteLine(jObject["owningTeamId"]);
+                Console.WriteLine($"{jObject["owningTeamId"]}\t{jObject["targetIcMConnector"]}\t{jObject["containerPublicId"]}\t{jObject["routingId"]}");
             }
+            Console.WriteLine(list.Count);
+
+            list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(
+               @"SELECT * FROM c where c.routingId = 'IDEAS://SMB'")).Result;
+            foreach (JObject jObject in list)
+            {
+                Console.WriteLine(jObject);
+            }
+            Console.WriteLine(list.Count);
+
+            list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(
+               @"SELECT distinct c.targetIcMConnector,c.containerPublicId FROM c")).Result;
+            foreach (JObject jObject in list)
+            {
+                Console.WriteLine($"{jObject["targetIcMConnector"]}\t{jObject["containerPublicId"]}");
+            }
+            Console.WriteLine(list.Count);
+        }
+
+        public static void QueryScheduleMonitorReportDemo()
+        {
+            Console.WriteLine("QueryScheduleMonitorReportDemo:");
+            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "ScheduleMonitorReport");
+
+            // Collation: asc and desc is ascending and descending
+            IList<JObject> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(
+                @"SELECT c.reportStartDate,c.reportEndDate,c.datasetName,c.datasetTestName,c.allTestRunCount," +
+                "c.successTestRunCount,c.abortedTestRunCount,c.testRunErrorMessage,c.incidentId FROM c where c.datasetTestName = 'DimCampaign Default CosmosAvailability Test'")).Result;
+            foreach (JObject jObject in list)
+            {
+                Console.WriteLine(jObject);
+            }
+            Console.WriteLine(list.Count);
+        }
+
+        public static void ResetIncidentIdForMonitorReportDemo()
+        {
+            Console.WriteLine("ResetIncidentIdForMonitorReportDemo:");
+            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "ScheduleMonitorReport");
+
+            // Remove useless
+            IList<JObject> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(
+                @"SELECT top 1000 * FROM c where is_defined(c.incidentId)")).Result;
+            while (list.Any())
+            {
+                Console.WriteLine(list.Count);
+                foreach (var report in list)
+                {
+                    report.Remove("incidentId");
+                    azureCosmosDBClient.UpsertDocumentAsync(report).Wait();
+                }
+                list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(
+                @"SELECT top 1000 * FROM c where is_defined(c.incidentId)")).Result;
+            }
+        }
+
+        public static void UpdateScheduleMonitorReportSampleDemo()
+        {
+
+            DateTime now = DateTime.UtcNow.Date;
+            Random r = new Random();
+            Console.WriteLine("UpdateScheduleMonitorReportSampleDemo:");
+            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "ScheduleMonitorReport");
+
+            // Remove useless
+            IList<JObject> removedList = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(
+                @"SELECT * FROM c where c.reportStartDate != '2020-11-20T00:00:00Z'")).Result;
+            Console.WriteLine("Remove useless instances:");
+            foreach (var remove in removedList)
+            {
+                string id = remove["id"].ToString();
+                Console.WriteLine(id);
+                string documentLink = GetDocumentLink("DataCop", "ScheduleMonitorReport", id);
+                ResourceResponse<Document> resource = azureCosmosDBClient.DeleteDocumentAsync(documentLink).Result;
+            }
+
+            IList<JObject> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(
+                @"SELECT * FROM c where c.reportStartDate = '2020-11-20T00:00:00Z'")).Result;
+            foreach (JObject jObject in list)
+            {
+                Console.WriteLine(jObject["id"]);
+                for (int i = 1; i < 10; i++)
+                {
+                    jObject["id"] = Guid.NewGuid();
+                    jObject["reportStartDate"] = now.AddDays(-i - 1).Date;
+                    jObject["reportEndDate"] = now.AddDays(-i).Date;
+                    azureCosmosDBClient.UpsertDocumentAsync(jObject).Wait();
+                    int all = r.Next(100);
+                    int success = r.Next(all);
+                    int aborted = r.Next(all - success);
+
+                    jObject["allTestRunCount"] = all;
+                    jObject["successTestRunCount"] = success;
+                    jObject["abortedTestRunCount"] = aborted;
+                    var allIds = new JArray();
+                    var successIds = new JArray();
+                    var abortedIds = new JArray();
+                    for (int j = 0; j < all; j++)
+                    {
+                        allIds.Add(Guid.NewGuid());
+                    }
+                    for (int j = 0; j < success; j++)
+                    {
+                        successIds.Add(Guid.NewGuid());
+                    }
+                    for (int j = 0; j < aborted; j++)
+                    {
+                        abortedIds.Add(Guid.NewGuid());
+                    }
+                    jObject["allTestIds"] = allIds;
+                    jObject["successTestRunIds"] = successIds;
+                    jObject["allTestIds"] = abortedIds;
+
+                    int ran = r.Next(3);
+                    jObject["testRunErrorMessage"] = ran == 0 ? "" : (ran == 1 ? "InternalException" : "Forbidden");
+                    azureCosmosDBClient.UpsertDocumentAsync(jObject).Wait();
+                }
+            }
+        }
+
+        public static void QueryAlertSettingInDatasetTestsDemo()
+        {
+            Console.WriteLine("QueryAlertSettingInDatasetTestsDemo:");
+            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "DatasetTest");
+            IList<JObject> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT distinct c.alertSettingId FROM c where c.status = 'Enabled'")).Result;
+
+            AzureCosmosDBClient alertSettingsAzureCosmosDBClient = new AzureCosmosDBClient("DataCop", "AlertSettings");
+            // Collation: asc and desc is ascending and descending
+            IList<JObject> alertSettings = alertSettingsAzureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(
+                @"SELECT * FROM c")).Result;
+            Console.WriteLine(alertSettings.Count);
+            Console.WriteLine(list.Count);
+
+            HashSet<string> set = new HashSet<string>();
+            foreach (JObject jObject in list)
+            {
+                if (jObject["alertSettingId"] != null)
+                {
+                    var alertSettingId = jObject["alertSettingId"].ToString();
+                    foreach (var alertSetting in alertSettings)
+                    {
+                        if (alertSetting["id"].ToString().Equals(alertSettingId))
+                        {
+                            set.Add($"{alertSetting["owningTeamId"]}\t{alertSetting["targetIcMConnector"]}\t{alertSetting["containerPublicId"]}\t{alertSetting["routingId"]}");
+                        }
+                    }
+                }
+            }
+
+            foreach (var alertSettingContent in set)
+            {
+                Console.WriteLine(alertSettingContent);
+            }
+            Console.WriteLine(set.Count);
         }
 
         public static void QueryDataSetDemo()
@@ -1506,6 +1665,8 @@
 
         public static void QueryMonitroReportDemo()
         {
+            // TODO: I don't think it works as my expection. Will follow up this function. 
+            // ToString("s") of DateTime doesn't contains 'Z' in the string end if the datetime is the hour(minute/second and millisecond are zero) 
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "MonitorReport");
 
             DateTime timeStamp = DateTime.Parse("2019-11-26T06:00:00");
@@ -1575,15 +1736,15 @@
 
         public static void QueryTestRuns()
         {
-
             IList<string> filters = new List<string>
             {
                 //"c.id = '03630344-73a4-4079-a8a1-0c9764af49d9'",
-                "c.datasetId = 'eb5af06c-43c3-45d6-9226-1fb5e8ecac56'",
+                //"(c.datasetId = '92110282-bc44-418d-bb42-d776ff374b60' or c.datasetId = 'BCEE3FD4-1A54-43B3-82D1-3C2FED5C8419')",
+                //"c.datasetTestId = ''",
                 //"c.partitionKey = ''",
-                //"c.dataFabric = ''",
-                //"c.status != 'Waiting'",
-                "c.createTime > '2020-11-16'",
+                "c.dataFabric = 'CosmosView'",
+                "c.status = 'Aborted'",
+                "c.createTime > '2020-11-18'",
             };
 
             IList<JObject> list = GetQueryResult("DataCop", "PartitionedTestRun", null, filters);
@@ -1595,6 +1756,11 @@
 
         public static void QueryForbiddenTestRuns()
         {
+            IList<string> properties = new List<string>
+            {
+                "datasetId",
+                "message"
+            };
             IList<string> filters = new List<string>
             {
                 "(c.dataFabric = 'CosmosStream' or c.dataFabric = 'Adls' or c.dataFabric = 'ADLS')",
@@ -1603,7 +1769,7 @@
                 "c.createTime > '2020-11-12'",
             };
 
-            IList<JObject> list = GetQueryResult("DataCop", "PartitionedTestRun", null, filters);
+            IList<JObject> list = GetQueryResult("DataCop", "PartitionedTestRun", properties, filters);
             foreach (JObject jObject in list)
             {
                 Console.WriteLine(jObject);
@@ -1676,11 +1842,9 @@
         {
             var filters = new List<string>
             {
-                //"c. id = 'eb5af06c-43c3-45d6-9226-1fb5e8ecac56'"
+                //"c. id = 'eaf6509f-e2ed-4dae-bead-f1a40d45ee6d'"
                 @"(c.dataFabric = 'Adls' or c.dataFabric = 'ADLS')",
                 @"c.reportStartTimeStamp > '2020-11-11'",
-                //@"c.isEnabled = true"
-
             };
             IList<JObject> list = GetQueryResult("DataCop", "ServiceMonitorReport", null, filters);
             //IList<JObject> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(sqlQueryString.ToString())).Result;
@@ -1706,11 +1870,20 @@
             filters = new List<string>
             {
                 "(c.createdBy = 'BuildDeployment' or c.createdBy = 'BuildTestExecution')",
-                @"contains(c.dataFabric, 'Cosmos')",
+                @"c.dataFabric = 'CosmosStream'",
 
             };
-            var buildCosmosCount = GetQueryCount("DataCop", "Dataset", filters);
-            Console.WriteLine($"buildCosmosCount：{buildCosmosCount}");
+            var buildCosmosStreamCount = GetQueryCount("DataCop", "Dataset", filters);
+            Console.WriteLine($"buildCosmosStreamCount：{buildCosmosStreamCount}");
+
+            filters = new List<string>
+            {
+                "(c.createdBy = 'BuildDeployment' or c.createdBy = 'BuildTestExecution')",
+                @"c.dataFabric = 'CosmosView'",
+
+            };
+            var buildCosmosViewCount = GetQueryCount("DataCop", "Dataset", filters);
+            Console.WriteLine($"buildCosmosViewCount：{buildCosmosViewCount}");
 
         }
 
