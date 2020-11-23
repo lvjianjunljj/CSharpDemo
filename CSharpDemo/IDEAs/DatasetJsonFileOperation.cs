@@ -26,7 +26,8 @@
             //UpdateAllSqlKeyVaultName();
             //UpdateSomeCFRToAdls();
             //UpdateCosmosViewScripts();
-            UpdateCosmosVCToBuild();
+            //UpdateCosmosVCToBuild();
+            UpdateStoreForSpark();
         }
         public static void DisableAllDatasetTests()
         {
@@ -288,33 +289,72 @@
             }
         }
 
-        public static void UpdateCosmosViewScripts()
+        public static void UpdateStoreForSpark()
         {
-            var datasetJsonFilePaths = ReadFile.GetAllFilePath(FolderPath);
-            int count = 0;
+            var datasetTestJsonFilePaths = ReadFile.GetAllFilePath(FolderPath);
+            HashSet<string> datasetIds = new HashSet<string>();
 
-            foreach (var datasetJsonFilePath in datasetJsonFilePaths)
+            foreach (var datasetTestJsonFilePath in datasetTestJsonFilePaths)
             {
-                if (datasetJsonFilePath.ToLower().Contains(@"\monitor"))
+                if (datasetTestJsonFilePath.ToLower().Contains(@"\monitor"))
                 {
-                    string fileContent = ReadFile.ThirdMethod(datasetJsonFilePath);
+                    string fileContent = ReadFile.ThirdMethod(datasetTestJsonFilePath);
                     JsonSerializerSettings serializer = new JsonSerializerSettings
                     {
                         DateParseHandling = DateParseHandling.None
                     };
-                    JObject gitDatasetJObject = JsonConvert.DeserializeObject<JObject>(fileContent, serializer);
-                    if (gitDatasetJObject["dataFabric"]?.ToString().ToLower().Equals("cosmosview") == true)
+                    JObject gitDatasetTestJObject = JsonConvert.DeserializeObject<JObject>(fileContent, serializer);
+
+                    if (gitDatasetTestJObject["testContentType"]?.ToString().ToLower().Equals("spark") == true)
                     {
-                        count++;
-                        var cosmosScriptContent = gitDatasetJObject["testContent"]["cosmosScriptContent"].ToString();
-                        var index = cosmosScriptContent.IndexOf("OUTPUT ViewSamples");
-                        cosmosScriptContent = cosmosScriptContent.Substring(0, index);
-                        cosmosScriptContent += " Count = SELECT COUNT() AS NumSessions FROM ViewSamples; OUTPUT Count TO SSTREAM \"/my/output.ss\"";
-                        gitDatasetJObject["testContent"]["cosmosScriptContent"] = cosmosScriptContent;
-                        WriteFile.FirstMethod(datasetJsonFilePath, gitDatasetJObject.ToString());
+                        var datasetId = gitDatasetTestJObject["datasetId"]?.ToString();
+                        datasetIds.Add(datasetId);
+                        //var cosmosScriptContent = gitDatasetTestJObject["testContent"]["cosmosScriptContent"].ToString();
+                        //var index = cosmosScriptContent.IndexOf("OUTPUT ViewSamples");
+                        //cosmosScriptContent = cosmosScriptContent.Substring(0, index);
+                        //cosmosScriptContent += " Count = SELECT COUNT() AS NumSessions FROM ViewSamples; OUTPUT Count TO SSTREAM \"/my/output.ss\"";
+                        //gitDatasetTestJObject["testContent"]["cosmosScriptContent"] = cosmosScriptContent;
+                        //WriteFile.FirstMethod(datasetTestJsonFilePath, gitDatasetTestJObject.ToString());
                     }
                 }
             }
+
+            foreach (var datasetId in datasetIds)
+            {
+                Console.WriteLine(datasetId);
+            }
+
+            Console.WriteLine($"count: {datasetIds.Count}");
+        }
+
+        public static void UpdateCosmosViewScripts()
+        {
+            var datasetTestJsonFilePaths = ReadFile.GetAllFilePath(FolderPath);
+            int count = 0;
+
+            foreach (var datasetTestJsonFilePath in datasetTestJsonFilePaths)
+            {
+                if (datasetTestJsonFilePath.ToLower().Contains(@"\monitor"))
+                {
+                    string fileContent = ReadFile.ThirdMethod(datasetTestJsonFilePath);
+                    JsonSerializerSettings serializer = new JsonSerializerSettings
+                    {
+                        DateParseHandling = DateParseHandling.None
+                    };
+                    JObject gitDatasetTestJObject = JsonConvert.DeserializeObject<JObject>(fileContent, serializer);
+                    if (gitDatasetTestJObject["dataFabric"]?.ToString().ToLower().Equals("cosmosview") == true)
+                    {
+                        count++;
+                        var cosmosScriptContent = gitDatasetTestJObject["testContent"]["cosmosScriptContent"].ToString();
+                        var index = cosmosScriptContent.IndexOf("OUTPUT ViewSamples");
+                        cosmosScriptContent = cosmosScriptContent.Substring(0, index);
+                        cosmosScriptContent += " Count = SELECT COUNT() AS NumSessions FROM ViewSamples; OUTPUT Count TO SSTREAM \"/my/output.ss\"";
+                        gitDatasetTestJObject["testContent"]["cosmosScriptContent"] = cosmosScriptContent;
+                        WriteFile.FirstMethod(datasetTestJsonFilePath, gitDatasetTestJObject.ToString());
+                    }
+                }
+            }
+
             Console.WriteLine($"count: {count}");
         }
 

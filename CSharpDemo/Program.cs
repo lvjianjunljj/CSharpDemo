@@ -41,14 +41,14 @@
     {
         static void Main(string[] args)
         {
-            AzureCosmosDBOperation.MainMethod();
+            //AzureCosmosDBOperation.MainMethod();
             //AzureServiceBus.MainMethod();
             //AzureCosmosDB.MainMethod();
 
             //QueryIncidents.MainMethod();
             //FireIncident.MainMethod();
 
-            //DatasetJsonFileOperation.MainMethod();
+            DatasetJsonFileOperation.MainMethod();
             //AzureActiveDirectoryToken.MainMethod();
             //AzureKeyVaultDemo.MainMethod();
 
