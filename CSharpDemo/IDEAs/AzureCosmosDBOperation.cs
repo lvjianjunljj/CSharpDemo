@@ -1531,8 +1531,11 @@
                 Console.WriteLine(list.Count);
                 foreach (var report in list)
                 {
-                    report.Remove("incidentId");
+                    string id = report["id"].ToString();
+                    report["id"] = id + "/test";
+                    //report.Remove("incidentId");
                     report["resultExpirePeriod"] = "12:00:00";
+                    Console.WriteLine(id);
                     azureCosmosDBClient.UpsertDocumentAsync(report).Wait();
                 }
                 list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(
