@@ -40,7 +40,7 @@
 
             dataLakeClient = new DataLakeClient(tenantId, clientId, clientKey);
 
-            //CheckAdlsFileExistsDemo();
+            CheckAdlsFileExistsDemo();
             //GetIDEAsProdAdlsFileSizeDemo();
             //GetObdTestFileSizeDemo();
             //InsertAdlsFileDemo();
@@ -53,7 +53,7 @@
             //TorusAccessCFRFileDemo();
             //CheckPermissionByJson();
             //CheckShareSettingByJson();
-            CheckPermission();
+            //CheckPermission();
             //CheckShareSetting();
         }
 
@@ -95,10 +95,11 @@
                 //"shares/AD_DataAnalytics/TenantSaasAppUsage/",
                 //"shares/adPlatform.AudienceIntelligence.Scoring.proxy/PublicShare/UserSegment/Snapshots/IBT/",
                 //"shares/adPlatform.AudienceIntelligence.Scoring.proxy/PublicShare",
-                "shares/AD_DataAnalytics/AD_DataAnalytics/Resources/Views/IDEAs/IDEAsPolicyMapping.view",
-                "shares/onedrive.data/public/Resources/Views/Public/ODC_State_Users.view",
-                "shares/bus.prod/local/office/Odin/Action/OfficeDataAction.view",
-                "shares/IDEAs.Prod.Data/Private/Profiles/Subscription/Commercial/IDEAsPrivateSubscriptionProfile/Streams/v1"
+                //"shares/AD_DataAnalytics/AD_DataAnalytics/Resources/Views/IDEAs/IDEAsPolicyMapping.view",
+                //"shares/onedrive.data/public/Resources/Views/Public/ODC_State_Users.view",
+                //"shares/bus.prod/local/office/Odin/Action/OfficeDataAction.view",
+                //"shares/IDEAs.Prod.Data/Private/Profiles/Subscription/Commercial/IDEAsPrivateSubscriptionProfile/Streams/v1"
+                //"shares/IDEAs.Prod.Data/Publish/Profiles/User/Commercial/Internal/IDEAsUserSKUProfile/Streams/v1/2020/11/UserSKUsStats_2020_11_08.ss"
             };
             foreach (var dataLakeStore in dataLakeStores)
             {
@@ -256,12 +257,12 @@
 
         public static void CheckAdlsFileExistsDemo()
         {
-            Console.WriteLine(dataLakeClient.CheckExists("ideas-prod-c14.azuredatalakestore.net",
-                "/shares/IDEAs.Prod.Data/Publish/Profiles/Tenant/Commercial/Internal/IDEAsTenantProfile/PostValidation/Streams/v3/2020/09/TenantProfileStats_2020_09_16.ss"));
+            //Console.WriteLine(dataLakeClient.CheckExists("ideas-prod-c14.azuredatalakestore.net",
+            //    "/shares/IDEAs.Prod.Data/Publish/Profiles/Tenant/Commercial/Internal/IDEAsTenantProfile/PostValidation/Streams/v3/2020/09/TenantProfileStats_2020_09_16.ss"));
             Console.WriteLine(dataLakeClient.CheckExists("ideas-prod-build-c14.azuredatalakestore.net",
-                "shares/ffo.prod/local/Aggregated/Datasets/Private/MIGMetrics/MIGFeaturesMapping.ss"));
-            Console.WriteLine(dataLakeClient.CheckExists("ideas-prod-c14.azuredatalakestore.net",
-                "shares/ffo.prod/local/Aggregated/Datasets/Private/MIGMetrics/MIGFeaturesMapping.ss"));
+                "shares/IDEAs.Prod.Data/Publish/Profiles/User/Commercial/Internal/IDEAsUserSKUProfile/Streams/v1/2020/11/UserSKUsStats_2020_11_08.ss"));
+            //Console.WriteLine(dataLakeClient.CheckExists("ideas-prod-c14.azuredatalakestore.net",
+            //    "shares/ffo.prod/local/Aggregated/Datasets/Private/MIGMetrics/MIGFeaturesMapping.ss"));
 
 
             // We don't have access to store "ideas-ppe-c14.azuredatalakestore.net". It will throw exception: forbidden

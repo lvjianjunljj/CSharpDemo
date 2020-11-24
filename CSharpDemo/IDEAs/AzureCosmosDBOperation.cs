@@ -1532,6 +1532,7 @@
                 foreach (var report in list)
                 {
                     report.Remove("incidentId");
+                    report["resultExpirePeriod"] = "12:00:00";
                     azureCosmosDBClient.UpsertDocumentAsync(report).Wait();
                 }
                 list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(
@@ -1739,12 +1740,12 @@
             IList<string> filters = new List<string>
             {
                 //"c.id = '03630344-73a4-4079-a8a1-0c9764af49d9'",
-                //"(c.datasetId = '92110282-bc44-418d-bb42-d776ff374b60' or c.datasetId = 'BCEE3FD4-1A54-43B3-82D1-3C2FED5C8419')",
-                //"c.datasetTestId = ''",
+                "c.datasetId = '8c8ff3c5-c151-430c-aa62-8b3453b84297'",
+                //"c.datasetTestId = 'd2c2991c-4d9b-43df-ac98-acd10a4caf0d'",
                 //"c.partitionKey = ''",
-                "c.dataFabric = 'CosmosView'",
-                "c.status = 'Aborted'",
-                "c.createTime > '2020-11-18'",
+                //"c.dataFabric = 'CosmosView'",
+                "c.status != 'Waiting'",
+                "c.createTime > '2020-11-20'",
             };
 
             IList<JObject> list = GetQueryResult("DataCop", "PartitionedTestRun", null, filters);

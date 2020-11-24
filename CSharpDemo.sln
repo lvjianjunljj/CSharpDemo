@@ -31,17 +31,19 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdfDemo", "AdfDemo\AdfDemo.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdfV2Demo", "AdfV2Demo\AdfV2Demo.csproj", "{07E0FD3C-74D9-4F31-8F1C-C53037636484}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StandardDemoLib", "StandardDemoLib\StandardDemoLib.csproj", "{A4CC06E5-9179-4887-B898-336F9AF1B960}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StandardDemoLib", "StandardDemoLib\StandardDemoLib.csproj", "{A4CC06E5-9179-4887-B898-336F9AF1B960}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoreDemoLib", "CoreDemoLib\CoreDemoLib.csproj", "{E8787504-3E35-4B36-B4F9-08C303CF6AC3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CoreDemoLib", "CoreDemoLib\CoreDemoLib.csproj", "{E8787504-3E35-4B36-B4F9-08C303CF6AC3}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NetVersionDemo", "NetVersionDemo", "{56FDF34C-71A7-456E-BE64-3DBCF00CEA11}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrameworkDemoLib", "FrameworkDemoLib\FrameworkDemoLib.csproj", "{55ECDD46-64F0-434D-966B-EB4E6C8991E6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoreToFrameworkDemoLib", "CoreToFrameworkDemoLib\CoreToFrameworkDemoLib.csproj", "{B9B87533-50DC-4176-A836-7ACE93289ADF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CoreToFrameworkDemoLib", "CoreToFrameworkDemoLib\CoreToFrameworkDemoLib.csproj", "{B9B87533-50DC-4176-A836-7ACE93289ADF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StandardToFrameworkDemoLib", "StandardToFrameworkDemoLib\StandardToFrameworkDemoLib.csproj", "{BFAB3EA2-7A34-47D9-9EB8-5B6502C3B625}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StandardToFrameworkDemoLib", "StandardToFrameworkDemoLib\StandardToFrameworkDemoLib.csproj", "{BFAB3EA2-7A34-47D9-9EB8-5B6502C3B625}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KustoDemo", "KustoDemo\KustoDemo.csproj", "{6DFBDA26-B61F-41D3-970B-305DDC6AC360}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -437,6 +439,26 @@ Global
 		{BFAB3EA2-7A34-47D9-9EB8-5B6502C3B625}.Release|x64.Build.0 = Release|Any CPU
 		{BFAB3EA2-7A34-47D9-9EB8-5B6502C3B625}.Release|x86.ActiveCfg = Release|Any CPU
 		{BFAB3EA2-7A34-47D9-9EB8-5B6502C3B625}.Release|x86.Build.0 = Release|Any CPU
+		{6DFBDA26-B61F-41D3-970B-305DDC6AC360}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6DFBDA26-B61F-41D3-970B-305DDC6AC360}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6DFBDA26-B61F-41D3-970B-305DDC6AC360}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{6DFBDA26-B61F-41D3-970B-305DDC6AC360}.Debug|ARM.Build.0 = Debug|Any CPU
+		{6DFBDA26-B61F-41D3-970B-305DDC6AC360}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{6DFBDA26-B61F-41D3-970B-305DDC6AC360}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{6DFBDA26-B61F-41D3-970B-305DDC6AC360}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{6DFBDA26-B61F-41D3-970B-305DDC6AC360}.Debug|x64.Build.0 = Debug|Any CPU
+		{6DFBDA26-B61F-41D3-970B-305DDC6AC360}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{6DFBDA26-B61F-41D3-970B-305DDC6AC360}.Debug|x86.Build.0 = Debug|Any CPU
+		{6DFBDA26-B61F-41D3-970B-305DDC6AC360}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6DFBDA26-B61F-41D3-970B-305DDC6AC360}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6DFBDA26-B61F-41D3-970B-305DDC6AC360}.Release|ARM.ActiveCfg = Release|Any CPU
+		{6DFBDA26-B61F-41D3-970B-305DDC6AC360}.Release|ARM.Build.0 = Release|Any CPU
+		{6DFBDA26-B61F-41D3-970B-305DDC6AC360}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{6DFBDA26-B61F-41D3-970B-305DDC6AC360}.Release|ARM64.Build.0 = Release|Any CPU
+		{6DFBDA26-B61F-41D3-970B-305DDC6AC360}.Release|x64.ActiveCfg = Release|Any CPU
+		{6DFBDA26-B61F-41D3-970B-305DDC6AC360}.Release|x64.Build.0 = Release|Any CPU
+		{6DFBDA26-B61F-41D3-970B-305DDC6AC360}.Release|x86.ActiveCfg = Release|Any CPU
+		{6DFBDA26-B61F-41D3-970B-305DDC6AC360}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
