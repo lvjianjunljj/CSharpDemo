@@ -10,7 +10,7 @@
     using System.Collections.Generic;
     using System.IO;
 
-    class DatasetJsonFileOperation
+    class DataCopJsonFileOperation
     {
         private static string FolderPath = @"D:\IDEAs\repos\Ibiza\Source\DataCopMonitors";
 
@@ -27,7 +27,7 @@
             //UpdateSomeCFRToAdls();
             //UpdateCosmosViewScripts();
             //UpdateCosmosVCToBuild();
-            UpdateStoreForSpark();
+            //UpdateStoreForSpark();
         }
         public static void DisableAllDatasetTests()
         {

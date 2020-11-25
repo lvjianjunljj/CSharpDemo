@@ -22,7 +22,7 @@
         public static void MainMethod()
         {
             // for datacop: "datacop-ppe" and "datacop-prod"
-            string KeyVaultName = "datacop-ppe";
+            string KeyVaultName = "datacop-prod";
             var secretProvider = KeyVaultSecretProvider.Instance;
             string endpoint = secretProvider.GetSecretAsync(KeyVaultName, "CosmosDBEndPoint").Result;
             string key = secretProvider.GetSecretAsync(KeyVaultName, "CosmosDBAuthKey").Result;
@@ -39,7 +39,7 @@
             //UpsertServiceMonitorDemo();
             //UpdateVcToBuild();
             //UpdateScheduleMonitorReportSampleDemo();
-            ResetIncidentIdForMonitorReportDemo();
+            //ResetIncidentIdForMonitorReportDemo();
 
             //DisableAllCFRMonitor();
             //InsertCFRMonitorConfig();
@@ -63,7 +63,7 @@
             //QueryTestRuns();
             //QueryForbiddenTestRuns();
             //QueryDataCopScores();
-            //QueryDatasets();
+            QueryDatasets();
             //QueryServiceMonitorReports();
             //QueryDatasetCount();
             //QueryTestRunCountByDatasetId();
@@ -1833,7 +1833,6 @@
 
             };
             IList<JObject> list = GetQueryResult("DataCop", "Dataset", null, filters);
-            //IList<JObject> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(sqlQueryString.ToString())).Result;
             foreach (JObject jObject in list)
             {
                 Console.WriteLine(jObject);

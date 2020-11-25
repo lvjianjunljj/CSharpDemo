@@ -66,6 +66,18 @@
             return data;
         }
 
+        public static IEnumerable<string> FifthMethod(string filePath)
+        {
+            List<List<string>> data = new List<List<string>>();
+            StreamReader sr = new StreamReader(filePath, Encoding.UTF8);
+            String line;
+            while ((line = sr.ReadLine()) != null)
+            {
+                yield return line;
+            }
+            sr.Close();
+        }
+
         public static void SummaryDirToOneFile(string folderAbsolutePath, string outputFileFullName)
         {
             DirectoryInfo TheFolder = new DirectoryInfo(folderAbsolutePath);

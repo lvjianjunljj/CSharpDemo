@@ -8,6 +8,7 @@
     using System.IO;
     using System.Linq;
     using System.Net;
+    using System.Runtime.CompilerServices;
     using System.Text;
 
     public class AdlsDemoClass
@@ -40,7 +41,7 @@
 
             dataLakeClient = new DataLakeClient(tenantId, clientId, clientKey);
 
-            CheckAdlsFileExistsDemo();
+            //CheckAdlsFileExistsDemo();
             //GetIDEAsProdAdlsFileSizeDemo();
             //GetObdTestFileSizeDemo();
             //InsertAdlsFileDemo();
@@ -55,8 +56,59 @@
             //CheckShareSettingByJson();
             //CheckPermission();
             //CheckShareSetting();
+
+            CheckBuildStreamsAvailability();
         }
 
+        public static void CheckBuildStreamsAvailability()
+        {
+            Console.WriteLine("Check Build streams availability By tsv: ");
+            string tsvFilePath = @"D:\data\company_work\M365\IDEAs\buildpath.tsv";
+            var dataLakeStore = @"ideas-prod-build-c14.azuredatalakestore.net";
+            IList<string> noShareSetting = new List<string>();
+            IList<string> noPermission = new List<string>();
+
+            var lines = File.ReadAllLines(tsvFilePath, Encoding.UTF8);
+            foreach (var line in lines)
+            {
+                var streamPath = line.Split(new char[] { '\t' })[0];
+                string rootPath = GetPathPrefix(streamPath.ToString());
+                try
+                {
+                    if (!dataLakeClient.CheckDirectoryExists(dataLakeStore, rootPath))
+                    {
+                        noShareSetting.Add(rootPath);
+                    }
+                }
+                catch (AdlsException e)
+                {
+                    if (e.HttpStatus == HttpStatusCode.Forbidden)
+                    {
+                        Console.WriteLine($"No permission for dataLakeStore '{dataLakeStore}' and path '{rootPath}'");
+                        continue;
+                    }
+
+                    throw;
+                }
+
+                if (!dataLakeClient.CheckPermission(dataLakeStore, streamPath))
+                {
+                    noPermission.Add(streamPath);
+                }
+            }
+
+            Console.WriteLine("noShareSetting: ");
+            foreach (var streamPath in noShareSetting)
+            {
+                Console.WriteLine(streamPath);
+            }
+
+            Console.WriteLine("noPermission: ");
+            foreach (var streamPath in noPermission)
+            {
+                Console.WriteLine(streamPath);
+            }
+        }
 
         public static void CheckPermission()
         {
