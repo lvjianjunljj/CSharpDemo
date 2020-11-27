@@ -15,12 +15,12 @@
     {
         private static string FolderPath = @"D:\IDEAs\pls_repos";
 
-
         public static void MainMethod()
         {
             QueryAllViewFiles();
         }
-        public static void QueryAllViewFiles()
+
+        private static void QueryAllViewFiles()
         {
             var jsonFilePaths = ReadFile.GetAllFilePath(FolderPath);
             HashSet<string> set = new HashSet<string>();

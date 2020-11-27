@@ -8,7 +8,6 @@
     using System.IO;
     using System.Linq;
     using System.Net;
-    using System.Runtime.CompilerServices;
     using System.Text;
 
     public class AdlsDemoClass
@@ -57,21 +56,20 @@
             //CheckPermission();
             //CheckShareSetting();
 
-            CheckBuildStreamsAvailability();
+            //CheckBuildStreamsAvailability();
         }
 
-        public static void CheckBuildStreamsAvailability()
+        private static void CheckBuildStreamsAvailability()
         {
             Console.WriteLine("Check Build streams availability By tsv: ");
             string tsvFilePath = @"D:\data\company_work\M365\IDEAs\buildpath.tsv";
             var dataLakeStore = @"ideas-prod-build-c14.azuredatalakestore.net";
-            IList<string> noShareSetting = new List<string>();
-            IList<string> noPermission = new List<string>();
+            HashSet<string> noShareSetting = new HashSet<string>();
+            HashSet<string> noPermission = new HashSet<string>();
 
-            var lines = File.ReadAllLines(tsvFilePath, Encoding.UTF8);
-            foreach (var line in lines)
+            var streamPaths = File.ReadAllLines(tsvFilePath, Encoding.UTF8);
+            foreach (var streamPath in streamPaths)
             {
-                var streamPath = line.Split(new char[] { '\t' })[0];
                 string rootPath = GetPathPrefix(streamPath.ToString());
                 try
                 {
@@ -85,10 +83,11 @@
                     if (e.HttpStatus == HttpStatusCode.Forbidden)
                     {
                         Console.WriteLine($"No permission for dataLakeStore '{dataLakeStore}' and path '{rootPath}'");
-                        continue;
                     }
-
-                    throw;
+                    else
+                    {
+                        throw;
+                    }
                 }
 
                 if (!dataLakeClient.CheckPermission(dataLakeStore, streamPath))
@@ -98,19 +97,23 @@
             }
 
             Console.WriteLine("noShareSetting: ");
-            foreach (var streamPath in noShareSetting)
+            var noShareSettingList = noShareSetting.ToList();
+            var noPermissionList = noPermission.ToList();
+            noShareSettingList.Sort();
+            noPermissionList.Sort();
+            foreach (var streamPath in noShareSettingList)
             {
                 Console.WriteLine(streamPath);
             }
 
             Console.WriteLine("noPermission: ");
-            foreach (var streamPath in noPermission)
+            foreach (var streamPath in noPermissionList)
             {
                 Console.WriteLine(streamPath);
             }
         }
 
-        public static void CheckPermission()
+        private static void CheckPermission()
         {
             var dataLakeStores = new List<string>
             {
@@ -152,6 +155,8 @@
                 //"shares/bus.prod/local/office/Odin/Action/OfficeDataAction.view",
                 //"shares/IDEAs.Prod.Data/Private/Profiles/Subscription/Commercial/IDEAsPrivateSubscriptionProfile/Streams/v1"
                 //"shares/IDEAs.Prod.Data/Publish/Profiles/User/Commercial/Internal/IDEAsUserSKUProfile/Streams/v1/2020/11/UserSKUsStats_2020_11_08.ss"
+                "/shares/User360/UserProfile/resources/LCID_Locale.ss",
+                "shares/IDEAs.Prod.Data/Publish.Usage.User.Neutral.Reporting.Dashboards.AppDashboard.AverageDAU.Excel/"
             };
             foreach (var dataLakeStore in dataLakeStores)
             {
@@ -165,7 +170,7 @@
                     }
                     else
                     {
-                        path = pathPrefix + "/Test/Test.ss";
+                        path = pathPrefix + "Test.ss";
                     }
                     if (!dataLakeClient.CheckPermission(dataLakeStore, path))
                     {
@@ -175,7 +180,49 @@
             }
         }
 
-        public static void CheckPermissionByJson()
+        private static void CheckShareSetting()
+        {
+            var dataLakeStores = new List<string>
+            {
+                @"ideas-ppe-c14.azuredatalakestore.net",
+                @"ideas-prod-c14.azuredatalakestore.net",
+                @"ideas-prod-data-c14.azuredatalakestore.net",
+                @"ideas-prod-build-c14.azuredatalakestore.net",
+            };
+            var streamPaths = new List<string>()
+            {
+                "/shares/User360/UserProfile/resources/LCID_Locale.ss",
+                "shares/IDEAs.Prod.Data/Publish.Usage.User.Neutral.Reporting.Dashboards.AppDashboard.AverageDAU.Excel/"
+            };
+            foreach (var dataLakeStore in dataLakeStores)
+            {
+                Console.WriteLine($"DataLakeStore: {dataLakeStore}");
+                foreach (var streamPath in streamPaths)
+                {
+                    string rootPath = GetPathPrefix(streamPath.ToString());
+                    try
+                    {
+                        if (!dataLakeClient.CheckDirectoryExists(dataLakeStore, rootPath))
+                        {
+                            Console.WriteLine($"Have no permission for rootPath: '{rootPath}'");
+                        }
+                    }
+                    catch (AdlsException e)
+                    {
+                        if (e.HttpStatus == HttpStatusCode.Forbidden)
+                        {
+                            Console.WriteLine($"No permission for dataLakeStore '{dataLakeStore}' and path '{rootPath}'");
+                        }
+                        else
+                        {
+                            throw;
+                        }
+                    }
+                }
+            }
+        }
+
+        private static void CheckPermissionByJson()
         {
             Console.WriteLine("Check Adls Permission By Json: ");
             JArray result = new JArray();
@@ -237,7 +284,7 @@
             Console.WriteLine(result);
         }
 
-        public static void CheckShareSettingByJson()
+        private static void CheckShareSettingByJson()
         {
             Console.WriteLine("Check Adls Share Setting By Json: ");
             JArray result = new JArray();
@@ -307,7 +354,7 @@
         }
 
 
-        public static void CheckAdlsFileExistsDemo()
+        private static void CheckAdlsFileExistsDemo()
         {
             //Console.WriteLine(dataLakeClient.CheckExists("ideas-prod-c14.azuredatalakestore.net",
             //    "/shares/IDEAs.Prod.Data/Publish/Profiles/Tenant/Commercial/Internal/IDEAsTenantProfile/PostValidation/Streams/v3/2020/09/TenantProfileStats_2020_09_16.ss"));
@@ -321,7 +368,7 @@
             //Console.WriteLine(dataLakeClient.CheckExists("ideas-ppe-c14.azuredatalakestore.net", "/local/build/user/dekashet/TeamsMeetingProdAfterTimeZoneFixApril18th/directViewCodeWithAdjustEndDate.csv"));
         }
 
-        public static void TorusAccessCFRFileDemo()
+        private static void TorusAccessCFRFileDemo()
         {
             Console.WriteLine(dataLakeClient.CheckExists("cfr-ppe-c14.azuredatalakestore.net",
                 "local/Cooked/ActivityUserYammer/ActivityUserYammer_2020_09_14.ss"));
@@ -354,7 +401,7 @@
             }
         }
 
-        public static void GetIDEAsProdAdlsFileSizeDemo()
+        private static void GetIDEAsProdAdlsFileSizeDemo()
         {
             Console.WriteLine(dataLakeClient.GetFileSize("ideas-prod-c14.azuredatalakestore.net",
                 "local/Scheduled/Datasets/Public/Profiles/OlsLicenses/v4/2020/06/20/LicensesCommercialHistory_2020-06-20.ss"));
@@ -363,12 +410,12 @@
                 "shares/IDEAs.Prod/Public/Resources/WDATPSkuMapping.ss"));
         }
 
-        public static void GetObdTestFileSizeDemo()
+        private static void GetObdTestFileSizeDemo()
         {
 
         }
 
-        public static void InsertAdlsFileDemo()
+        private static void InsertAdlsFileDemo()
         {
             Console.WriteLine("Insert Adls File...");
 
@@ -382,7 +429,7 @@
             }
         }
 
-        public static void DeleteAdlsFileDemo()
+        private static void DeleteAdlsFileDemo()
         {
             string folderPath = @"/users/jianjlv/";
             for (int i = 1; i < 11; i++)
@@ -393,66 +440,48 @@
             }
         }
 
-        public static void GetEnumerateAdlsMetadataEntityDemo()
+        private static void GetEnumerateAdlsMetadataEntityDemo()
         {
-            //IEnumerable<JObject> entities = dataLakeClient.EnumerateAdlsMetadataEntity("ideas-prod-c14.azuredatalakestore.net",
-            //    "local/users/");
-
-            //foreach (var entity in entities)
-            //{
-            //    Console.WriteLine(entity);
-            //}
-            //Console.WriteLine();
-
-            // Not found error.
-            //var entities = dataLakeClient.EnumerateAdlsMetadataEntity("ideas-prod-build-c14.azuredatalakestore.net",
-            //    "shares/ffo.prod/");
-
-            //foreach (var entity in entities)
-            //{
-            //    Console.WriteLine(entity);
-            //}
-            //Console.WriteLine();
-
-            //entities = dataLakeClient.EnumerateAdlsMetadataEntity("ideas-prod-build-c14.azuredatalakestore.net",
-            //    "/shares/IDEAs.Prod.Data/Publish/Profiles/Tenant/Commercial/Internal/IDEAsTenantProfile/PostValidation/Streams/v3/2020/09/");
-
-            //foreach (var entity in entities)
-            //{
-            //    Console.WriteLine(entity);
-            //}
-            //Console.WriteLine();
-
+            //var directoryExists = dataLakeClient.CheckDirectoryExists("ideas-prod-data-c14.azuredatalakestore.net",
+            //                "shares/IDEAs.Prod.Data");
+            //Console.WriteLine(directoryExists);
             var entities = dataLakeClient.EnumerateAdlsMetadataEntity("ideas-prod-data-c14.azuredatalakestore.net",
-                            "Private/Profiles/Subscription/Commercial/IDEAsPrivateSubscriptionProfile/Streams/v1/");
+                            "/shares/IDEAs.Prod.Data/Publish.Usage.User.Neutral.Reporting.Dashboards.AppDashboard.AverageDAU.Excel/");
 
             foreach (var entity in entities)
             {
                 Console.WriteLine(entity);
             }
-            Console.WriteLine();
         }
 
         private static string GetPathPrefix(string streamPath)
         {
+            streamPath = streamPath.Trim('/');
             if (string.IsNullOrEmpty(streamPath))
             {
                 return string.Empty;
             }
 
-            string pathPrefix;
+            string pathPrefix = string.Empty;
             var splits = streamPath.Split(new char[] { '/' });
 
             if (streamPath.StartsWith("share"))
             {
-                pathPrefix = splits[0] + "/" + splits[1] + "/" + splits[2];
+                for (int i = 0; i < 3 && i < splits.Length; i++)
+                {
+                    pathPrefix += splits[i] + "/";
+
+                }
             }
             else
             {
-                pathPrefix = splits[0] + "/" + splits[1];
+                for (int i = 0; i < 2 && i < splits.Length; i++)
+                {
+                    pathPrefix += splits[i] + "/";
+                }
             }
 
-            return pathPrefix;
+            return pathPrefix.Trim('/');
         }
     }
 }

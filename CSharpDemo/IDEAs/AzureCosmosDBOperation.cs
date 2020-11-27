@@ -18,16 +18,10 @@
 
     public class AzureCosmosDBOperation
     {
-
         public static void MainMethod()
         {
             // for datacop: "datacop-ppe" and "datacop-prod"
-            string KeyVaultName = "datacop-prod";
-            var secretProvider = KeyVaultSecretProvider.Instance;
-            string endpoint = secretProvider.GetSecretAsync(KeyVaultName, "CosmosDBEndPoint").Result;
-            string key = secretProvider.GetSecretAsync(KeyVaultName, "CosmosDBAuthKey").Result;
-            AzureCosmosDBClient.Endpoint = endpoint;
-            AzureCosmosDBClient.Key = key;
+            Initialize("datacop-prod");
 
             //UpdateAllAlertSettingsDemo();
             //UpdateAllDatasetTestCreatedBy();
@@ -60,10 +54,11 @@
             //QueryTestRunCount();
             //QueryKenshoDataset();
             //QueryMonthlyTestRunCount();
-            //QueryTestRuns();
+            QueryTestRuns();
             //QueryForbiddenTestRuns();
             //QueryDataCopScores();
             QueryDatasets();
+            QueryDatasetTests();
             //QueryServiceMonitorReports();
             //QueryDatasetCount();
             //QueryTestRunCountByDatasetId();
@@ -121,7 +116,7 @@
             //MigrateData("TablesDB", "TestPerf", null, microsoftEndPoint, microsoftKey, torusEndpoint, torusKey);
         }
 
-        public static void GetNonAuthPath()
+        private static void GetNonAuthPath()
         {
             //string testRunsQueryStr = @"SELECT top 1000 * FROM c WHERE c.status = 'Aborted' and (c.dataFabric = 'ADLS' or contains(c.dataFabric, 'Cosmos')) order by c.createTime desc";
             string nonAuthTestRunsQueryStr = @"SELECT distinct c.datasetId FROM c WHERE c.status = 'Aborted' and (c.dataFabric = 'ADLS' or contains(c.dataFabric, 'Cosmos')) and contains(c.message, 'HttpStatus:Forbidden') and c.createTime > '2020-10-07' order by c.createTime desc";
@@ -242,18 +237,18 @@
             }
         }
 
-        public static void ShowADLSStreamPathPrefix()
+        private static void ShowADLSStreamPathPrefix()
         {
             var result = GetADLSStreamPaths(GetPathPrefix);
             WriteFile.FirstMethod(@"D:\data\company_work\M365\IDEAs\pathPrefixs.json", result);
         }
-        public static void ShowADLSStreamPathWithoutDate()
+        private static void ShowADLSStreamPathWithoutDate()
         {
             var result = GetADLSStreamPaths(GetPathWithoutDateInfo);
             WriteFile.FirstMethod(@"D:\data\company_work\M365\IDEAs\pathsWithoutDate.json", result);
         }
 
-        public static void ShowStreamPathsWithoutDate()
+        private static void ShowStreamPathsWithoutDate()
         {
             IList<string> properties = new List<string>
             {
@@ -281,7 +276,7 @@
             Console.WriteLine(datasets.Count);
         }
 
-        public static string GetADLSStreamPaths(Func<string, string> getPathFunc)
+        private static string GetADLSStreamPaths(Func<string, string> getPathFunc)
         {
             IList<string> properties = new List<string>
             {
@@ -395,7 +390,7 @@
         }
 
 
-        public static string GetPathWithoutDateInfo(string streamPath)
+        private static string GetPathWithoutDateInfo(string streamPath)
         {
             if (string.IsNullOrEmpty(streamPath))
             {
@@ -448,7 +443,7 @@
         }
 
         // Disable all the CFR monitor dataset and datasetTest
-        public static void DisableAllCFRMonitor()
+        private static void DisableAllCFRMonitor()
         {
             AzureCosmosDBClient datasetCosmosDBClient = new AzureCosmosDBClient("DataCop", "Dataset");
             // Collation: asc and desc is ascending and descending
@@ -478,7 +473,7 @@
         }
 
         // Insert all the CFR monitor dataset and datasetTest in repo
-        public static void InsertCFRMonitorConfig()
+        private static void InsertCFRMonitorConfig()
         {
             AzureCosmosDBClient datasetCosmosDBClient = new AzureCosmosDBClient("DataCop", "Dataset");
             AzureCosmosDBClient datasetTestCosmosDBClient = new AzureCosmosDBClient("DataCop", "DatasetTest");
@@ -552,7 +547,7 @@
             Console.WriteLine(updatedDatasetTests.Count);
         }
 
-        public static void SetOutdatedForDuplicatedDatasetTest()
+        private static void SetOutdatedForDuplicatedDatasetTest()
         {
             AzureCosmosDBClient azureDatasetTestCosmosDB = new AzureCosmosDBClient("DataCop", "DatasetTest");
             AzureCosmosDBClient azureDatasetCosmosDB = new AzureCosmosDBClient("DataCop", "Dataset");
@@ -602,7 +597,7 @@
             }
         }
 
-        public static void CheckDuplicatedEnabledDatasetTest()
+        private static void CheckDuplicatedEnabledDatasetTest()
         {
             AzureCosmosDBClient azureDatasetTestCosmosDB = new AzureCosmosDBClient("DataCop", "DatasetTest");
             AzureCosmosDBClient azureDatasetCosmosDB = new AzureCosmosDBClient("DataCop", "Dataset");
@@ -656,7 +651,7 @@
             }
         }
 
-        public static void CheckAdlsConnectionInfoMappingCorrectness()
+        private static void CheckAdlsConnectionInfoMappingCorrectness()
         {
             AzureCosmosDBClient azureDatasetCosmosDB = new AzureCosmosDBClient("DataCop", "Dataset");
             AzureCosmosDBClient azureDatasetTestCosmosDB = new AzureCosmosDBClient("DataCop", "DatasetTest");
@@ -694,7 +689,7 @@
             Console.WriteLine("END!!!");
         }
 
-        public static void CheckCosmosConnectionInfoMappingCorrectness()
+        private static void CheckCosmosConnectionInfoMappingCorrectness()
         {
             AzureCosmosDBClient azureDatasetCosmosDB = new AzureCosmosDBClient("DataCop", "Dataset");
             AzureCosmosDBClient azureDatasetTestCosmosDB = new AzureCosmosDBClient("DataCop", "DatasetTest");
@@ -729,7 +724,7 @@
             Console.WriteLine("END!!!");
         }
 
-        public static void CheckPPEAlertsettingOwningTeamAndRouting()
+        private static void CheckPPEAlertsettingOwningTeamAndRouting()
         {
             string cfrId = "da71491f-c49a-475e-9d54-d2fde4a6403f";
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "AlertSettings");
@@ -747,7 +742,7 @@
             }
         }
 
-        public static void CheckDatasetTestIntegrity()
+        private static void CheckDatasetTestIntegrity()
         {
             AzureCosmosDBClient azureDatasetTestCosmosDB = new AzureCosmosDBClient("DataCop", "DatasetTest");
             AzureCosmosDBClient azureDatasetCosmosDB = new AzureCosmosDBClient("DataCop", "Dataset");
@@ -786,7 +781,7 @@
 
         }
 
-        public static void AddCompletenessMonitors4ADLS()
+        private static void AddCompletenessMonitors4ADLS()
         {
             string dirPath = @"D:\data\company_work\M365\IDEAs\work_item_file\1161175\write\";
             string duplicateDirPath = @"D:\data\company_work\M365\IDEAs\work_item_file\1161175\duplicate\";
@@ -881,7 +876,7 @@
             }
         }
 
-        public static void MigrateData(string databaseId, string collectionId, IList<string> filters, string fromEndPoint, string fromKey, string toEndPoint, string toKey)
+        private static void MigrateData(string databaseId, string collectionId, IList<string> filters, string fromEndPoint, string fromKey, string toEndPoint, string toKey)
         {
             StringBuilder sqlQuerySb = new StringBuilder(@"SELECT * FROM c");
             if (filters?.Count > 0 == true)
@@ -896,7 +891,7 @@
             MigrateData(databaseId, collectionId, sqlQuerySb.ToString(), fromEndPoint, fromKey, toEndPoint, toKey);
         }
 
-        public static void MigrateData(string databaseId, string collectionId, string queryStr, string fromEndPoint, string fromKey, string toEndPoint, string toKey)
+        private static void MigrateData(string databaseId, string collectionId, string queryStr, string fromEndPoint, string fromKey, string toEndPoint, string toKey)
         {
             AzureCosmosDBClient.Endpoint = fromEndPoint;
             AzureCosmosDBClient.Key = fromKey;
@@ -926,7 +921,7 @@
             Console.WriteLine(count);
         }
 
-        public static void UpdateNoneAlertTypeDemo()
+        private static void UpdateNoneAlertTypeDemo()
         {
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "Alert");
             // Collation: asc and desc is ascending and descending
@@ -961,7 +956,7 @@
             return list.Count > 0 ? list[0] : null;
         }
 
-        public static void UpdateAllAlertSettingsDemo()
+        private static void UpdateAllAlertSettingsDemo()
         {
             var serviceCustomFieldNames = new string[] {"DatasetId",
                                                             "AlertType",
@@ -1009,7 +1004,7 @@
             }
         }
 
-        public static void UpdateAllDatasetForMerging()
+        private static void UpdateAllDatasetForMerging()
         {
             int count = 0;
 
@@ -1084,7 +1079,7 @@
             Console.WriteLine($"count: {count}!!!");
         }
 
-        public static void UpdateAllDatasetTestForMerging()
+        private static void UpdateAllDatasetTestForMerging()
         {
             int count = 0;
 
@@ -1191,7 +1186,7 @@
             Console.WriteLine($"count: {count}!!!");
         }
 
-        public static void UpdateAllDatasetTestCreatedBy()
+        private static void UpdateAllDatasetTestCreatedBy()
         {
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "DatasetTest");
             // Collation: asc and desc is ascending and descending
@@ -1206,7 +1201,7 @@
             }
         }
 
-        public static void UpdateAllCosmosTestResultExpirePeriod()
+        private static void UpdateAllCosmosTestResultExpirePeriod()
         {
             string oldResultExpirePeriod = "48.00:00:00";
             string newResultExpirePeriod = "2.00:00:00";
@@ -1233,7 +1228,7 @@
             Console.WriteLine($"count: {count}");
         }
 
-        public static void UpdateAllCosmosTestCreateTime()
+        private static void UpdateAllCosmosTestCreateTime()
         {
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "PartitionedTestRun");
             for (int min = 0; min < 16; min++)
@@ -1267,14 +1262,14 @@
             }
         }
 
-        public static void UpsertServiceMonitorDemo()
+        private static void UpsertServiceMonitorDemo()
         {
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "ServiceMonitor");
             var jObject = JObject.Parse(@"{'datasetId': 'a4353e4b-1611-4965-8334-4c81fd824dad', 'expectedTestRunStatus': 'Success','isEnabled': true}");
             azureCosmosDBClient.UpsertDocumentAsync(jObject).Wait();
         }
 
-        public static void UpdateVcToBuild()
+        private static void UpdateVcToBuild()
         {
             HashSet<string> set = new HashSet<string>();
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "Dataset");
@@ -1310,7 +1305,7 @@
             Console.WriteLine(count);
         }
 
-        public static void DisableDatasets()
+        private static void DisableDatasets()
         {
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "Dataset");
             // Collation: asc and desc is ascending and descending
@@ -1324,7 +1319,7 @@
             }
         }
 
-        public static void DisableAllBuildDeploymentDataset()
+        private static void DisableAllBuildDeploymentDataset()
         {
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "Dataset");
             // Collation: asc and desc is ascending and descending
@@ -1345,7 +1340,7 @@
             Console.WriteLine(datasets.Count);
         }
 
-        public static void UpdateSqlDatasetKeyVaultName()
+        private static void UpdateSqlDatasetKeyVaultName()
         {
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "Dataset");
             // Collation: asc and desc is ascending and descending
@@ -1361,7 +1356,7 @@
             Console.WriteLine(datasets.Count);
         }
 
-        public static void EnableDataset()
+        private static void EnableDataset()
         {
             var datasetIds = new string[]
             {
@@ -1386,7 +1381,7 @@
             }
         }
 
-        public static void DisableAllCosmosDatasetTest()
+        private static void DisableAllCosmosDatasetTest()
         {
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "DatasetTest");
             // Collation: asc and desc is ascending and descending
@@ -1404,7 +1399,7 @@
             }
         }
 
-        public static void EnableAllCosmosDatasetTestSuccessively()
+        private static void EnableAllCosmosDatasetTestSuccessively()
         {
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "DatasetTest");
             // Collation: asc and desc is ascending and descending
@@ -1431,7 +1426,7 @@
             }
         }
 
-        public static void EnableAllCosmosDatasetTestWhenNoActiveMessage()
+        private static void EnableAllCosmosDatasetTestWhenNoActiveMessage()
         {
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "DatasetTest");
             // Collation: asc and desc is ascending and descending
@@ -1472,7 +1467,7 @@
             return existCosmosMessage > 0;
         }
 
-        public static void QueryAlertSettingDemo()
+        private static void QueryAlertSettingDemo()
         {
             Console.WriteLine("QueryAlertSettingDemo:");
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "AlertSettings");
@@ -1502,7 +1497,7 @@
             Console.WriteLine(list.Count);
         }
 
-        public static void QueryScheduleMonitorReportDemo()
+        private static void QueryScheduleMonitorReportDemo()
         {
             Console.WriteLine("QueryScheduleMonitorReportDemo:");
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "ScheduleMonitorReport");
@@ -1518,7 +1513,7 @@
             Console.WriteLine(list.Count);
         }
 
-        public static void ResetIncidentIdForMonitorReportDemo()
+        private static void ResetIncidentIdForMonitorReportDemo()
         {
             Console.WriteLine("ResetIncidentIdForMonitorReportDemo:");
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "ScheduleMonitorReport");
@@ -1543,7 +1538,7 @@
             }
         }
 
-        public static void UpdateScheduleMonitorReportSampleDemo()
+        private static void UpdateScheduleMonitorReportSampleDemo()
         {
 
             DateTime now = DateTime.UtcNow.Date;
@@ -1607,7 +1602,7 @@
             }
         }
 
-        public static void QueryAlertSettingInDatasetTestsDemo()
+        private static void QueryAlertSettingInDatasetTestsDemo()
         {
             Console.WriteLine("QueryAlertSettingInDatasetTestsDemo:");
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "DatasetTest");
@@ -1643,7 +1638,7 @@
             Console.WriteLine(set.Count);
         }
 
-        public static void QueryDataSetDemo()
+        private static void QueryDataSetDemo()
         {
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "Dataset");
             // Collation: asc and desc is ascending and descending
@@ -1654,7 +1649,7 @@
             }
         }
 
-        public static void QueryTestRunTestContentDemo()
+        private static void QueryTestRunTestContentDemo()
         {
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "PartitionedTestRun");
             // Collation: asc and desc is ascending and descending
@@ -1667,7 +1662,7 @@
             }
         }
 
-        public static void QueryMonitroReportDemo()
+        private static void QueryMonitroReportDemo()
         {
             // TODO: I don't think it works as my expection. Will follow up this function. 
             // ToString("s") of DateTime doesn't contains 'Z' in the string end if the datetime is the hour(minute/second and millisecond are zero) 
@@ -1686,7 +1681,7 @@
             }
         }
 
-        public static void QueryServiceMonitorDemo()
+        private static void QueryServiceMonitorDemo()
         {
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "ServiceMonitor");
 
@@ -1698,7 +1693,7 @@
             }
         }
 
-        public static void QueryTestRunCount()
+        private static void QueryTestRunCount()
         {
             int minute = 5;
             var startTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc);
@@ -1719,7 +1714,7 @@
             }
         }
 
-        public static void QueryMonthlyTestRunCount()
+        private static void QueryMonthlyTestRunCount()
         {
             string databaseId = "DataCop";
             string collectionId = "PartitionedTestRun";
@@ -1738,17 +1733,17 @@
             Console.WriteLine($"Sum: {sum}");
         }
 
-        public static void QueryTestRuns()
+        private static void QueryTestRuns()
         {
             IList<string> filters = new List<string>
             {
                 //"c.id = '03630344-73a4-4079-a8a1-0c9764af49d9'",
-                "c.datasetId = '8c8ff3c5-c151-430c-aa62-8b3453b84297'",
+                "c.datasetId = '700663cc-cb12-4fb7-877b-262ab0160690'",
                 //"c.datasetTestId = 'd2c2991c-4d9b-43df-ac98-acd10a4caf0d'",
                 //"c.partitionKey = ''",
-                //"c.dataFabric = 'CosmosView'",
-                "c.status != 'Waiting'",
-                "c.createTime > '2020-11-20'",
+                //"c.dataFabric = 'Spark'",
+                "c.status = 'Success'",
+                "c.createTime > '2020-11-27'",
             };
 
             IList<JObject> list = GetQueryResult("DataCop", "PartitionedTestRun", null, filters);
@@ -1756,9 +1751,10 @@
             {
                 Console.WriteLine(jObject);
             }
+            Console.WriteLine(list.Count);
         }
 
-        public static void QueryForbiddenTestRuns()
+        private static void QueryForbiddenTestRuns()
         {
             IList<string> properties = new List<string>
             {
@@ -1782,7 +1778,7 @@
             WriteFile.FirstMethod(@"D:\data\company_work\M365\IDEAs\ForbiddenTestRuns.json", JsonConvert.SerializeObject(list));
         }
 
-        public static void QueryDataCopScores()
+        private static void QueryDataCopScores()
         {
             var azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "TestRunResultForScore");
             var counts = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT count(1) FROM c")).Result;
@@ -1798,7 +1794,7 @@
             }
         }
 
-        public static void QueryTestRunCountByDatasetId()
+        private static void QueryTestRunCountByDatasetId()
         {
             string filePath = @"D:\data\company_work\M365\IDEAs\BuildDeploymentDatasets.json";
             var content = File.ReadAllText(filePath, Encoding.UTF8);
@@ -1824,10 +1820,12 @@
 
         private static void QueryDatasets()
         {
+            Console.WriteLine("Query Datasets: ");
+
             var filters = new List<string>
             {
-                "(c.createdBy = 'BuildDeployment' or c.createdBy = 'BuildTestExecution')",
-                //"c. id = 'eb5af06c-43c3-45d6-9226-1fb5e8ecac56'"
+                "c. id = '700663cc-cb12-4fb7-877b-262ab0160690'",
+                //"(c.createdBy = 'BuildDeployment' or c.createdBy = 'BuildTestExecution')",
                 //@"(c.dataFabric = 'Adls' or c.dataFabric = 'ADLS')",
                 //@"c.isEnabled = true"
 
@@ -1841,7 +1839,28 @@
             //WriteFile.FirstMethod(@"D:\data\company_work\M365\IDEAs\BuildDeploymentDatasets.json", JsonConvert.SerializeObject(list));
         }
 
-        public static void QueryServiceMonitorReports()
+        private static void QueryDatasetTests()
+        {
+            Console.WriteLine("Query DatasetTests: ");
+
+            var filters = new List<string>
+            {
+                //"c.id = 'e32035f7-2fa3-4b54-9114-5605138a3c89'",
+                //"(c.createdBy = 'BuildDeployment' or c.createdBy = 'BuildTestExecution')",
+                "c.datasetId = '700663cc-cb12-4fb7-877b-262ab0160690'",
+                //@"(c.dataFabric = 'Adls' or c.dataFabric = 'ADLS')",
+                //@"c.status = 'Enabled'"
+            };
+            IList<JObject> list = GetQueryResult("DataCop", "DatasetTest", null, filters);
+            foreach (JObject jObject in list)
+            {
+                Console.WriteLine(jObject);
+            }
+            Console.WriteLine(list.Count);
+            //WriteFile.FirstMethod(@"D:\data\company_work\M365\IDEAs\BuildDeploymentDatasets.json", JsonConvert.SerializeObject(list));
+        }
+
+        private static void QueryServiceMonitorReports()
         {
             var filters = new List<string>
             {
@@ -1859,7 +1878,7 @@
             //WriteFile.FirstMethod(@"D:\data\company_work\M365\IDEAs\BuildDeploymentDatasets.json", JsonConvert.SerializeObject(list));
         }
 
-        public static void QueryDatasetCount()
+        private static void QueryDatasetCount()
         {
             var filters = new List<string>
             {
@@ -2093,7 +2112,7 @@
         /// select-value-count(0) is much better.
         /// </summary>
         /// <returns></returns>
-        public static void GetTimeCostDemo()
+        private static void GetTimeCostDemo()
         {
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "Dataset");
 
@@ -2135,7 +2154,7 @@
             Console.WriteLine($"select count time cost: {watch.ElapsedMilliseconds} ms");
         }
 
-        public static void QueryKenshoDataset()
+        private static void QueryKenshoDataset()
         {
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "Dataset");
             // Collation: asc and desc is ascending and descending
@@ -2202,7 +2221,7 @@
             public double FileRowCountMaxLimit { get; set; }
         }
 
-        public static void DeleteTestRunDemo()
+        private static void DeleteTestRunDemo()
         {
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "PartitionedTestRun");
             string id = "900c3f79-79e1-45e1-82ff-17f308a62179";
@@ -2213,7 +2232,7 @@
             Console.WriteLine(resource);
         }
 
-        public static void DeleteTestRuns()
+        private static void DeleteTestRuns()
         {
             string datasetId = @"";
             string partitionKey = @"";
@@ -2307,7 +2326,7 @@
             }
         }
 
-        public static void DeleteWaitingOrchestrateTestRuns()
+        private static void DeleteWaitingOrchestrateTestRuns()
         {
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "PartitionedTestRun");
             // Collation: asc and desc is ascending and descending
@@ -2348,7 +2367,7 @@
         }
 
         // Delete CosmosDB instance without partitionKey
-        public static void DeleteAlertsWithoutIncidentId()
+        private static void DeleteAlertsWithoutIncidentId()
         {
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "Alert");
             // Collation: asc and desc is ascending and descending
@@ -2367,7 +2386,7 @@
             }
         }
 
-        public static void DeleteWrongAlertsFromDataCopTest()
+        private static void DeleteWrongAlertsFromDataCopTest()
         {
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "Alert");
             // Collation: asc and desc is ascending and descending
@@ -2382,7 +2401,7 @@
             }
         }
 
-        public static void UpdateAlertSettingToGitFolder()
+        private static void UpdateAlertSettingToGitFolder()
         {
             AzureCosmosDBClient alertSettingsCosmosDBClient = new AzureCosmosDBClient("DataCop", "AlertSettings");
 
@@ -2554,7 +2573,7 @@
             string databaseName,
             string collectionName) => $"/dbs/{databaseName}/colls/{collectionName}/";
 
-        public static void DeleteCosmosTestRunByResultExpirePeriod()
+        private static void DeleteCosmosTestRunByResultExpirePeriod()
         {
             string resultExpirePeriod = "2.00:00:00";
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "PartitionedTestRun");
@@ -2579,7 +2598,7 @@
             }
         }
 
-        public static void DisableAbortedTest()
+        private static void DisableAbortedTest()
         {
             // Based on the testRuns in the past half a month
             DateTime startDate = DateTime.UtcNow.AddDays(-15);
@@ -2624,6 +2643,15 @@
             }
 
             return allFiles;
+        }
+
+        private static void Initialize(string keyVaultName)
+        {
+            var secretProvider = KeyVaultSecretProvider.Instance;
+            string endpoint = secretProvider.GetSecretAsync(keyVaultName, "CosmosDBEndPoint").Result;
+            string key = secretProvider.GetSecretAsync(keyVaultName, "CosmosDBAuthKey").Result;
+            AzureCosmosDBClient.Endpoint = endpoint;
+            AzureCosmosDBClient.Key = key;
         }
     }
 }

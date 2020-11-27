@@ -28,16 +28,74 @@
             //UpdateCosmosViewScripts();
             //UpdateCosmosVCToBuild();
             //UpdateStoreForSpark();
+            //UpsertDatasetsIntoDB();
+            //UpsertDatasetTestsIntoDB();
         }
-        public static void DisableAllDatasetTests()
-        {
-            string keyVaultName = "datacop-prod";
-            var secretProvider = KeyVaultSecretProvider.Instance;
-            string endpoint = secretProvider.GetSecretAsync(keyVaultName, "CosmosDBEndPoint").Result;
-            string key = secretProvider.GetSecretAsync(keyVaultName, "CosmosDBAuthKey").Result;
-            AzureCosmosDBClient.Endpoint = endpoint;
-            AzureCosmosDBClient.Key = key;
 
+        private static void UpsertDatasetsIntoDB()
+        {
+            Initialize("datacop-ppe");
+            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "Dataset");
+            var datasetIds = new HashSet<string>()
+            {
+                @"700663cc-cb12-4fb7-877b-262ab0160690",
+            };
+            var datasetJsonFilePaths = ReadFile.GetAllFilePath(FolderPath);
+
+            foreach (var datasetJsonFilePath in datasetJsonFilePaths)
+            {
+                if (datasetJsonFilePath.ToLower().Contains(@"\dataset"))
+                {
+                    string fileContent = ReadFile.ThirdMethod(datasetJsonFilePath);
+                    JsonSerializerSettings serializer = new JsonSerializerSettings
+                    {
+                        DateParseHandling = DateParseHandling.None
+                    };
+                    JObject gitDatasetJObject = JsonConvert.DeserializeObject<JObject>(fileContent, serializer);
+                    string id = gitDatasetJObject["id"].ToString();
+                    if (datasetIds.Contains(id))
+                    {
+                        Console.WriteLine(id);
+                        azureCosmosDBClient.UpsertDocumentAsync(gitDatasetJObject).Wait();
+                    }
+                }
+            }
+
+        }
+
+        private static void UpsertDatasetTestsIntoDB()
+        {
+            Initialize("datacop-ppe");
+            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "DatasetTest");
+            var datasetTestIds = new HashSet<string>()
+            {
+                @"2301b186-cf42-42c3-9abd-67adb516499d",
+            };
+            var datasetTestJsonFilePaths = ReadFile.GetAllFilePath(FolderPath);
+
+            foreach (var datasetTestJsonFilePath in datasetTestJsonFilePaths)
+            {
+                if (datasetTestJsonFilePath.ToLower().Contains(@"\monitor"))
+                {
+                    string fileContent = ReadFile.ThirdMethod(datasetTestJsonFilePath);
+                    JsonSerializerSettings serializer = new JsonSerializerSettings
+                    {
+                        DateParseHandling = DateParseHandling.None
+                    };
+                    JObject gitDatasetTestJObject = JsonConvert.DeserializeObject<JObject>(fileContent, serializer);
+                    string id = gitDatasetTestJObject["id"].ToString();
+                    if (datasetTestIds.Contains(id))
+                    {
+                        Console.WriteLine(id);
+                        azureCosmosDBClient.UpsertDocumentAsync(gitDatasetTestJObject).Wait();
+                    }
+                }
+            }
+        }
+
+        private static void DisableAllDatasetTests()
+        {
+            Initialize("datacop-prod");
             string fileFolder = FolderPath + @"\PROD\DataVC\Monitor";
             var filePaths = ReadFile.GetFolderSubPaths(fileFolder, ReadType.File, PathType.Absolute);
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "DatasetTest");
@@ -62,7 +120,7 @@
             }
         }
 
-        public static void DisableSomeDatasets()
+        private static void DisableSomeDatasets()
         {
             var gerber = new HashSet<string>()
             {
@@ -166,7 +224,7 @@
             }
         }
 
-        public static void UpdateAllSqlKeyVaultName()
+        private static void UpdateAllSqlKeyVaultName()
         {
             var datasetJsonFilePaths = ReadFile.GetAllFilePath(FolderPath);
 
@@ -201,7 +259,7 @@
             }
         }
 
-        public static void UpdateSomeCFRToAdls()
+        private static void UpdateSomeCFRToAdls()
         {
             var datasetIds = new HashSet<string>()
             {
@@ -289,7 +347,7 @@
             }
         }
 
-        public static void UpdateStoreForSpark()
+        private static void UpdateStoreForSpark()
         {
             var datasetTestJsonFilePaths = ReadFile.GetAllFilePath(FolderPath);
             HashSet<string> datasetIds = new HashSet<string>();
@@ -327,7 +385,7 @@
             Console.WriteLine($"count: {datasetIds.Count}");
         }
 
-        public static void UpdateCosmosViewScripts()
+        private static void UpdateCosmosViewScripts()
         {
             var datasetTestJsonFilePaths = ReadFile.GetAllFilePath(FolderPath);
             int count = 0;
@@ -358,7 +416,7 @@
             Console.WriteLine($"count: {count}");
         }
 
-        public static void UpdateCosmosVCToBuild()
+        private static void UpdateCosmosVCToBuild()
         {
             var kenshoDatasetIds = GetKenshoDatasetIds();
             var jsonFilePaths = ReadFile.GetAllFilePath(FolderPath);
@@ -441,7 +499,7 @@
             return kenshoDatasetIds;
         }
 
-        public static void UpdateAllDatasetJsonForMergingADLSCosmos()
+        private static void UpdateAllDatasetJsonForMergingADLSCosmos()
         {
             var datasetJsonFilePaths = ReadFile.GetAllFilePath(FolderPath);
 
@@ -452,7 +510,7 @@
             }
         }
 
-        public static void UpdateOldPathSchemaDatasetJsonForMergingADLSCosmos()
+        private static void UpdateOldPathSchemaDatasetJsonForMergingADLSCosmos()
         {
             var folders = ReadFile.GetFolderSubPaths(FolderPath, ReadType.Directory, PathType.Absolute);
             int count = 0;
@@ -477,7 +535,7 @@
             Console.WriteLine(count);
         }
 
-        public static void UpdateCFRDatasetJsonForMergingADLSCosmos()
+        private static void UpdateCFRDatasetJsonForMergingADLSCosmos()
         {
             string cfrFolder = Path.Combine(FolderPath, @"\CFR\Cooked\Datasets");
             try
@@ -536,7 +594,7 @@
             }
         }
 
-        public static void DisableAllDatasetTest()
+        private static void DisableAllDatasetTest()
         {
             string fileFolder = Path.Combine(FolderPath, @"PROD\ConsumerPaidSubscription\Monitors\");
             var filePaths = ReadFile.GetFolderSubPaths(fileFolder, ReadType.File, PathType.Absolute);
@@ -553,6 +611,15 @@
                 WriteFile.FirstMethod(filePath, json.ToString());
                 Console.WriteLine(id);
             }
+        }
+
+        private static void Initialize(string keyVaultName)
+        {
+            var secretProvider = KeyVaultSecretProvider.Instance;
+            string endpoint = secretProvider.GetSecretAsync(keyVaultName, "CosmosDBEndPoint").Result;
+            string key = secretProvider.GetSecretAsync(keyVaultName, "CosmosDBAuthKey").Result;
+            AzureCosmosDBClient.Endpoint = endpoint;
+            AzureCosmosDBClient.Key = key;
         }
     }
 }
