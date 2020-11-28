@@ -21,7 +21,7 @@
         public static void MainMethod()
         {
             // for datacop: "datacop-ppe" and "datacop-prod"
-            Initialize("datacop-prod");
+            Initialize("datacop-ppe");
 
             //UpdateAllAlertSettingsDemo();
             //UpdateAllDatasetTestCreatedBy();
@@ -57,8 +57,8 @@
             QueryTestRuns();
             //QueryForbiddenTestRuns();
             //QueryDataCopScores();
-            QueryDatasets();
-            QueryDatasetTests();
+            //QueryDatasets();
+            //QueryDatasetTests();
             //QueryServiceMonitorReports();
             //QueryDatasetCount();
             //QueryTestRunCountByDatasetId();
@@ -1737,13 +1737,13 @@
         {
             IList<string> filters = new List<string>
             {
-                //"c.id = '03630344-73a4-4079-a8a1-0c9764af49d9'",
-                "c.datasetId = '700663cc-cb12-4fb7-877b-262ab0160690'",
+                //"c.id = 'd258fa41-2b14-4c69-acd5-a4443f110ac6'",
+                "c.datasetId = 'ef4ce0c7-d945-414c-b289-9935d8c74dbb'",
                 //"c.datasetTestId = 'd2c2991c-4d9b-43df-ac98-acd10a4caf0d'",
                 //"c.partitionKey = ''",
                 //"c.dataFabric = 'Spark'",
-                "c.status = 'Success'",
-                "c.createTime > '2020-11-27'",
+                //"c.status = 'Success'",
+                "c.createTime > '2020-11-28'",
             };
 
             IList<JObject> list = GetQueryResult("DataCop", "PartitionedTestRun", null, filters);
