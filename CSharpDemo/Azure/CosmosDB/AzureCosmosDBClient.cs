@@ -326,10 +326,11 @@
             while (query.HasMoreResults)
             {
                 allDocuments.AddRange(await query.ExecuteNextAsync<T>());
-                if (allDocuments.Count > 1000)
-                {
-                    throw new InvalidOperationException("Too many documents found in the query specified. Please break your query into smaller chunks.");
-                }
+                // This limitation  bring me some isseue, just remove this logic.
+                //if (allDocuments.Count > 1000)
+                //{
+                //    throw new InvalidOperationException("Too many documents found in the query specified. Please break your query into smaller chunks.");
+                //}
             }
 
             return allDocuments;

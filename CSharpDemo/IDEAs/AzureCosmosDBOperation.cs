@@ -260,7 +260,7 @@
                 @"(c.dataFabric = 'ADLS' or contains(c.dataFabric, 'Cosmos'))",
                 @"c.isEnabled = true",
             };
-            List<JObject> datasets = GetQueryResult("DataCop", "Dataset", properties, filters);
+            IList<JObject> datasets = GetQueryResult("DataCop", "Dataset", properties, filters);
             StringBuilder sb = new StringBuilder();
             foreach (var dataset in datasets)
             {
@@ -288,7 +288,7 @@
                 @"(c.dataFabric = 'ADLS' or contains(c.dataFabric, 'Cosmos'))",
                 @"c.isEnabled = true"
             };
-            List<JObject> datasets = GetQueryResult("DataCop", "Dataset", null, filters);
+            IList<JObject> datasets = GetQueryResult("DataCop", "Dataset", null, filters);
             Dictionary<string, HashSet<string>> dict = new Dictionary<string, HashSet<string>>();
 
             foreach (JObject dataset in datasets)
@@ -1803,10 +1803,9 @@
             foreach (var dataset in datasets)
             {
                 string datasetId = dataset["id"].ToString();
-                var azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "PartitionedTestRun");
-                var count = GetQueryCount(azureCosmosDBClient, new List<string> { $"c.datasetId = '{datasetId}'" });
-                var abortedCount = GetQueryCount(azureCosmosDBClient, new List<string> { "c.status = 'Aborted'", $"c.datasetId = '{datasetId}'" });
-                var successCount = GetQueryCount(azureCosmosDBClient, new List<string> { "c.status = 'Success'", $"c.datasetId = '{datasetId}'" });
+                var count = GetQueryCount("DataCop", "PartitionedTestRun", new List<string> { $"c.datasetId = '{datasetId}'" });
+                var abortedCount = GetQueryCount("DataCop", "PartitionedTestRun", new List<string> { "c.status = 'Aborted'", $"c.datasetId = '{datasetId}'" });
+                var successCount = GetQueryCount("DataCop", "PartitionedTestRun", new List<string> { "c.status = 'Success'", $"c.datasetId = '{datasetId}'" });
                 Console.WriteLine($"DatasetId: {datasetId}\t Count: {count}\t AbortedCount: {abortedCount}\t SuccessCount: {successCount}");
                 var json = new JObject();
                 json["datasetId"] = datasetId;
@@ -1909,148 +1908,9 @@
 
         }
 
-        ///  <summary>
-        /// This function cannot work as our expection.
-        /// The step of this query is: 
-        /// 1. select top ***
-        /// 2. order by c.XXX
-        /// </summary>
-        private static List<JObject> GetQueryResultAborted(string databaseId, string collectionId, IList<string> filters = null)
-        {
-            int maxLimit = 1000;
-            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient(databaseId, collectionId);
-            StringBuilder querySb = new StringBuilder($"SELECT top {maxLimit} * FROM c where ");
-            if (filters != null && filters.Count > 0)
-            {
-                querySb.Append(string.Join(" and ", filters));
-                querySb.Append(" and ");
-            }
-
-            querySb.Append(@"c._ts > {0} order by c._ts");
-
-            // We need set the _ts in cosmos DB as long type.
-            long ts = 0;
-            List<JObject> result = new List<JObject>();
-            while (true)
-            {
-                var queryStr = string.Format(querySb.ToString(), ts);
-                IList<JObject> resultSub = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(queryStr)).Result;
-                if (resultSub == null || resultSub.Count() < 1)
-                {
-                    break;
-                }
-                result.AddRange(resultSub);
-                ts = long.Parse(resultSub[resultSub.Count - 1]["_ts"].ToString());
-
-            }
-
-            return result;
-        }
-
-        /// <summary>
-        /// Realize the function to break the query into smaller chunks.
-        /// </summary>
-        /// <param name="databaseId"></param>
-        /// <param name="collectionId"></param>
-        /// <param name="filters"></param>
-        /// <param name="startTs"></param>
-        /// <param name="endTs"></param>
-        /// <returns></returns>
-        private static List<JObject> GetQueryResult(string databaseId,
-                                                    string collectionId,
-                                                    IList<string> properties = null,
-                                                    IList<string> filters = null,
-                                                    string suffix = null,
-                                                    long? startTs = null,
-                                                    long? endTs = null,
-                                                    AzureCosmosDBClient azureCosmosDBClient = null)
-        {
-            int maxLimit = 1000;
-
-            if (azureCosmosDBClient == null)
-            {
-                azureCosmosDBClient = new AzureCosmosDBClient(databaseId, collectionId);
-            }
-
-            long count = GetQueryCount(azureCosmosDBClient, filters);
-            if (count == 0)
-            {
-                return new List<JObject>();
-            }
-
-            if (!startTs.HasValue)
-            {
-                startTs = GetQueryKeyWord(azureCosmosDBClient, "min", "_ts", filters);
-            }
-
-            if (!endTs.HasValue)
-            {
-                endTs = GetQueryKeyWord(azureCosmosDBClient, "max", "_ts", filters) + 1;
-            }
-
-            IList<string> newFilters = null, newProperties = null;
-            if (filters != null && filters.Count > 0)
-            {
-                newFilters = new List<string>(filters)
-                {
-                    $"c._ts >= {startTs}",
-                    $"c._ts < {endTs}"
-                };
-            }
-
-            if (properties != null && properties.Count > 0)
-            {
-                newProperties = new List<string>(properties)
-                {
-                    "_ts"
-                };
-            }
-
-
-            count = GetQueryCount(azureCosmosDBClient, newFilters);
-
-            List<JObject> result;
-            if (count > maxLimit)
-            {
-                var midTs = (startTs + endTs) / 2;
-                result = GetQueryResult(databaseId, collectionId, properties, filters, suffix, startTs, midTs, azureCosmosDBClient);
-                List<JObject> right = GetQueryResult(databaseId, collectionId, properties, filters, suffix, midTs, endTs, azureCosmosDBClient);
-                result.AddRange(right);
-            }
-            else
-            {
-                result = GetQueryResultAux(azureCosmosDBClient, newProperties, newFilters, suffix).ToList();
-            }
-
-            if (result.Count != count)
-            {
-                throw new Exception($"wrong result with count: {result.Count}, the count should be: {count}.");
-            }
-
-            return result;
-        }
-
         private static long GetQueryCount(string databaseId, string collectionId, IList<string> filters = null)
         {
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient(databaseId, collectionId);
-            return GetQueryCount(azureCosmosDBClient, filters);
-        }
-
-        private static IList<JObject> GetQueryResultAux(string databaseId, string collectionId, IList<string> properties = null, IList<string> filters = null, string suffix = null)
-        {
-            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient(databaseId, collectionId);
-            return GetQueryResultAux(azureCosmosDBClient, properties, filters, suffix);
-        }
-
-        private static long GetQueryKeyWord(string databaseId, string collectionId, string keyWord, string propertyName, IList<string> filters = null)
-        {
-            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient(databaseId, collectionId);
-            return GetQueryKeyWord(azureCosmosDBClient, keyWord, propertyName, filters);
-        }
-
-
-        private static long GetQueryCount(AzureCosmosDBClient azureCosmosDBClient, IList<string> filters = null)
-        {
             // Cross partition query only supports 'VALUE <AggreateFunc>' for aggregates.
             StringBuilder queryStr = new StringBuilder(@"SELECT value count(1) FROM c");
             if (filters != null && filters.Count > 0)
@@ -2063,8 +1923,13 @@
             return long.Parse(list[0].ToString());
         }
 
-        private static IList<JObject> GetQueryResultAux(AzureCosmosDBClient azureCosmosDBClient, IList<string> properties = null, IList<string> filters = null, string suffix = null)
+        private static IList<JObject> GetQueryResult(string databaseId,
+                                                     string collectionId,
+                                                     IList<string> properties = null,
+                                                     IList<string> filters = null,
+                                                     string suffix = null)
         {
+            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient(databaseId, collectionId);
             // Cross partition query only supports 'VALUE <AggreateFunc>' for aggregates.
             StringBuilder queryStr;
             if (properties == null || properties.Count < 1)
@@ -2090,8 +1955,9 @@
         }
 
 
-        private static long GetQueryKeyWord(AzureCosmosDBClient azureCosmosDBClient, string keyWord, string propertyName, IList<string> filters = null)
+        private static long GetQueryKeyWord(string databaseId, string collectionId, string keyWord, string propertyName, IList<string> filters = null)
         {
+            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient(databaseId, collectionId);
             // Cross partition query only supports 'VALUE <AggreateFunc>' for aggregates.
             StringBuilder queryStr = new StringBuilder($"SELECT value {keyWord}(c.{propertyName}) FROM c");
             if (filters != null && filters.Count > 0)
