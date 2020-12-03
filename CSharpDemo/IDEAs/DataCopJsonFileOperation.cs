@@ -28,17 +28,18 @@
             //UpdateCosmosViewScripts();
             //UpdateCosmosVCToBuild();
             //UpdateStoreForSpark();
-            //UpsertDatasetsIntoDB();
-            //UpsertDatasetTestsIntoDB();
+            UpsertDatasetsIntoDB();
+            UpsertDatasetTestsIntoDB();
         }
 
         private static void UpsertDatasetsIntoDB()
         {
             Initialize("datacop-ppe");
+            Console.WriteLine("Upsert Datasets Into DB:");
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "Dataset");
             var datasetIds = new HashSet<string>()
             {
-                @"700663cc-cb12-4fb7-877b-262ab0160690",
+                @"618319c3-e263-4f02-bb24-041476954dc9",
             };
             var datasetJsonFilePaths = ReadFile.GetAllFilePath(FolderPath);
 
@@ -65,11 +66,12 @@
 
         private static void UpsertDatasetTestsIntoDB()
         {
+            Console.WriteLine("Upsert DatasetTests Into DB:");
             Initialize("datacop-ppe");
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "DatasetTest");
             var datasetTestIds = new HashSet<string>()
             {
-                @"2301b186-cf42-42c3-9abd-67adb516499d",
+                @"d2e33866-5d1c-4670-90c2-dd8d0c29fcdc",
             };
             var datasetTestJsonFilePaths = ReadFile.GetAllFilePath(FolderPath);
 

@@ -369,21 +369,29 @@
 
         private static string GetPathPrefix(string streamPath)
         {
+            streamPath = streamPath.Trim('/');
             if (string.IsNullOrEmpty(streamPath))
             {
                 return string.Empty;
             }
 
-            string pathPrefix;
+            string pathPrefix = string.Empty;
             var splits = streamPath.Split(new char[] { '/' });
 
             if (streamPath.StartsWith("share"))
             {
-                pathPrefix = splits[0] + "/" + splits[1] + "/" + splits[2];
+                for (int i = 0; i < 3 && i < splits.Length; i++)
+                {
+                    pathPrefix += "/" + splits[i];
+
+                }
             }
             else
             {
-                pathPrefix = splits[0] + "/" + splits[1];
+                for (int i = 0; i < 2 && i < splits.Length; i++)
+                {
+                    pathPrefix += "/" + splits[i];
+                }
             }
 
             return pathPrefix;
@@ -1501,11 +1509,12 @@
         {
             Console.WriteLine("QueryScheduleMonitorReportDemo:");
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "ScheduleMonitorReport");
+            string queryStr = @"SELECT c.reportStartDate,c.reportEndDate,c.datasetName,c.datasetTestName,c.allTestRunCount," +
+                "c.successTestRunCount,c.abortedTestRunCount,c.testRunErrorMessage,c.incidentId FROM c where c.datasetTestName = 'DimCampaign Default CosmosAvailability Test'";
+            queryStr = @"SELECT * FROM c where c.datasetTestName = 'DimCampaign Default CosmosAvailability Test'";
 
             // Collation: asc and desc is ascending and descending
-            IList<JObject> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(
-                @"SELECT c.reportStartDate,c.reportEndDate,c.datasetName,c.datasetTestName,c.allTestRunCount," +
-                "c.successTestRunCount,c.abortedTestRunCount,c.testRunErrorMessage,c.incidentId FROM c where c.datasetTestName = 'DimCampaign Default CosmosAvailability Test'")).Result;
+            IList<JObject> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(queryStr)).Result;
             foreach (JObject jObject in list)
             {
                 Console.WriteLine(jObject);
@@ -1737,8 +1746,8 @@
         {
             IList<string> filters = new List<string>
             {
-                //"c.id = 'd258fa41-2b14-4c69-acd5-a4443f110ac6'",
-                "c.datasetId = 'ef4ce0c7-d945-414c-b289-9935d8c74dbb'",
+                "c.id = '8286d39e-7efb-44e4-a6d9-d3568ea6200b'",
+                //"c.datasetId = '618319c3-e263-4f02-bb24-041476954dc9'",
                 //"c.datasetTestId = 'd2c2991c-4d9b-43df-ac98-acd10a4caf0d'",
                 //"c.partitionKey = ''",
                 //"c.dataFabric = 'Spark'",
@@ -1823,8 +1832,9 @@
 
             var filters = new List<string>
             {
-                "c. id = '700663cc-cb12-4fb7-877b-262ab0160690'",
-                //"(c.createdBy = 'BuildDeployment' or c.createdBy = 'BuildTestExecution')",
+                //"c. id = '700663cc-cb12-4fb7-877b-262ab0160690'",
+                "(c.createdBy = 'BuildDeployment' or c.createdBy = 'BuildTestExecution')",
+                @"(c.dataFabric = 'Cosmos' or c.dataFabric = 'CosmosView')",
                 //@"(c.dataFabric = 'Adls' or c.dataFabric = 'ADLS')",
                 //@"c.isEnabled = true"
 
@@ -1845,9 +1855,10 @@
             var filters = new List<string>
             {
                 //"c.id = 'e32035f7-2fa3-4b54-9114-5605138a3c89'",
-                //"(c.createdBy = 'BuildDeployment' or c.createdBy = 'BuildTestExecution')",
-                "c.datasetId = '700663cc-cb12-4fb7-877b-262ab0160690'",
+                "(c.createdBy = 'BuildDeployment' or c.createdBy = 'BuildTestExecution')",
+                //"c.datasetId = '700663cc-cb12-4fb7-877b-262ab0160690'",
                 //@"(c.dataFabric = 'Adls' or c.dataFabric = 'ADLS')",
+                @"(c.dataFabric = 'Cosmos' or c.dataFabric = 'CosmosView')",
                 //@"c.status = 'Enabled'"
             };
             IList<JObject> list = GetQueryResult("DataCop", "DatasetTest", null, filters);

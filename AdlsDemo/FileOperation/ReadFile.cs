@@ -1,4 +1,4 @@
-﻿namespace CSharpDemo.FileOperation
+﻿namespace AdlsDemo.FileOperation
 {
     using System;
     using System.Collections.Generic;
@@ -30,13 +30,12 @@
                 Console.WriteLine(e.ToString());
             }
         }
-
         public static void SecondMethod(string filePath)
         {
             List<string> l = new List<string>();
             //StreamReader sr = new StreamReader(filePath, Encoding.Default);
             StreamReader sr = new StreamReader(filePath, Encoding.UTF8);
-            string line;
+            String line;
             while ((line = sr.ReadLine()) != null)
             {
 
@@ -45,17 +44,17 @@
             }
             sr.Close();
         }
-
         public static string ThirdMethod(string filePath)
         {
             //return File.ReadAllText(filePath, Encoding.ASCII);
             return File.ReadAllText(filePath, Encoding.UTF8);
         }
 
-        public static IEnumerable<IEnumerable<string>> ForthMethod(string filePath)
+        public static List<List<string>> ForthMethod(string filePath)
         {
+            List<List<string>> data = new List<List<string>>();
             StreamReader sr = new StreamReader(filePath, Encoding.UTF8);
-            string line;
+            String line;
             while ((line = sr.ReadLine()) != null)
             {
                 string[] sps = line.Split(new char[] { '\t' });
@@ -64,16 +63,17 @@
                 {
                     list.Add(str);
                 }
-                yield return list;
+                data.Add(list);
             }
-
             sr.Close();
+            return data;
         }
 
         public static IEnumerable<string> FifthMethod(string filePath)
         {
+            List<List<string>> data = new List<List<string>>();
             StreamReader sr = new StreamReader(filePath, Encoding.UTF8);
-            string line;
+            String line;
             while ((line = sr.ReadLine()) != null)
             {
                 yield return line;

@@ -1,5 +1,6 @@
 ﻿namespace AdlsDemo
 {
+    using AdlsDemo.FileOperation;
     using AzureLib.KeyVault;
     using Microsoft.Azure.DataLake.Store;
     using Newtonsoft.Json.Linq;
@@ -40,7 +41,7 @@
 
             dataLakeClient = new DataLakeClient(tenantId, clientId, clientKey);
 
-            //CheckAdlsFileExistsDemo();
+            CheckAdlsFileExistsDemo();
             //GetIDEAsProdAdlsFileSizeDemo();
             //GetObdTestFileSizeDemo();
             //InsertAdlsFileDemo();
@@ -62,7 +63,9 @@
         private static void CheckBuildStreamsAvailability()
         {
             Console.WriteLine("Check Build streams availability By tsv: ");
-            string tsvFilePath = @"D:\data\company_work\M365\IDEAs\buildpath.tsv";
+            string tsvFilePath = @"D:\data\company_work\M365\IDEAs\build\sharepaths.tsv";
+            string noShareSettingTsvFilePath = @"D:\data\company_work\M365\IDEAs\build\nosharesettingpaths.tsv";
+            string noPermissionTsvFilePath = @"D:\data\company_work\M365\IDEAs\build\nopermissionpaths.tsv";
             var dataLakeStore = @"ideas-prod-build-c14.azuredatalakestore.net";
             HashSet<string> noShareSetting = new HashSet<string>();
             HashSet<string> noPermission = new HashSet<string>();
@@ -105,16 +108,19 @@
             {
                 Console.WriteLine(streamPath);
             }
+            WriteFile.Save(noShareSettingTsvFilePath, noShareSettingList);
 
             Console.WriteLine("noPermission: ");
             foreach (var streamPath in noPermissionList)
             {
                 Console.WriteLine(streamPath);
             }
+            WriteFile.Save(noPermissionTsvFilePath, noPermissionList);
         }
 
         private static void CheckPermission()
         {
+            Console.WriteLine("CheckPermission:");
             var dataLakeStores = new List<string>
             {
                 @"ideas-ppe-c14.azuredatalakestore.net",
@@ -156,7 +162,10 @@
                 //"shares/IDEAs.Prod.Data/Private/Profiles/Subscription/Commercial/IDEAsPrivateSubscriptionProfile/Streams/v1"
                 //"shares/IDEAs.Prod.Data/Publish/Profiles/User/Commercial/Internal/IDEAsUserSKUProfile/Streams/v1/2020/11/UserSKUsStats_2020_11_08.ss"
                 "/shares/User360/UserProfile/resources/LCID_Locale.ss",
-                "shares/IDEAs.Prod.Data/Publish.Usage.User.Neutral.Reporting.Dashboards.AppDashboard.AverageDAU.Excel/"
+                "shares/IDEAs.Prod.Data/Publish.Usage.User.Neutral.Reporting.Dashboards.AppDashboard.AverageDAU.Excel/",
+                "/shares/User360/user360.local/projects/UserSegmentation/UserProfile/",
+                "/shares/User360_Shared/user360_shared.local/",
+                "/shares/User360_Shared/user360_shared.local/Upload/Skype/Production/",
             };
             foreach (var dataLakeStore in dataLakeStores)
             {
@@ -182,6 +191,7 @@
 
         private static void CheckShareSetting()
         {
+            Console.WriteLine("CheckShareSetting:");
             var dataLakeStores = new List<string>
             {
                 @"ideas-ppe-c14.azuredatalakestore.net",
@@ -192,7 +202,10 @@
             var streamPaths = new List<string>()
             {
                 "/shares/User360/UserProfile/resources/LCID_Locale.ss",
-                "shares/IDEAs.Prod.Data/Publish.Usage.User.Neutral.Reporting.Dashboards.AppDashboard.AverageDAU.Excel/"
+                "shares/IDEAs.Prod.Data/Publish.Usage.User.Neutral.Reporting.Dashboards.AppDashboard.AverageDAU.Excel/",
+                "/shares/CFR.ppe/Internal/YammerGroupTenantSegmentationMap/YammerGroupTenantSegmentationMap_2020_11_20.tsv",
+                "/shares/CFR.prod/Internal/YammerGroupTenantSegmentationMap/YammerGroupTenantSegmentationMap_2020_11_20.tsv",
+                "/shares/User360_Shared/user360_shared.local/Upload/Skype/Production/",
             };
             foreach (var dataLakeStore in dataLakeStores)
             {
@@ -204,14 +217,14 @@
                     {
                         if (!dataLakeClient.CheckDirectoryExists(dataLakeStore, rootPath))
                         {
-                            Console.WriteLine($"Have no permission for rootPath: '{rootPath}'");
+                            Console.WriteLine($"No share setting for rootPath: '{rootPath}'");
                         }
                     }
                     catch (AdlsException e)
                     {
                         if (e.HttpStatus == HttpStatusCode.Forbidden)
                         {
-                            Console.WriteLine($"No permission for dataLakeStore '{dataLakeStore}' and path '{rootPath}'");
+                            Console.WriteLine($"No permission for dataLakeStore '{dataLakeStore}' and root path '{rootPath}'");
                         }
                         else
                         {
@@ -358,12 +371,15 @@
         {
             //Console.WriteLine(dataLakeClient.CheckExists("ideas-prod-c14.azuredatalakestore.net",
             //    "/shares/IDEAs.Prod.Data/Publish/Profiles/Tenant/Commercial/Internal/IDEAsTenantProfile/PostValidation/Streams/v3/2020/09/TenantProfileStats_2020_09_16.ss"));
-            Console.WriteLine(dataLakeClient.CheckExists("ideas-prod-build-c14.azuredatalakestore.net",
-                "shares/IDEAs.Prod.Data/Publish/Profiles/User/Commercial/Internal/IDEAsUserSKUProfile/Streams/v1/2020/11/UserSKUsStats_2020_11_08.ss"));
+            //Console.WriteLine(dataLakeClient.CheckExists("ideas-prod-build-c14.azuredatalakestore.net",
+            //    "shares/IDEAs.Prod.Data/Publish/Profiles/User/Commercial/Internal/IDEAsUserSKUProfile/Streams/v1/2020/11/UserSKUsStats_2020_11_08.ss"));
             //Console.WriteLine(dataLakeClient.CheckExists("ideas-prod-c14.azuredatalakestore.net",
             //    "shares/ffo.prod/local/Aggregated/Datasets/Private/MIGMetrics/MIGFeaturesMapping.ss"));
 
+            //Console.WriteLine(dataLakeClient.CheckExists("ideas-prod-build-c14.azuredatalakestore.net", "/shares/OCV/OfficeCustomerVoice-Prod/OcvItems.ss"));
+            //Console.WriteLine(dataLakeClient.CheckExists("ideas-prod-build-c14.azuredatalakestore.net", "/shares/ocv/OfficeCustomerVoice-Prod/OcvItems.ss"));
 
+            Console.WriteLine(dataLakeClient.CheckExists("ideas-prod-build-c14.azuredatalakestore.net", "/shares/ffo.antispam/partner/IDEAs/ATPUsage/ATPMapping.ss"));
             // We don't have access to store "ideas-ppe-c14.azuredatalakestore.net". It will throw exception: forbidden
             //Console.WriteLine(dataLakeClient.CheckExists("ideas-ppe-c14.azuredatalakestore.net", "/local/build/user/dekashet/TeamsMeetingProdAfterTimeZoneFixApril18th/directViewCodeWithAdjustEndDate.csv"));
         }
@@ -445,12 +461,55 @@
             //var directoryExists = dataLakeClient.CheckDirectoryExists("ideas-prod-data-c14.azuredatalakestore.net",
             //                "shares/IDEAs.Prod.Data");
             //Console.WriteLine(directoryExists);
-            var entities = dataLakeClient.EnumerateAdlsMetadataEntity("ideas-prod-data-c14.azuredatalakestore.net",
-                            "/shares/IDEAs.Prod.Data/Publish.Usage.User.Neutral.Reporting.Dashboards.AppDashboard.AverageDAU.Excel/");
+            //var entities = dataLakeClient.EnumerateAdlsMetadataEntity("ideas-prod-data-c14.azuredatalakestore.net",
+            //                "/shares/IDEAs.Prod.Data/Publish.Usage.User.Neutral.Reporting.Dashboards.AppDashboard.AverageDAU.Excel/");
+            var entities = dataLakeClient.EnumerateAdlsMetadataEntity("ideas-prod-build-c14.azuredatalakestore.net",
+                            "/shares/CFR.Gal/");
 
             foreach (var entity in entities)
             {
                 Console.WriteLine(entity);
+            }
+
+            entities = dataLakeClient.EnumerateAdlsMetadataEntity("ideas-prod-build-c14.azuredatalakestore.net",
+                            "/shares/CFR.Ppe/");
+
+            foreach (var entity in entities)
+            {
+                Console.WriteLine(entity);
+            }
+
+            entities = dataLakeClient.EnumerateAdlsMetadataEntity("ideas-prod-build-c14.azuredatalakestore.net",
+                            "/shares/CFR.Prod/");
+
+            foreach (var entity in entities)
+            {
+                Console.WriteLine(entity);
+            }
+
+            Console.WriteLine("`````````````");
+            var paths = dataLakeClient.EnumerateAdlsNexLevelPath("ideas-prod-build-c14.azuredatalakestore.net",
+                            "/shares/");
+
+            foreach (var path in paths)
+            {
+                Console.WriteLine(path);
+            }
+
+            paths = dataLakeClient.EnumerateAdlsNexLevelPath("ideas-prod-build-c14.azuredatalakestore.net",
+                           "/shares/User360_Shared/");
+
+            foreach (var path in paths)
+            {
+                Console.WriteLine(path);
+            }
+
+            paths = dataLakeClient.EnumerateAdlsNexLevelPath("ideas-prod-build-c14.azuredatalakestore.net",
+                           "/shares/User360_SharedTest/");
+
+            foreach (var path in paths)
+            {
+                Console.WriteLine(path);
             }
         }
 
@@ -469,7 +528,7 @@
             {
                 for (int i = 0; i < 3 && i < splits.Length; i++)
                 {
-                    pathPrefix += splits[i] + "/";
+                    pathPrefix += "/" + splits[i];
 
                 }
             }
@@ -477,11 +536,11 @@
             {
                 for (int i = 0; i < 2 && i < splits.Length; i++)
                 {
-                    pathPrefix += splits[i] + "/";
+                    pathPrefix += "/" + splits[i];
                 }
             }
 
-            return pathPrefix.Trim('/');
+            return pathPrefix;
         }
     }
 }

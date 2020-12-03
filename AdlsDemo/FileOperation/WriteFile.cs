@@ -1,4 +1,4 @@
-﻿namespace CSharpDemo.FileOperation
+﻿namespace AdlsDemo.FileOperation
 {
     using System.Collections.Generic;
     using System.IO;

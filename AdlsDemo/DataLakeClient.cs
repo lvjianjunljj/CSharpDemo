@@ -233,6 +233,44 @@
             }
         }
 
+        public IEnumerable<string> EnumerateAdlsNexLevelPath(string store, string path)
+        {
+            var client = CreateAdlsClient(store, tenantId, clientId, clientKey);
+            IEnumerator<DirectoryEntry> entities;
+            try
+            {
+                entities = client.EnumerateDirectory(path).GetEnumerator();
+            }
+            catch (ArgumentException ae)
+            {
+                Console.WriteLine(ae.Message);
+                yield break;
+            }
+
+            while (true)
+            {
+                DirectoryEntry entity;
+                try
+                {
+                    if (!entities.MoveNext())
+                    {
+                        break;
+                    }
+                    entity = entities.Current;
+                }
+                catch (AdlsException e)
+                {
+                    if (e.HttpStatus == HttpStatusCode.NotFound)
+                    {
+                        Console.WriteLine("Not Found Error!!!");
+                        break;
+                    }
+                    throw;
+                }
+                yield return entity.FullName;
+            }
+        }
+
         public IEnumerable<JObject> EnumerateAdlsMetadataEntityFor(string store, string path)
         {
             var client = CreateAdlsClient(store, tenantId, clientId, clientKey);
