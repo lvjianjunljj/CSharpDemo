@@ -41,15 +41,20 @@
                 SecretBundle secret = await keyVaultClient.GetSecretAsync(vaultUri, secretName);
                 return secret.Value;
             }
-            catch (AzureServiceTokenProviderException ae)
+            //catch (AzureServiceTokenProviderException ae)
+            //{
+            //    if (ae.Message.Contains("[No connection string specified]"))
+            //    {
+
+            //        return GetSecretByJson(keyVaultName, secretName);
+            //    }
+
+            //    throw;
+            //}
+            catch (Exception e)
             {
-                if (ae.Message.Contains("[No connection string specified]"))
-                {
-
-                    return GetSecretByJson(keyVaultName, secretName);
-                }
-
-                throw;
+                Console.WriteLine($"Get secret '{secretName}' from keyvault '{keyVaultName}' occured error: {e.Message}");
+                return GetSecretByJson(keyVaultName, secretName);
             }
         }
 

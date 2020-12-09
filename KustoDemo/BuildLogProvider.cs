@@ -323,5 +323,43 @@
 
             return buildFailureEntry;
         }
+
+        public IList<IDictionary<string, string>> GetADFActivityRun(DateTime startTime, DateTime endTime)
+        {
+            // Get the client to do the query.
+            var client = GetKustoClient();
+
+            // Execute the query to get all the non-build failed activities for this run.
+
+            // Execute the query to get the last failed activity for this run.
+            var kustoQuery = "ADFActivityRun ";
+            kustoQuery += $"| where TimeGenerated > datetime(\"{startTime.ToString("yyyy-MM-dd hh:mm:ss.ffff")}\") ";
+            kustoQuery += $"| where TimeGenerated <= datetime(\"{endTime.ToString("yyyy-MM-dd hh:mm:ss.ffff")}\") ";
+            kustoQuery += $"| order by TimeGenerated desc ";
+            var results = client.Query(query: kustoQuery);
+            var resultsList = results.Results.ToList();
+
+
+            return resultsList;
+        }
+
+        public IList<IDictionary<string, string>> GetADFPipelineRun(DateTime startTime, DateTime endTime)
+        {
+            // Get the client to do the query.
+            var client = GetKustoClient();
+
+            // Execute the query to get all the non-build failed activities for this run.
+
+            // Execute the query to get the last failed activity for this run.
+            var kustoQuery = "ADFPipelineRun ";
+            kustoQuery += $"| where TimeGenerated > datetime(\"{startTime.ToString("yyyy-MM-dd hh:mm:ss.ffff")}\") ";
+            kustoQuery += $"| where TimeGenerated <= datetime(\"{endTime.ToString("yyyy-MM-dd hh:mm:ss.ffff")}\") ";
+            kustoQuery += $"| order by TimeGenerated desc ";
+            var results = client.Query(query: kustoQuery);
+            var resultsList = results.Results.ToList();
+
+
+            return resultsList;
+        }
     }
 }

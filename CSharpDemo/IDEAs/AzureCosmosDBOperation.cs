@@ -21,7 +21,7 @@
         public static void MainMethod()
         {
             // for datacop: "datacop-ppe" and "datacop-prod"
-            Initialize("datacop-ppe");
+            Initialize("datacop-prod");
 
             //UpdateAllAlertSettingsDemo();
             //UpdateAllDatasetTestCreatedBy();
@@ -54,7 +54,8 @@
             //QueryTestRunCount();
             //QueryKenshoDataset();
             //QueryMonthlyTestRunCount();
-            QueryTestRuns();
+            //QueryTestRuns();
+            QueryTestRunsByDatasets();
             //QueryForbiddenTestRuns();
             //QueryDataCopScores();
             //QueryDatasets();
@@ -1746,8 +1747,8 @@
         {
             IList<string> filters = new List<string>
             {
-                "c.id = '8286d39e-7efb-44e4-a6d9-d3568ea6200b'",
-                //"c.datasetId = '618319c3-e263-4f02-bb24-041476954dc9'",
+                //"c.id = '8286d39e-7efb-44e4-a6d9-d3568ea6200b'",
+                "c.datasetId = '618319c3-e263-4f02-bb24-041476954dc9'",
                 //"c.datasetTestId = 'd2c2991c-4d9b-43df-ac98-acd10a4caf0d'",
                 //"c.partitionKey = ''",
                 //"c.dataFabric = 'Spark'",
@@ -1761,6 +1762,24 @@
                 Console.WriteLine(jObject);
             }
             Console.WriteLine(list.Count);
+        }
+
+        private static void QueryTestRunsByDatasets()
+        {
+            AzureCosmosDBClient datasetCosmosDBClient = new AzureCosmosDBClient("DataCop", "Dataset");
+            IList<JObject> azureDatasets = datasetCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(
+                @"SELECT c.id FROM c WHERE c.createdBy = 'BuildDeployment' and (c.dataFabric = 'CosmosView' or c.dataFabric = 'CosmosStream')")).Result;
+            Console.WriteLine($"BuildDeployment cosmos view dataset cout: {azureDatasets.Count}");
+
+            var datasetIdsStr = string.Join(",", azureDatasets.Select(d => $"'{d["id"]}'"));
+
+            AzureCosmosDBClient datasetTestCosmosDBClient = new AzureCosmosDBClient("DataCop", "PartitionedTestRun");
+            IList<JObject> testRuns = datasetTestCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec($@"SELECT * FROM c WHERE c.datasetId in ({datasetIdsStr})")).Result;
+            foreach (JObject testRun in testRuns)
+            {
+                Console.WriteLine(testRun);
+            }
+            Console.WriteLine($"BuildDeployment cosmos view testRun count: {testRuns.Count}");
         }
 
         private static void QueryForbiddenTestRuns()
@@ -1834,7 +1853,7 @@
             {
                 //"c. id = '700663cc-cb12-4fb7-877b-262ab0160690'",
                 "(c.createdBy = 'BuildDeployment' or c.createdBy = 'BuildTestExecution')",
-                @"(c.dataFabric = 'Cosmos' or c.dataFabric = 'CosmosView')",
+                @"(c.dataFabric = 'CosmosView')",
                 //@"(c.dataFabric = 'Adls' or c.dataFabric = 'ADLS')",
                 //@"c.isEnabled = true"
 

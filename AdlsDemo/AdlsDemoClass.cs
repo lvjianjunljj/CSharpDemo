@@ -39,6 +39,8 @@
             //clientId = secretProvider.GetSecretAsync("datacop-prod", "IDEAsBuildVNextAppId").Result;
             //clientKey = secretProvider.GetSecretAsync("datacop-prod", "IDEAsBuildVNextAppSecret").Result;
 
+            Console.WriteLine($"clientId: {clientId}");
+            Console.WriteLine($"clientKey: {clientKey}");
             dataLakeClient = new DataLakeClient(tenantId, clientId, clientKey);
 
             CheckAdlsFileExistsDemo();
@@ -123,9 +125,9 @@
             Console.WriteLine("CheckPermission:");
             var dataLakeStores = new List<string>
             {
-                @"ideas-ppe-c14.azuredatalakestore.net",
-                @"ideas-prod-c14.azuredatalakestore.net",
-                @"ideas-prod-data-c14.azuredatalakestore.net",
+                //@"ideas-ppe-c14.azuredatalakestore.net",
+                //@"ideas-prod-c14.azuredatalakestore.net",
+                //@"ideas-prod-data-c14.azuredatalakestore.net",
                 @"ideas-prod-build-c14.azuredatalakestore.net",
             };
             var pathPrefixs = new List<string>()
@@ -161,11 +163,23 @@
                 //"shares/bus.prod/local/office/Odin/Action/OfficeDataAction.view",
                 //"shares/IDEAs.Prod.Data/Private/Profiles/Subscription/Commercial/IDEAsPrivateSubscriptionProfile/Streams/v1"
                 //"shares/IDEAs.Prod.Data/Publish/Profiles/User/Commercial/Internal/IDEAsUserSKUProfile/Streams/v1/2020/11/UserSKUsStats_2020_11_08.ss"
-                "/shares/User360/UserProfile/resources/LCID_Locale.ss",
-                "shares/IDEAs.Prod.Data/Publish.Usage.User.Neutral.Reporting.Dashboards.AppDashboard.AverageDAU.Excel/",
-                "/shares/User360/user360.local/projects/UserSegmentation/UserProfile/",
-                "/shares/User360_Shared/user360_shared.local/",
-                "/shares/User360_Shared/user360_shared.local/Upload/Skype/Production/",
+                //"/shares/User360/UserProfile/resources/LCID_Locale.ss",
+                //"shares/IDEAs.Prod.Data/Publish.Usage.User.Neutral.Reporting.Dashboards.AppDashboard.AverageDAU.Excel/",
+                //"/shares/User360/user360.local/projects/UserSegmentation/UserProfile/",
+                //"/shares/User360_Shared/user360_shared.local/",
+                //"/shares/User360_Shared/user360_shared.local/Upload/Skype/Production/",
+
+                //"/shares/CFR.ppe/MWS/Features/UserAttachment_001D",
+                //"/shares/CFR.ppe/MWS/Features",
+                //"/shares/CFR.ppe/MWS",
+                //"/shares/CFR.ppe",
+                //"/shares/CFR.prod/MWS/Features/UserAttachment_001D",
+                //"/shares/CFR.prod/MWS/Features",
+                //"/shares/CFR.prod/MWS",
+                //"/shares/CFR.prod",
+
+                "shares/IDEAs.Prod.Data/Publish/Profiles/Subscription/Commercial/IDEAsCommercialSubscriptionProfile/Views/v3/IDEAsCommercialSubscriptionProfile.view"
+
             };
             foreach (var dataLakeStore in dataLakeStores)
             {
@@ -380,6 +394,36 @@
             //Console.WriteLine(dataLakeClient.CheckExists("ideas-prod-build-c14.azuredatalakestore.net", "/shares/ocv/OfficeCustomerVoice-Prod/OcvItems.ss"));
 
             Console.WriteLine(dataLakeClient.CheckExists("ideas-prod-build-c14.azuredatalakestore.net", "/shares/ffo.antispam/partner/IDEAs/ATPUsage/ATPMapping.ss"));
+            Console.WriteLine(dataLakeClient.CheckExists(
+                "ideas-prod-build-c14.azuredatalakestore.net",
+                "shares/IDEAs.Prod.Data/Publish/Profiles/Subscription/Commercial/IDEAsCommercialSubscriptionProfile/Views/v3/IDEAsCommercialSubscriptionProfile.view"));
+            Console.WriteLine(dataLakeClient.CheckExists(
+                "ideas-prod-build-c14.azuredatalakestore.net",
+                "/shares/IDEAs.Prod.Data/Collect/General/DBDigitalAnalytics/Marin/v1/2020/06/DimDimensions_2020_06_30.tsv"));
+            Console.WriteLine(dataLakeClient.CheckExists(
+                "ideas-prod-build-c14.azuredatalakestore.net",
+                "/shares/IDEAs.Prod.Data/Collect/General/DBDigitalAnalytics/Marin/v1/2020/06/DimKeyword_2020_06_30.tsv"));
+            Console.WriteLine(dataLakeClient.CheckDirectoryExists(
+                "ideas-prod-build-c14.azuredatalakestore.net",
+                "/shares/IDEAs.Prod.Data/Collect/"));
+            Console.WriteLine(dataLakeClient.CheckDirectoryExists(
+                "ideas-prod-build-c14.azuredatalakestore.net",
+                "/shares/IDEAs.Prod.Data/Collect"));
+            Console.WriteLine(dataLakeClient.CheckDirectory(
+                "ideas-prod-build-c14.azuredatalakestore.net",
+                "/shares/IDEAs.Prod.Data/Collect"));
+            DateTime now = DateTime.UtcNow.Date;
+            for (int i = 0; i < 60; i++)
+            {
+                DateTime date = now.AddDays(-i);
+                Console.WriteLine($"For date: {date:yyyy}-{date:MM}-{date:dd}");
+                Console.WriteLine(dataLakeClient.CheckExists("ideas-prod-data-c14.azuredatalakestore.net",
+                    $"local/Publish/Usage/User/Neutral/Reporting/Dashboards/AppDashboard/External/NPS/Streams/v1/{date:yyyy}/{date:MM}/NPSJson_{date:yyyy}_{date:MM}_{date:dd}.ndjson"));
+                Console.WriteLine(dataLakeClient.CheckExists("ideas-prod-data-c14.azuredatalakestore.net",
+                    $"local/Publish/Usage/User/Neutral/Reporting/Dashboards/AppDashboard/External/NPS/Streams/v1/{date:yyyy}/{date:MM}/NPSJson_{date:yyyy}_{date:MM}_{date:dd}.json"));
+                Console.WriteLine(dataLakeClient.CheckExists("ideas-prod-data-c14.azuredatalakestore.net",
+                    $"local/Publish/Usage/User/Neutral/Reporting/Dashboards/AppDashboard/External/NPS/Streams/v1/{date:yyyy}/{date:MM}/NPS_{date:yyyy}_{date:MM}_{date:dd}.ss"));
+            }
             // We don't have access to store "ideas-ppe-c14.azuredatalakestore.net". It will throw exception: forbidden
             //Console.WriteLine(dataLakeClient.CheckExists("ideas-ppe-c14.azuredatalakestore.net", "/local/build/user/dekashet/TeamsMeetingProdAfterTimeZoneFixApril18th/directViewCodeWithAdjustEndDate.csv"));
         }
