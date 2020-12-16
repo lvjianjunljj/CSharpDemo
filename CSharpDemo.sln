@@ -43,7 +43,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CoreToFrameworkDemoLib", "C
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StandardToFrameworkDemoLib", "StandardToFrameworkDemoLib\StandardToFrameworkDemoLib.csproj", "{BFAB3EA2-7A34-47D9-9EB8-5B6502C3B625}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KustoDemo", "KustoDemo\KustoDemo.csproj", "{6DFBDA26-B61F-41D3-970B-305DDC6AC360}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LogAnalyticsDemo", "LogAnalyticsDemo\LogAnalyticsDemo.csproj", "{6DFBDA26-B61F-41D3-970B-305DDC6AC360}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

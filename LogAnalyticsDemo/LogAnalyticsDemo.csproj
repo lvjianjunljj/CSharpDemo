@@ -6,8 +6,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{6DFBDA26-B61F-41D3-970B-305DDC6AC360}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>KustoDemo</RootNamespace>
-    <AssemblyName>KustoDemo</AssemblyName>
+    <RootNamespace>LogAnalyticsDemo</RootNamespace>
+    <AssemblyName>LogAnalyticsDemo</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>

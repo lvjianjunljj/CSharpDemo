@@ -19,8 +19,8 @@ namespace AzureKustoDemo
             ISecretProvider secretProvider = KeyVaultSecretProvider.Instance;
 
             string kustoAppId = secretProvider.GetSecretAsync("datacop-prod", "KustoAppId").Result;
-            string kustoAppKey = secretProvider.GetSecretAsync("datacopdev", "KustoAppKey").Result;
-            string kustoAuthorityId = secretProvider.GetSecretAsync("datacopdev", "KustoAuthorityId").Result;
+            string kustoAppKey = secretProvider.GetSecretAsync("datacop-prod", "KustoAppKey").Result;
+            string kustoAuthorityId = secretProvider.GetSecretAsync("datacop-prod", "KustoAuthorityId").Result;
 
             // The value is that "https://icmcluster.kusto.windows.net"
             // It is not very necessary to save it in Azure KeyVault

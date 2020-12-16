@@ -1,4 +1,4 @@
-﻿namespace KustoDemo
+﻿namespace LogAnalyticsDemo
 {
     using Newtonsoft.Json;
     using System;

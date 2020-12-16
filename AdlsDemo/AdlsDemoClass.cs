@@ -178,7 +178,9 @@
                 //"/shares/CFR.prod/MWS",
                 //"/shares/CFR.prod",
 
-                "shares/IDEAs.Prod.Data/Publish/Profiles/Subscription/Commercial/IDEAsCommercialSubscriptionProfile/Views/v3/IDEAsCommercialSubscriptionProfile.view"
+                "shares/IDEAs.Prod.Data/Publish/Profiles/Subscription/Commercial/IDEAsCommercialSubscriptionProfile/Views/v3/IDEAsCommercialSubscriptionProfile.view",
+                "shares/IDEAs.Prod.Data/Collect/Sensitive/PLSMarketingHistory/SFMC/Raw/",
+
 
             };
             foreach (var dataLakeStore in dataLakeStores)
@@ -393,25 +395,38 @@
             //Console.WriteLine(dataLakeClient.CheckExists("ideas-prod-build-c14.azuredatalakestore.net", "/shares/OCV/OfficeCustomerVoice-Prod/OcvItems.ss"));
             //Console.WriteLine(dataLakeClient.CheckExists("ideas-prod-build-c14.azuredatalakestore.net", "/shares/ocv/OfficeCustomerVoice-Prod/OcvItems.ss"));
 
-            Console.WriteLine(dataLakeClient.CheckExists("ideas-prod-build-c14.azuredatalakestore.net", "/shares/ffo.antispam/partner/IDEAs/ATPUsage/ATPMapping.ss"));
-            Console.WriteLine(dataLakeClient.CheckExists(
-                "ideas-prod-build-c14.azuredatalakestore.net",
-                "shares/IDEAs.Prod.Data/Publish/Profiles/Subscription/Commercial/IDEAsCommercialSubscriptionProfile/Views/v3/IDEAsCommercialSubscriptionProfile.view"));
-            Console.WriteLine(dataLakeClient.CheckExists(
-                "ideas-prod-build-c14.azuredatalakestore.net",
-                "/shares/IDEAs.Prod.Data/Collect/General/DBDigitalAnalytics/Marin/v1/2020/06/DimDimensions_2020_06_30.tsv"));
-            Console.WriteLine(dataLakeClient.CheckExists(
-                "ideas-prod-build-c14.azuredatalakestore.net",
-                "/shares/IDEAs.Prod.Data/Collect/General/DBDigitalAnalytics/Marin/v1/2020/06/DimKeyword_2020_06_30.tsv"));
-            Console.WriteLine(dataLakeClient.CheckDirectoryExists(
-                "ideas-prod-build-c14.azuredatalakestore.net",
-                "/shares/IDEAs.Prod.Data/Collect/"));
-            Console.WriteLine(dataLakeClient.CheckDirectoryExists(
-                "ideas-prod-build-c14.azuredatalakestore.net",
-                "/shares/IDEAs.Prod.Data/Collect"));
-            Console.WriteLine(dataLakeClient.CheckDirectory(
-                "ideas-prod-build-c14.azuredatalakestore.net",
-                "/shares/IDEAs.Prod.Data/Collect"));
+            //Console.WriteLine(dataLakeClient.CheckExists("ideas-prod-build-c14.azuredatalakestore.net", "/shares/ffo.antispam/partner/IDEAs/ATPUsage/ATPMapping.ss"));
+            //Console.WriteLine(dataLakeClient.CheckExists(
+            //    "ideas-prod-build-c14.azuredatalakestore.net",
+            //    "shares/IDEAs.Prod.Data/Publish/Profiles/Subscription/Commercial/IDEAsCommercialSubscriptionProfile/Views/v3/IDEAsCommercialSubscriptionProfile.view"));
+            //Console.WriteLine(dataLakeClient.CheckExists(
+            //    "ideas-prod-build-c14.azuredatalakestore.net",
+            //    "/shares/IDEAs.Prod.Data/Collect/General/DBDigitalAnalytics/Marin/v1/2020/06/DimDimensions_2020_06_30.tsv"));
+            //Console.WriteLine(dataLakeClient.CheckExists(
+            //    "ideas-prod-build-c14.azuredatalakestore.net",
+            //    "/shares/IDEAs.Prod.Data/Collect/Sensitive/DBCoreDataSensitive/Profiles/Resources/SegmentGroupRank.ss"));
+            //Console.WriteLine(dataLakeClient.CheckExists(
+            //    "ideas-prod-build-c14.azuredatalakestore.net",
+            //    "shares/mcas.prod/Mcas_Telemetry_for_IDEA/FeatureToPremiumLevelMapping_CSV/FeatureNameToLevelMapping.txt "));
+            //Console.WriteLine(dataLakeClient.CheckExists(
+            //    "ideas-prod-build-c14.azuredatalakestore.net",
+            //    "shares/mcas.prod/Mcas_Telemetry_for_IDEA/FeatureToPremiumLevelMapping_CSV/FeatureNameToLevelMapping.txt"));
+            //Console.WriteLine(dataLakeClient.CheckDirectoryExists(
+            //    "ideas-prod-build-c14.azuredatalakestore.net",
+            //    "/shares/IDEAs.Prod.Data/Collect/"));
+            //Console.WriteLine(dataLakeClient.CheckDirectoryExists(
+            //    "ideas-prod-build-c14.azuredatalakestore.net",
+            //    "/shares/IDEAs.Prod.Data/Collect"));
+            //Console.WriteLine(dataLakeClient.CheckDirectory(
+            //    "ideas-prod-build-c14.azuredatalakestore.net",
+            //    "/shares/IDEAs.Prod.Data/Collect"));
+            for (int i = 0; i < 10; i++)
+            {
+                Console.WriteLine(dataLakeClient.CheckDirectory(
+                    "ideas-prod-build-c14.azuredatalakestore.net",
+                    $@"shares/IDEAs.Prod.Data/Publish/Profiles/User/Commercial/Validation/TenantMaibox/Streams/v2/2020/12/TenantMailbox_StatsMonitor_2020_12_1{i}.ss"));
+            }
+
             DateTime now = DateTime.UtcNow.Date;
             for (int i = 0; i < 60; i++)
             {
