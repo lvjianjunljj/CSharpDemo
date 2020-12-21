@@ -12,7 +12,7 @@
     {
         static void Main(string[] args)
         {
-            //AzureCosmosDBOperation.MainMethod();
+            AzureCosmosDBOperation.MainMethod();
             //AzureServiceBus.MainMethod();
 
             //QueryIncidents.MainMethod();
@@ -22,7 +22,6 @@
             //DataBuildJsonFileOperation.MainMethod();
             //AzureActiveDirectoryToken.MainMethod();
             //AzureKeyVaultDemo.MainMethod();
-
 
             if (Debugger.IsAttached)
             {

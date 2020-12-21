@@ -53,7 +53,7 @@
             //}
             catch (Exception e)
             {
-                Console.WriteLine($"Get secret '{secretName}' from keyvault '{keyVaultName}' occured error: {e.Message}");
+                Console.WriteLine($"Get secret '{secretName}' from keyvault '{keyVaultName}' throw exception.");
                 return GetSecretByJson(keyVaultName, secretName);
             }
         }

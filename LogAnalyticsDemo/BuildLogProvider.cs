@@ -6,6 +6,8 @@
     using Kusto.Cloud.Platform.Utils;
     using Microsoft.Azure.OperationalInsights;
     using Microsoft.Rest.Azure.Authentication;
+    using Newtonsoft.Json;
+    using Newtonsoft.Json.Linq;
 
     public class BuildLogProvider
     {
@@ -56,7 +58,7 @@
         /// Authenticate to the Kusto Log Analytics instance for build.
         /// </summary>
         /// <returns></returns>
-        private OperationalInsightsDataClient GetKustoClient()
+        private OperationalInsightsDataClient GetClient()
         {
             // Authenticate to log analytics.
             var adSettings = new ActiveDirectoryServiceSettings
@@ -84,28 +86,28 @@
         public IList<BuildLogEntry> GetRecentTriggerEntries(DateTime startTime, DateTime endTime, bool failures)
         {
             // Get the client to do the query.
-            var client = GetKustoClient();
+            var client = GetClient();
 
             // This saves off all the trigger errors found.
             List<BuildLogEntry> triggerEntries = new List<BuildLogEntry>();
 
             // Construct and execute the query to get all triggers whose last run failed recently.
-            string kustoQuery = "ADFPipelineRun ";
-            kustoQuery += $"| where TimeGenerated > datetime(\"{startTime.ToString("yyyy-MM-dd hh:mm:ss.ffff")}\") ";
-            kustoQuery += $"| where TimeGenerated <= datetime(\"{endTime.ToString("yyyy-MM-dd hh:mm:ss.ffff")}\") ";
-            kustoQuery += $"| extend TriggerId = extractjson(\"$.TriggerId\", SystemParameters) ";
-            kustoQuery += $"| extend BuildEntityId = extractjson(\"$.dataBuildEntityId\", Parameters) ";
-            kustoQuery += $"| extend WindowStart = extractjson(\"$.windowStart\", Parameters) ";
-            kustoQuery += $"| extend WindowEnd = extractjson(\"$.windowEnd\", Parameters) ";
-            kustoQuery += $"| extend MonitoringActive = extractjson(\"$.dataCopPipelineMonitoringActive\", Parameters) ";
-            kustoQuery += $"| extend MaxFailuresInARow = extractjson(\"$.dataCopPipelineMonitoringAlertAfterFailedAttempts\", Parameters) ";
-            kustoQuery += $"| extend LookbackPeriod = extractjson(\"$.dataCopPipelineMonitoringLookBackPeriod\", Parameters) ";
-            kustoQuery += $"| where MonitoringActive == \"True\" ";
-            kustoQuery += $"| summarize arg_max(TimeGenerated, *) by TriggerId ";
-            kustoQuery += failures ? $"| where Status == \"Failed\" " : $"| where Status == \"Succeeded\" ";
-            kustoQuery += $"| project TimeGenerated, ResourceId, PipelineName, TriggerId, RunId, BuildEntityId, WindowStart, WindowEnd, OperationName, FailureType, MaxFailuresInARow, LookbackPeriod ";
-            kustoQuery += $"| order by TimeGenerated asc";
-            var results = client.Query(query: kustoQuery);
+            string queryString = "ADFPipelineRun ";
+            queryString += $"| where TimeGenerated > datetime(\"{startTime.ToString("yyyy-MM-dd hh:mm:ss.ffff")}\") ";
+            queryString += $"| where TimeGenerated <= datetime(\"{endTime.ToString("yyyy-MM-dd hh:mm:ss.ffff")}\") ";
+            queryString += $"| extend TriggerId = extractjson(\"$.TriggerId\", SystemParameters) ";
+            queryString += $"| extend BuildEntityId = extractjson(\"$.dataBuildEntityId\", Parameters) ";
+            queryString += $"| extend WindowStart = extractjson(\"$.windowStart\", Parameters) ";
+            queryString += $"| extend WindowEnd = extractjson(\"$.windowEnd\", Parameters) ";
+            queryString += $"| extend MonitoringActive = extractjson(\"$.dataCopPipelineMonitoringActive\", Parameters) ";
+            queryString += $"| extend MaxFailuresInARow = extractjson(\"$.dataCopPipelineMonitoringAlertAfterFailedAttempts\", Parameters) ";
+            queryString += $"| extend LookbackPeriod = extractjson(\"$.dataCopPipelineMonitoringLookBackPeriod\", Parameters) ";
+            queryString += $"| where MonitoringActive == \"True\" ";
+            queryString += $"| summarize arg_max(TimeGenerated, *) by TriggerId ";
+            queryString += failures ? $"| where Status == \"Failed\" " : $"| where Status == \"Succeeded\" ";
+            queryString += $"| project TimeGenerated, ResourceId, PipelineName, TriggerId, RunId, BuildEntityId, WindowStart, WindowEnd, OperationName, FailureType, MaxFailuresInARow, LookbackPeriod ";
+            queryString += $"| order by TimeGenerated asc";
+            var results = client.Query(query: queryString);
             var resultsList = results.Results.ToList();
             foreach (IDictionary<string, string> result in resultsList)
             {
@@ -149,7 +151,7 @@
         public IList<BuildLogEntry> GetFailureRates(IList<BuildLogEntry> triggerFailures, bool computePipelines, DateTime startTime, DateTime endTime)
         {
             // Get the client to do the query.
-            var client = GetKustoClient();
+            var client = GetClient();
 
             // Generate a list of unique entities.
             HashSet<string> buildEntities = new HashSet<string>();
@@ -178,18 +180,18 @@
             // Construct and execute the query to compute the failure rates for each entity.
             if (buildEntities.Count > 0)
             {
-                string kustoQuery = "ADFPipelineRun ";
-                kustoQuery += $"| where TimeGenerated > datetime(\"{startTime.ToString("yyyy-MM-dd hh:mm:ss.ffff")}\") ";
-                kustoQuery += $"| where TimeGenerated <= datetime(\"{endTime.ToString("yyyy-MM-dd hh:mm:ss.ffff")}\") ";
-                kustoQuery += $"| where {buildEntitiesFilter} ";
-                kustoQuery += $"| extend BuildEntityId = extractjson(\"$.dataBuildEntityId\", Parameters) ";
-                kustoQuery += $"| extend WindowStart = extractjson(\"$.windowStart\", Parameters) ";
-                kustoQuery += $"| extend WindowEnd = extractjson(\"$.windowEnd\", Parameters) ";
-                kustoQuery += $"| extend MaxFailuresInARow = extractjson(\"$.dataCopPipelineMonitoringAlertAfterFailedAttempts\", Parameters) ";
-                kustoQuery += $"| extend LookbackPeriod = extractjson(\"$.dataCopPipelineMonitoringLookBackPeriod\", Parameters) ";
-                kustoQuery += $"| summarize Total=countif(Status == \"Failed\" or Status == \"Succeeded\"), Errors=countif(Status == \"Failed\"), arg_max(TimeGenerated, *) by {propertyName} ";
-                kustoQuery += $"| extend Pct=todouble(Errors)/todouble(Total) ";
-                var results = client.Query(query: kustoQuery);
+                string queryString = "ADFPipelineRun ";
+                queryString += $"| where TimeGenerated > datetime(\"{startTime.ToString("yyyy-MM-dd hh:mm:ss.ffff")}\") ";
+                queryString += $"| where TimeGenerated <= datetime(\"{endTime.ToString("yyyy-MM-dd hh:mm:ss.ffff")}\") ";
+                queryString += $"| where {buildEntitiesFilter} ";
+                queryString += $"| extend BuildEntityId = extractjson(\"$.dataBuildEntityId\", Parameters) ";
+                queryString += $"| extend WindowStart = extractjson(\"$.windowStart\", Parameters) ";
+                queryString += $"| extend WindowEnd = extractjson(\"$.windowEnd\", Parameters) ";
+                queryString += $"| extend MaxFailuresInARow = extractjson(\"$.dataCopPipelineMonitoringAlertAfterFailedAttempts\", Parameters) ";
+                queryString += $"| extend LookbackPeriod = extractjson(\"$.dataCopPipelineMonitoringLookBackPeriod\", Parameters) ";
+                queryString += $"| summarize Total=countif(Status == \"Failed\" or Status == \"Succeeded\"), Errors=countif(Status == \"Failed\"), arg_max(TimeGenerated, *) by {propertyName} ";
+                queryString += $"| extend Pct=todouble(Errors)/todouble(Total) ";
+                var results = client.Query(query: queryString);
                 var resultsList = results.Results.ToList();
                 foreach (IDictionary<string, string> result in resultsList)
                 {
@@ -236,15 +238,15 @@
             int failuresInARow = 0;
 
             // Get the client to do the query.
-            var client = GetKustoClient();
+            var client = GetClient();
 
             // Execute the query to get the last failed activity for this run.
-            string kustoQuery = "ADFPipelineRun ";
-            kustoQuery += $"| where TimeGenerated > datetime(\"{startTime.ToString("yyyy-MM-dd hh:mm:ss.ffff")}\") ";
-            kustoQuery += $"| extend TriggerId = extractjson(\"$.TriggerId\", SystemParameters) ";
-            kustoQuery += $"| where TriggerId == \"{triggerId}\" ";
-            kustoQuery += $"| order by TimeGenerated desc ";
-            var results = client.Query(query: kustoQuery);
+            string queryString = "ADFPipelineRun ";
+            queryString += $"| where TimeGenerated > datetime(\"{startTime.ToString("yyyy-MM-dd hh:mm:ss.ffff")}\") ";
+            queryString += $"| extend TriggerId = extractjson(\"$.TriggerId\", SystemParameters) ";
+            queryString += $"| where TriggerId == \"{triggerId}\" ";
+            queryString += $"| order by TimeGenerated desc ";
+            var results = client.Query(query: queryString);
             var resultsList = results.Results.ToList();
             foreach (IDictionary<string, string> result in resultsList)
             {
@@ -276,20 +278,20 @@
         public BuildLogEntry GetLastFailedActivityForRun(string runId, DateTime startTime, DateTime endTime)
         {
             // Get the client to do the query.
-            var client = GetKustoClient();
+            var client = GetClient();
 
             // Execute the query to get all the non-build failed activities for this run.
             bool buildFailure = true;
-            string kustoQuery = "ADFActivityRun ";
-            kustoQuery += $"| where TimeGenerated > datetime(\"{startTime.ToString("yyyy-MM-dd hh:mm:ss.ffff")}\") ";
-            kustoQuery += $"| where TimeGenerated <= datetime(\"{endTime.ToString("yyyy-MM-dd hh:mm:ss.ffff")}\") ";
-            kustoQuery += $"| where PipelineRunId == \"{runId}\" ";
-            kustoQuery += $"| where Status == \"Failed\" ";
-            kustoQuery += $"| extend BuildEntityId = extractjson(\"$.dataBuildEntityId\", UserProperties) ";
-            kustoQuery += $"| extend BuildFailure = extractjson(\"$.dataCopIsBuildTeamFailure\", UserProperties) ";
-            kustoQuery += $"| where BuildFailure != \"True\" ";
-            kustoQuery += $"| order by TimeGenerated desc ";
-            var results = client.Query(query: kustoQuery);
+            string queryString = "ADFActivityRun ";
+            queryString += $"| where TimeGenerated > datetime(\"{startTime.ToString("yyyy-MM-dd hh:mm:ss.ffff")}\") ";
+            queryString += $"| where TimeGenerated <= datetime(\"{endTime.ToString("yyyy-MM-dd hh:mm:ss.ffff")}\") ";
+            queryString += $"| where PipelineRunId == \"{runId}\" ";
+            queryString += $"| where Status == \"Failed\" ";
+            queryString += $"| extend BuildEntityId = extractjson(\"$.dataBuildEntityId\", UserProperties) ";
+            queryString += $"| extend BuildFailure = extractjson(\"$.dataCopIsBuildTeamFailure\", UserProperties) ";
+            queryString += $"| where BuildFailure != \"True\" ";
+            queryString += $"| order by TimeGenerated desc ";
+            var results = client.Query(query: queryString);
             var resultsList = results.Results.ToList();
             if (resultsList.Count > 0)
             {
@@ -299,14 +301,14 @@
 
             // Execute the query to get the last failed activity for this run.
             BuildLogEntry buildFailureEntry = null;
-            kustoQuery = "ADFActivityRun ";
-            kustoQuery += $"| where TimeGenerated > datetime(\"{startTime.ToString("yyyy-MM-dd hh:mm:ss.ffff")}\") ";
-            kustoQuery += $"| where TimeGenerated <= datetime(\"{endTime.ToString("yyyy-MM-dd hh:mm:ss.ffff")}\") ";
-            kustoQuery += $"| where PipelineRunId == \"{runId}\" ";
-            kustoQuery += $"| where Status == \"Failed\" ";
-            kustoQuery += $"| extend BuildEntityId = extractjson(\"$.dataBuildEntityId\", UserProperties) ";
-            kustoQuery += $"| order by TimeGenerated desc ";
-            results = client.Query(query: kustoQuery);
+            queryString = "ADFActivityRun ";
+            queryString += $"| where TimeGenerated > datetime(\"{startTime.ToString("yyyy-MM-dd hh:mm:ss.ffff")}\") ";
+            queryString += $"| where TimeGenerated <= datetime(\"{endTime.ToString("yyyy-MM-dd hh:mm:ss.ffff")}\") ";
+            queryString += $"| where PipelineRunId == \"{runId}\" ";
+            queryString += $"| where Status == \"Failed\" ";
+            queryString += $"| extend BuildEntityId = extractjson(\"$.dataBuildEntityId\", UserProperties) ";
+            queryString += $"| order by TimeGenerated desc ";
+            results = client.Query(query: queryString);
             resultsList = results.Results.ToList();
 
             if (resultsList.Count > 0)
@@ -327,16 +329,16 @@
         public IList<IDictionary<string, string>> GetADFActivityRun(DateTime startTime, DateTime endTime)
         {
             // Get the client to do the query.
-            var client = GetKustoClient();
+            var client = GetClient();
 
             // Execute the query to get all the non-build failed activities for this run.
 
             // Execute the query to get the last failed activity for this run.
-            var kustoQuery = "ADFActivityRun ";
-            kustoQuery += $"| where TimeGenerated > datetime(\"{startTime.ToString("yyyy-MM-dd hh:mm:ss.ffff")}\") ";
-            kustoQuery += $"| where TimeGenerated <= datetime(\"{endTime.ToString("yyyy-MM-dd hh:mm:ss.ffff")}\") ";
-            kustoQuery += $"| order by TimeGenerated desc ";
-            var results = client.Query(query: kustoQuery);
+            var queryString = "ADFActivityRun ";
+            queryString += $"| where TimeGenerated > datetime(\"{startTime.ToString("yyyy-MM-dd hh:mm:ss.ffff")}\") ";
+            queryString += $"| where TimeGenerated <= datetime(\"{endTime.ToString("yyyy-MM-dd hh:mm:ss.ffff")}\") ";
+            queryString += $"| order by TimeGenerated desc ";
+            var results = client.Query(query: queryString);
             var resultsList = results.Results.ToList();
 
 
@@ -346,16 +348,16 @@
         public IList<IDictionary<string, string>> GetADFPipelineRun(DateTime startTime, DateTime endTime)
         {
             // Get the client to do the query.
-            var client = GetKustoClient();
+            var client = GetClient();
 
             // Execute the query to get all the non-build failed activities for this run.
 
             // Execute the query to get the last failed activity for this run.
-            var kustoQuery = "ADFPipelineRun ";
-            kustoQuery += $"| where TimeGenerated > datetime(\"{startTime.ToString("yyyy-MM-dd hh:mm:ss.ffff")}\") ";
-            kustoQuery += $"| where TimeGenerated <= datetime(\"{endTime.ToString("yyyy-MM-dd hh:mm:ss.ffff")}\") ";
-            kustoQuery += $"| order by TimeGenerated desc ";
-            var results = client.Query(query: kustoQuery);
+            var queryString = "ADFPipelineRun ";
+            queryString += $"| where TimeGenerated > datetime(\"{startTime}\") ";
+            queryString += $"| where TimeGenerated <= datetime(\"{endTime}\") ";
+            queryString += $"| order by TimeGenerated desc ";
+            var results = client.Query(query: queryString);
             var resultsList = results.Results.ToList();
 
 
@@ -370,32 +372,31 @@
         /// <param name="endTime">The last time to scan for WindowStart.</param>
         /// <param name="status">The status output.</param>
         /// <returns>The last entry for the log.</returns>
-        public BuildLogEntry GetLastPipelineRun(string buildEntityId, DateTime startTime, DateTime endTime, out string status)
+        public BuildLogEntry GetLastPipelineRun(string buildEntityId, DateTime testDate, out string status)
         {
             // Get the client to do the query.
-            var client = GetKustoClient();
+            var client = GetClient();
             // Construct and execute the query to get all triggers whose last run failed recently.
-            string kustoQuery = "ADFPipelineRun ";
-            kustoQuery += $"| extend TriggerId = extractjson(\"$.TriggerId\", SystemParameters) ";
-            kustoQuery += $"| extend BuildEntityId = extractjson(\"$.dataBuildEntityId\", Parameters) ";
+            string queryString = "ADFPipelineRun ";
+            queryString += $"| extend TriggerId = extractjson(\"$.TriggerId\", SystemParameters) ";
+            queryString += $"| extend BuildEntityId = extractjson(\"$.dataBuildEntityId\", Parameters) ";
             if (!string.IsNullOrEmpty(buildEntityId))
             {
-                kustoQuery += $"| where BuildEntityId == \"{buildEntityId}\" ";
+                queryString += $"| where BuildEntityId == \"{buildEntityId}\" ";
             }
-            kustoQuery += $"| extend WindowStart = extractjson(\"$.windowStart\", Parameters, typeof(datetime)) ";
-            kustoQuery += $"| extend WindowEnd = extractjson(\"$.windowEnd\", Parameters, typeof(datetime)) ";
-            kustoQuery += $"| where WindowStart > datetime(\"{startTime.ToString("yyyy-MM-dd hh:mm:ss.ffff")}\") ";
-            kustoQuery += $"| where WindowStart <= datetime(\"{endTime.ToString("yyyy-MM-dd hh:mm:ss.ffff")}\") ";
-            kustoQuery += $"| extend MonitoringActive = extractjson(\"$.dataCopPipelineMonitoringActive\", Parameters) ";
-            kustoQuery += $"| extend MaxFailuresInARow = extractjson(\"$.dataCopPipelineMonitoringAlertAfterFailedAttempts\", Parameters) ";
-            kustoQuery += $"| extend LookbackPeriod = extractjson(\"$.dataCopPipelineMonitoringLookBackPeriod\", Parameters) ";
-            kustoQuery += $"| where MonitoringActive == \"True\" ";
-            kustoQuery += $"| where Status != \"Succeeded\" ";
-            kustoQuery += $"| summarize arg_max(TimeGenerated, *) by TriggerId ";
-            kustoQuery += $"| project TimeGenerated, ResourceId, PipelineName, Status, TriggerId, RunId, BuildEntityId, WindowStart, WindowEnd, OperationName, FailureType, MaxFailuresInARow, LookbackPeriod ";
-            kustoQuery += $"| order by TimeGenerated asc";
+            queryString += $"| extend WindowStart = extractjson(\"$.windowStart\", Parameters, typeof(datetime)) ";
+            queryString += $"| extend WindowEnd = extractjson(\"$.windowEnd\", Parameters, typeof(datetime)) ";
+            queryString += $"| where WindowStart == datetime(\"{testDate}\") ";
+            queryString += $"| extend MonitoringActive = extractjson(\"$.dataCopPipelineMonitoringActive\", Parameters) ";
+            queryString += $"| extend MaxFailuresInARow = extractjson(\"$.dataCopPipelineMonitoringAlertAfterFailedAttempts\", Parameters) ";
+            queryString += $"| extend LookbackPeriod = extractjson(\"$.dataCopPipelineMonitoringLookBackPeriod\", Parameters) ";
+            queryString += $"| where MonitoringActive == \"True\" ";
+            //queryString += $"| where Status != \"Succeeded\" ";
+            queryString += $"| summarize arg_max(TimeGenerated, *) by TriggerId ";
+            queryString += $"| project TimeGenerated, ResourceId, PipelineName, Status, TriggerId, RunId, BuildEntityId, WindowStart, WindowEnd, OperationName, FailureType, MaxFailuresInARow, LookbackPeriod ";
+            queryString += $"| order by TimeGenerated desc";
 
-            var results = client.Query(query: kustoQuery);
+            var results = client.Query(query: queryString);
             var resultsList = results.Results.ToList();
             if (resultsList == null || resultsList.Count == 0)
             {
@@ -432,21 +433,28 @@
         /// <param name="endTime">The last time to scan for.</param>
         /// <param name="status">The status output.</param>
         /// <returns>The last entry for the log.</returns>
-        public BuildLogEntry GetLastActivityRun(string runId, DateTime startTime, DateTime endTime, out string status)
+        public BuildLogEntry GetLastActivityRun(string runId, string activityName, DateTime? testDate, out string status)
         {
+            status = string.Empty;
             // Get the client to do the query.
-            var client = GetKustoClient();
-            string kustoQuery = "ADFActivityRun ";
+            var client = GetClient();
+            string queryString = "ADFActivityRun ";
             // Execute the query to get the last failed activity for this run.
             BuildLogEntry buildFailureEntry = null;
-            kustoQuery = "ADFActivityRun ";
-            kustoQuery += $"| extend WindowStart = extractjson(\"$.windowStart\", Parameters, typeof(datetime)) ";
-            kustoQuery += $"| where WindowStart > datetime(\"{startTime.ToString("yyyy-MM-dd hh:mm:ss.ffff")}\") ";
-            kustoQuery += $"| where WindowStart <= datetime(\"{endTime.ToString("yyyy-MM-dd hh:mm:ss.ffff")}\") ";
-            kustoQuery += $"| where PipelineRunId == \"{runId}\" ";
-            kustoQuery += $"| extend BuildEntityId = extractjson(\"$.dataBuildEntityId\", UserProperties) ";
-            kustoQuery += $"| order by TimeGenerated desc ";
-            var results = client.Query(query: kustoQuery);
+            queryString += $"| extend WindowStart = extractjson(\"$.extendedProperties.windowStart\", Input, typeof(datetime)) ";
+            if (testDate.HasValue)
+            {
+                queryString += $"| where WindowStart == datetime(\"{testDate}\") ";
+            }
+
+            queryString += $"| where PipelineRunId == \"{runId}\" ";
+            if (!string.IsNullOrEmpty(activityName))
+            {
+                queryString += $"| where ActivityName == \"{activityName}\" ";
+            }
+            queryString += $"| extend BuildEntityId = extractjson(\"$.dataBuildEntityId\", UserProperties) ";
+            queryString += $"| order by TimeGenerated desc ";
+            var results = client.Query(query: queryString);
             var resultsList = results.Results.ToList();
             if (resultsList.Count > 0)
             {
@@ -458,8 +466,8 @@
                     BuildEntityId = resultsList[0]["BuildEntityId"],
                     //BuildFailure = buildFailure,
                 };
+                status = resultsList[0]["Status"];
             }
-            status = resultsList[0]["Status"];
             return buildFailureEntry;
         }
 
@@ -471,53 +479,129 @@
         /// <param name="endTime">The last time to scan for WindowStart.</param>
         /// <param name="status">The status output.</param>
         /// <returns>The last entry for the log.</returns>
-        public BuildLogEntry Test(string buildEntityId, DateTime startTime, DateTime endTime, out string status)
+        public BuildLogEntry GetJobSubmissionResult(string buildEntityId, string activityName, DateTime testDate, out string status)
         {
-            // Get the client to do the query.
-            var client = GetKustoClient();
+            // Get the client to do the query.  
+            var client = GetClient();
             // Construct and execute the query to get all triggers whose last run failed recently.
-            string kustoQuery = "ADFPipelineRun ";
-            kustoQuery += $"| extend WindowStart = extractjson(\"$.windowStart\", Parameters, typeof(datetime)) ";
-            kustoQuery += $"| extend BuildEntityId = extractjson(\"$.dataBuildEntityId\", Parameters) ";
-            kustoQuery += $"| where WindowStart > datetime(\"{startTime.ToString("yyyy-MM-dd hh:mm:ss.ffff")}\") ";
-            kustoQuery += $"| where WindowStart <= datetime(\"{endTime.ToString("yyyy-MM-dd hh:mm:ss.ffff")}\") ";
-            kustoQuery += $"| where MonitoringActive == \"True\" ";
-            kustoQuery += $"| where BuildEntityId == \"{buildEntityId}\" ";
-            kustoQuery += $"| extend TriggerId = extractjson(\"$.TriggerId\", SystemParameters) ";
-            kustoQuery += $"| extend WindowEnd = extractjson(\"$.windowEnd\", Parameters) ";
-            kustoQuery += $"| extend MonitoringActive = extractjson(\"$.dataCopPipelineMonitoringActive\", Parameters) ";
-            kustoQuery += $"| extend MaxFailuresInARow = extractjson(\"$.dataCopPipelineMonitoringAlertAfterFailedAttempts\", Parameters) ";
-            kustoQuery += $"| extend LookbackPeriod = extractjson(\"$.dataCopPipelineMonitoringLookBackPeriod\", Parameters) ";
-            kustoQuery += $"| summarize arg_max(TimeGenerated, *) by TriggerId ";
-            kustoQuery += $"| project TimeGenerated, ResourceId, PipelineName, Status, TriggerId, RunId, BuildEntityId, WindowStart, WindowEnd, OperationName, FailureType, MaxFailuresInARow, LookbackPeriod ";
-            kustoQuery += $"| order by TimeGenerated desc";
-            var results = client.Query(query: kustoQuery);
+            string queryString = "let lastPipeline = ADFPipelineRun ";
+            queryString += $"| extend BuildEntityId = extractjson(\"$.dataBuildEntityId\", Parameters) ";
+            queryString += $"| where BuildEntityId == \"{buildEntityId}\" ";
+            //queryString += $"| where Status != \"Succeeded\" ";
+            queryString += $"| extend WindowStart = extractjson(\"$.windowStart\", Parameters, typeof(datetime)) ";
+            queryString += $"| extend MonitoringActive = extractjson(\"$.dataCopPipelineMonitoringActive\", Parameters) ";
+            queryString += $"| extend PipelineRunId = RunId";
+            queryString += $"| where WindowStart == datetime(\"{testDate}\") ";
+            queryString += $"| where MonitoringActive == \"True\" ";
+            queryString += $"| top 1 by TimeGenerated desc ";
+            queryString += $"| project PipelineRunId, Status; ";
+
+            queryString += $"let succeeded = lastPipeline ";
+            queryString += $"| extend ActivityRunId = \"DummyActivityRunId\"";
+            queryString += $"| extend ActivityName = \"DummyActivityName\"";
+            queryString += $"| where Status == \"Succeeded\" ";
+            queryString += $"| project PipelineRunId, ActivityRunId, ActivityName, Status; ";
+
+            queryString += $"let not_succeeded = lastPipeline ";
+            queryString += $"| where Status != \"Succeeded\" ";
+            queryString += $"| project PipelineRunId; ";
+
+            queryString += $"let lastADFActivity = ADFActivityRun ";
+            queryString += $"| where PipelineRunId in (not_succeeded) ";
+            if (!string.IsNullOrEmpty(activityName))
+                queryString += $"| where ActivityName == \"{activityName}\" ";
+            queryString += $"| top 1 by TimeGenerated desc ";
+            queryString += $"| project PipelineRunId, ActivityRunId, ActivityName, Status; ";
+
+            queryString += $"let not_queued = lastADFActivity ";
+            queryString += $"| where Status != \"Queued\" ";
+            queryString += $"| project PipelineRunId, ActivityRunId, ActivityName, Status; ";
+
+            queryString += $"succeeded ";
+            queryString += $"| union not_queued ";
+
+            var results = client.Query(query: queryString);
             var resultsList = results.Results.ToList();
             if (resultsList == null || resultsList.Count == 0)
             {
                 status = string.Empty;
                 return null;
             }
+
             BuildLogEntry logEntry = new BuildLogEntry()
             {
-                TimeGenerated = DateTime.Parse(resultsList[0]["TimeGenerated"]).ToUniversalTime(),
-                BuildEntityId = buildEntityId,
-                OperationName = resultsList[0]["OperationName"].ValueOrDefaultIfNullOrWhitespace(""),
-                FailureType = resultsList[0]["FailureType"].ValueOrDefaultIfNullOrWhitespace(""),
-                WindowStart = DateTime.Parse(resultsList[0]["WindowStart"]).ToUniversalTime(),
-                WindowEnd = DateTime.Parse(resultsList[0]["WindowEnd"]).ToUniversalTime(),
-                MaxFailuresInARow = int.Parse(resultsList[0]["MaxFailuresInARow"].ValueOrDefaultIfNullOrWhitespace("0")),
-                LookbackPeriod = TimeSpan.Parse(resultsList[0]["LookbackPeriod"].ValueOrDefaultIfNullOrWhitespace("0")),
-                PipelineName = resultsList[0]["PipelineName"].ValueOrDefaultIfNullOrWhitespace(""),
-                PipelineRunId = resultsList[0]["RunId"].ValueOrDefaultIfNullOrWhitespace(""),
-                ResourceId = resultsList[0]["ResourceId"].ValueOrDefaultIfNullOrWhitespace(""),
-                TriggerId = resultsList[0]["TriggerId"].ValueOrDefaultIfNullOrWhitespace(""),
+                //PipelineName = resultsList[0]["PipelineName"].ValueOrDefaultIfNullOrWhitespace(""),
+                PipelineRunId = resultsList[0]["PipelineRunId"].ValueOrDefaultIfNullOrWhitespace(""),
+                //ResourceId = resultsList[0]["ResourceId"].ValueOrDefaultIfNullOrWhitespace(""),
+                ActivityRunId = resultsList[0]["ActivityRunId"].ValueOrDefaultIfNullOrWhitespace(""),
+                ActivityName = resultsList[0]["ActivityName"].ValueOrDefaultIfNullOrWhitespace(""),
             };
-            logEntry.LinkToADFPipeline = $"<a href='https://ms-adf.azure.com/monitoring/pipelineruns/{logEntry.PipelineRunId}?factory={logEntry.ResourceId}'>Run Details for {logEntry.PipelineName}</a>";
-            logEntry.HelpLink = $"<a href='https://aka.ms/databuild-debugpipelinefailure'>IDEAs DataBuild Pipeline Failure Debugging Guide</a>";
-            logEntry.DataFactory = logEntry.ResourceId.Substring(logEntry.ResourceId.LastIndexOf('/') + 1);
+
             status = resultsList[0]["Status"].ValueOrDefaultIfNullOrWhitespace("");
             return logEntry;
+        }
+
+        // New version of query generatation for UDP job submission monitor
+        public BuildLogEntry GetJobSubmissionQueryResult(string activityName, DateTime testDate, out string status)
+        {
+            // Get the client to do the query.  
+            var client = GetClient();
+
+            // Construct and execute the query to get all triggers whose last run failed recently.
+
+            string queryString = this.GenerateJobSubmissionQuery(activityName, testDate);
+
+            var results = client.Query(query: queryString.Replace("@@TestDate@@", testDate.ToString()));
+            var resultsList = results.Results.ToList();
+            if (resultsList == null || resultsList.Count == 0)
+            {
+                status = string.Empty;
+                return null;
+            }
+
+            BuildLogEntry logEntry = new BuildLogEntry()
+            {
+                ActivityRunId = resultsList[0]["ActivityRunId"].ValueOrDefaultIfNullOrWhitespace(""),
+                ActivityName = resultsList[0]["ActivityName"].ValueOrDefaultIfNullOrWhitespace(""),
+            };
+
+            status = resultsList[0]["Status"].ValueOrDefaultIfNullOrWhitespace("");
+            return logEntry;
+        }
+
+        private string GenerateJobSubmissionQuery(string activityName, DateTime testDate)
+        {
+            string queryString = $"ADFActivityRun ";
+            queryString += $"| extend WindowStart = extractjson(\"$.extendedProperties.windowStart\", Input, typeof(datetime)) ";
+            queryString += $"| where WindowStart == datetime(\"@@TestDate@@\") ";
+            if (!string.IsNullOrEmpty(activityName))
+                queryString += $"| where ActivityName == \"{activityName}\" ";
+            queryString += $"| where Status != \"Failed\" ";
+            queryString += $"| project ActivityRunId, ActivityName, Status ";
+
+            return queryString;
+        }
+
+        /// <summary>
+        /// Get the last pipeline run and its status based on buildEntityId.
+        /// </summary>
+        /// <param name="buildEntityId">The buildEntityId.</param>
+        /// <param name="startTime">The first time to scan for WindowStart.</param>
+        /// <param name="endTime">The last time to scan for WindowStart.</param>
+        /// <param name="status">The status output.</param>
+        /// <returns>The last entry for the log.</returns>
+        public List<IDictionary<string, string>> GetPipelineRuns(string pipelineRunId)
+        {
+            // Get the client to do the query.
+            var client = GetClient();
+            // Construct and execute the query to get all triggers whose last run failed recently.
+            string queryString = "ADFPipelineRun ";
+            queryString += $"| extend PipelineRunId = RunId";
+            queryString += $"| where RunId == \"{pipelineRunId}\" ";
+            queryString += $"| order by TimeGenerated desc";
+
+            var results = client.Query(query: queryString);
+            return results.Results.ToList();
         }
     }
 }

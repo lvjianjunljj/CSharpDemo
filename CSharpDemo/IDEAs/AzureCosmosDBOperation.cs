@@ -21,7 +21,7 @@
         public static void MainMethod()
         {
             // for datacop: "datacop-ppe" and "datacop-prod"
-            Initialize("datacop-prod");
+            Initialize("datacop-ppe");
 
             //UpdateAllAlertSettingsDemo();
             //UpdateAllDatasetTestCreatedBy();
@@ -37,6 +37,9 @@
 
             //DisableAllCFRMonitor();
             //InsertCFRMonitorConfig();
+            //UpsertDatasetDemo();
+            //UpsertDatasetTestDemo();
+
 
             //DisableDatasets();
             //EnableDataset();
@@ -54,8 +57,8 @@
             //QueryTestRunCount();
             //QueryKenshoDataset();
             //QueryMonthlyTestRunCount();
-            //QueryTestRuns();
-            QueryTestRunsByDatasets();
+            QueryTestRuns();
+            //QueryTestRunsByDatasets();
             //QueryForbiddenTestRuns();
             //QueryDataCopScores();
             //QueryDatasets();
@@ -1328,6 +1331,26 @@
             }
         }
 
+        private static void UpsertDatasetDemo()
+        {
+            Console.WriteLine("Upsert demo Dataset.");
+            string demoDatasetFilePath = @"D:\data\company_work\M365\IDEAs\datacop\LogAnalyticsWorker\dataset.json";
+            var demoDatasetJson = JObject.Parse(File.ReadAllText(demoDatasetFilePath));
+            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "Dataset");
+            azureCosmosDBClient.UpsertDocumentAsync(demoDatasetJson).Wait();
+            Console.WriteLine("End.");
+        }
+
+        private static void UpsertDatasetTestDemo()
+        {
+            Console.WriteLine("Upsert demo DatasetTest.");
+            string demoDatasetTestFilePath = @"D:\data\company_work\M365\IDEAs\datacop\LogAnalyticsWorker\datasetTest.json";
+            var demoDatasetTestJson = JObject.Parse(File.ReadAllText(demoDatasetTestFilePath));
+            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "DatasetTest");
+            azureCosmosDBClient.UpsertDocumentAsync(demoDatasetTestJson).Wait();
+            Console.WriteLine("End.");
+        }
+
         private static void DisableAllBuildDeploymentDataset()
         {
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "Dataset");
@@ -1748,12 +1771,12 @@
             IList<string> filters = new List<string>
             {
                 //"c.id = '8286d39e-7efb-44e4-a6d9-d3568ea6200b'",
-                "c.datasetId = '618319c3-e263-4f02-bb24-041476954dc9'",
+                "c.datasetId = '8a0ad95b-20f6-4da5-9719-b82f59b00691'",
                 //"c.datasetTestId = 'd2c2991c-4d9b-43df-ac98-acd10a4caf0d'",
                 //"c.partitionKey = ''",
                 //"c.dataFabric = 'Spark'",
                 //"c.status = 'Success'",
-                "c.createTime > '2020-11-28'",
+                //"c.createTime > '2020-11-28'",
             };
 
             IList<JObject> list = GetQueryResult("DataCop", "PartitionedTestRun", null, filters);
@@ -2137,10 +2160,10 @@
             string createTimeMin = @"";
 
             int count = 1000;
-            //datasetId = @"CFR_PPE_ActivityGroupYammer";
+            datasetId = @"8a0ad95b-20f6-4da5-9719-b82f59b00691";
             //partitionKey = @"2020-10-10T00:00:00";
-            dataFabric = "CosmosStream";
-            status = @"Waiting";
+            //dataFabric = "CosmosStream";
+            //status = @"Waiting";
             //createTimeMin = @"2020-11-01";
 
             var start = true;
@@ -2218,7 +2241,8 @@
                         Console.WriteLine(JsonConvert.SerializeObject(e));
                     }
                 }
-                testRuns = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT top 1000 * FROM c WHERE c.status = 'Waiting' and not contains(c.partitionKey, 'T00:00:00') order by c.createTime desc")).Result;
+                Console.WriteLine($"Remove TestRun count: {testRuns.Count}");
+                testRuns = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(sqlQueryString.ToString())).Result;
             }
         }
 
