@@ -27,12 +27,12 @@
         [JsonProperty(PropertyName = "dataStartFrom")]
         public DateTime DataStartFrom { get; set; }
 
-
         /// <summary>
         /// This gets or sets the amount of time to wait for a new datafeed to arrive before alerting about missing data.
+        /// Command out this property for hotfix
         /// </summary>
-        [JsonProperty(PropertyName = "gracePeriodInSeconds")]
-        public int GracePeriodInSeconds { get; set; }
+        //[JsonProperty(PropertyName = "gracePeriodInSeconds")]
+        //public int GracePeriodInSeconds { get; set; }
 
         /// <summary>
         /// This gets or sets the names of the columns in the datafeed schema that represent metric values to be monitored.

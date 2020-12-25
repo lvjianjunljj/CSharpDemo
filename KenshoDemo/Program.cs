@@ -7,7 +7,8 @@
     {
         static void Main(string[] args)
         {
-            UpdateDatafeedDemo.MainMethod();
+            //UpdateDatafeedDemo.MainMethod();
+            QueryDetectResultDemo.MainMethod();
 
             if (Debugger.IsAttached)
             {

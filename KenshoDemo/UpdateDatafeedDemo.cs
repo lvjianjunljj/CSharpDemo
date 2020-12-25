@@ -3,29 +3,41 @@
     using AzureLib.KeyVault;
     using KenshoDemo.Models;
     using Newtonsoft.Json;
+    using Newtonsoft.Json.Linq;
     using System;
     using System.Collections.Generic;
     using System.ComponentModel;
     using System.Configuration;
+    using System.IO;
     using System.Net;
 
     public class UpdateDatafeedDemo
     {
+        private static string kenshoDataJsonFilePath;
         public static void MainMethod()
         {
+            //kenshoDataJsonFilePath = @"D:\IDEAs\repos\Ibiza\Source\DataCopMonitors\PROD\DigitalAnalytics\KAS\KenshoData\KASCombinedSegments.json";
+            kenshoDataJsonFilePath = @"D:\data\company_work\M365\IDEAs\datacop\Kensho\update_datafeed_request_failed\0d244b6f-1738-4316-bcb7-1fe4ed814d15.json";
+
             Initialize(@"datacop-prod");
-            Console.WriteLine(1234);
-            Console.ReadLine();
+            UpdateKenshoData();
+        }
+
+        // This demo function is for the bug 
+        // update_datafeed call failed with status code: BadRequest, error message Internal error occurred, please contact us.
+        private static void UpdateKenshoData()
+        {
+            KenshoData kenshoData = JsonConvert.DeserializeObject<KenshoData>(File.ReadAllText(kenshoDataJsonFilePath));
+            Console.WriteLine(kenshoData);
+            UpdateDatafeed(kenshoData);
         }
 
         /// <summary>
         /// This will update the properties of a datafeed in Kensho.
         /// </summary>
         /// <param name="kenshoData">The Kensho configuration data to update.</param>
-        /// <param name="oldAdminGroups">The previous admins in our local config or from Kensho.</param>
-        /// <param name="oldViewerGroups">The previous viewers in our local config or from Kensho.</param>
         /// <returns>KenshoData</returns>
-        private static void UpdateDatafeed(KenshoData kenshoData, List<string> oldAdminGroups, List<string> oldViewerGroups)
+        private static void UpdateDatafeed(KenshoData kenshoData)
         {
             // Create the update request based on the new Kensho properties set on the dataset.
             KenshoUpdateDatafeedRequest updateDatafeedRequest = new KenshoUpdateDatafeedRequest()
@@ -33,7 +45,7 @@
                 DatafeedId = kenshoData.DatafeedId.GetValueOrDefault(),
                 DatafeedName = kenshoData.DatafeedName,
                 DataStartFrom = kenshoData.DataStartFrom.GetValueOrDefault(),
-                GracePeriodInSeconds = kenshoData.GracePeriodInSeconds.GetValueOrDefault(),
+                //GracePeriodInSeconds = kenshoData.GracePeriodInSeconds.GetValueOrDefault(),
                 DisplayColumns = kenshoData.DisplayColumns,
                 Metrics = new List<string>(),
                 ParameterList = kenshoData.ParameterList,
@@ -55,7 +67,7 @@
         private static KenshoUpdateDatafeedResponse SendUpdateDatafeedRequestAsync(KenshoUpdateDatafeedRequest request)
         {
             KenshoUpdateDatafeedResponse response;
-
+            Console.WriteLine(JObject.Parse(JsonConvert.SerializeObject(request)));
             KenshoBaseResponse responseMessage = kenshoProvider.SendRequestAsync(JsonConvert.SerializeObject(request), UpdateDatafeedString).Result;
             response = new KenshoUpdateDatafeedResponse()
             {

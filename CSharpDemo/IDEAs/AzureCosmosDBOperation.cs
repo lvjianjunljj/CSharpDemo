@@ -57,7 +57,7 @@
             //QueryTestRunCount();
             //QueryKenshoDataset();
             //QueryMonthlyTestRunCount();
-            QueryTestRuns();
+            //QueryTestRuns();
             //QueryTestRunsByDatasets();
             //QueryForbiddenTestRuns();
             //QueryDataCopScores();
@@ -68,7 +68,7 @@
             //QueryTestRunCountByDatasetId();
 
             //DeleteTestRunDemo();
-            //DeleteTestRuns();
+            DeleteTestRuns();
             //DeleteWaitingOrchestrateTestRuns();
             //DeleteCosmosTestRunByResultExpirePeriod();
             // We can use this function to delete instance without any limitation.
@@ -1322,10 +1322,10 @@
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "Dataset");
             // Collation: asc and desc is ascending and descending
             IList<JObject> datasets = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(
-                @"SELECT * FROM c where c.id = '332313fc-0bba-4521-a964-33ca379c245d'")).Result;
+                @"SELECT * FROM c where c.id != '8a0ad95b-20f6-4da5-9719-b82f59b00691'")).Result;
             foreach (JObject dataset in datasets)
             {
-                Console.WriteLine(dataset);
+                Console.WriteLine(dataset["id"]);
                 dataset["isEnabled"] = false;
                 azureCosmosDBClient.UpsertDocumentAsync(dataset).Wait();
             }
