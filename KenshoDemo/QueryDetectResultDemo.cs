@@ -4,6 +4,7 @@
     using KenshoDemo.Models;
     using KenshoDemo.QueryModels;
     using Newtonsoft.Json;
+    using Newtonsoft.Json.Linq;
     using System;
     using System.Collections.Generic;
     using System.ComponentModel;
@@ -43,7 +44,6 @@
         /// <summary>
         /// REtrieves any anomalies found on a given date.
         /// </summary>
-        /// <param name="kenshoCommands">The kensho command class used to generate requests.</param>
         /// <param name="metricGuid">The metric we are processing.</param>
         /// <param name="startTime">The date we are processing.</param>
         /// <param name="configId">The detect config id in Kensho.</param>
@@ -73,6 +73,8 @@
                     },
                 },
             };
+
+            //Console.WriteLine(JObject.Parse(JsonConvert.SerializeObject(request)));
             KenshoQueryDetectResultAnomaliesResponse response = SendQueryDetectResultAnomaliesRequestAsync(request);
             if (response.StatusCode != HttpStatusCode.OK)
             {
