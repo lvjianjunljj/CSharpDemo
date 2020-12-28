@@ -44,9 +44,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="PropertyComparable.cs" />
+    <Compile Include="IDEAs\Constants.cs" />
+    <Compile Include="IDEAs\DateUtils.cs" />
+    <Compile Include="IDEAs\StreamSetUtils.cs" />
+    <Compile Include="IDEAs\PropertyComparable.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Retrier.cs" />
+    <Compile Include="IDEAs\Retrier.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

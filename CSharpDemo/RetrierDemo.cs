@@ -1,6 +1,6 @@
 ﻿namespace CSharpDemo
 {
-    using CommonLib;
+    using CommonLib.IDEAs;
     using System;
 
     class RetrierDemo

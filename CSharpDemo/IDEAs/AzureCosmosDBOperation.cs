@@ -15,6 +15,7 @@
     using System.IO;
     using System.Text;
     using System.Diagnostics;
+    using CommonLib.IDEAs;
 
     public class AzureCosmosDBOperation
     {
@@ -2084,44 +2085,6 @@
             }
         }
 
-        public enum Grain
-        {
-            /// <summary>
-            /// Non-Value
-            /// </summary>
-            None = 0,
-
-            /// <summary>
-            /// Hourly Grain - Once per hour
-            /// </summary>
-            Hourly,
-
-            /// <summary>
-            /// Daily Grain - Once per day
-            /// </summary>
-            Daily,
-
-            /// <summary>
-            /// Weeekly Grain - Once per week
-            /// </summary>
-            Weekly,
-
-            /// <summary>
-            /// Monthly Grain - Once per month (always on the first of every month)
-            /// </summary>
-            Monthly,
-
-            /// <summary>
-            /// Monthly Grain - Once per month (always test at the end of every month)
-            /// </summary>
-            EndOfMonth,
-
-            /// <summary>
-            /// Yearly Grain - Once per year
-            /// </summary>
-            Yearly
-        }
-
         private class CosmosCompletenessTestContent
         {
             /// <summary>
@@ -2483,7 +2446,6 @@
             }
             return false;
         }
-
         private static string GetDocumentLink(
             string databaseName,
             string collectionName,
@@ -2492,7 +2454,6 @@
         private static string GetCollectionLink(
             string databaseName,
             string collectionName) => $"/dbs/{databaseName}/colls/{collectionName}/";
-
         private static void DeleteCosmosTestRunByResultExpirePeriod()
         {
             string resultExpirePeriod = "2.00:00:00";
@@ -2517,7 +2478,6 @@
                 //Console.WriteLine(resource);
             }
         }
-
         private static void DisableAbortedTest()
         {
             // Based on the testRuns in the past half a month

@@ -1,5 +1,8 @@
 ﻿namespace AzureSparkDemo
 {
+    using AzureSparkDemo.Clients;
+    using AzureSparkDemo.Models;
+    using CommonLib.IDEAs;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
     using System;
@@ -12,7 +15,7 @@
     /// <summary>
     /// Class SparkMetricsCorrectness.
     /// </summary>
-    public static class SparkMetricDemo
+    public class SparkMetricDemo
     {
         public static void MainMethod()
         {
@@ -21,255 +24,283 @@
 
         public const string testDateString = "@testDate";
 
-        ///// <summary>
-        ///// Processes the metrics correctness test.
-        ///// </summary>
-        ///// <param name="dataLakeClient">The data lake client.</param>
-        ///// <param name="logger">The logger.</param>
-        ///// <param name="testRun">The test run.</param>
-        ///// <param name="testContent">Content of the test.</param>
-        ///// <param name="sparkClient">The spark client.</param>
-        ///// <param name="sparkClientSettings">The spark client settings.</param>
-        ///// <param name="messageTag">The message tag.</param>
-        ///// <returns>SparkMetricsTestResult.</returns>
-        ///// <exception cref="NotSupportedException">ComparisonType {testContent.ComparisonType}</exception>
-        //private static List<MetricsTestResult> ProcessMetricsCorrectnessTest(
-        //    IDataLakeClient dataLakeClient,
-        //    ILogger logger,
-        //    TestRun testRun,
-        //    SparkMetricsTestContent testContent,
-        //    ISparkClient sparkClient,
-        //    SparkClientSettings sparkClientSettings,
-        //    SparkWorkerMessageTag messageTag,
-        //    CancellationToken cancellationToken)
-        //{
+        private static string testRunName = @"";
+        private static string testRunId = @"";
 
-        //    MetricValues metricValues = null;
-        //    switch (testContent.ComparisonType)
-        //    {
-        //        case ComparisonType.DayOverDay:
-        //        case ComparisonType.WeekOverWeek:
-        //        case ComparisonType.MonthOverMonth:
-        //        case ComparisonType.YearOverYear:
-        //            metricValues = GetMetricValues(
-        //                dataLakeClient,
-        //                logger,
-        //                testRun,
-        //                testContent,
-        //                sparkClient,
-        //                sparkClientSettings,
-        //                messageTag,
-        //                cancellationToken);
-        //            break;
-        //        case ComparisonType.VarianceToTarget:
-        //            var metricValue = GetMetricValue(
-        //                logger,
-        //                testRun,
-        //                testContent,
-        //                sparkClient,
-        //                sparkClientSettings,
-        //                testContent.GetCurrentStreamPath(),
-        //                dataLakeClient,
-        //                messageTag,
-        //                cancellationToken);
-        //            testContent.NotebookParameters["cmdText"] = testContent.NotebookParameters["targetCmdText"];
-        //            var targetValue = GetMetricValue(
-        //                logger,
-        //                testRun,
-        //                testContent,
-        //                sparkClient,
-        //                sparkClientSettings,
-        //                testContent.TargetStreamPath != null ? testContent.GetCurrentTargetStreamPath() : testContent.GetCurrentStreamPath(),
-        //                dataLakeClient,
-        //                messageTag,
-        //                cancellationToken);
+        /// <summary>
+        /// Processes the metrics correctness test.
+        /// </summary>
+        /// <param name="dataLakeClient">The data lake client.</param>
+        /// <param name="testContent">Content of the test.</param>
+        /// <param name="sparkClient">The spark client.</param>
+        /// <param name="sparkClientSettings">The spark client settings.</param>
+        /// <param name="messageTag">The message tag.</param>
+        /// <returns>SparkMetricsTestResult.</returns>
+        /// <exception cref="NotSupportedException">ComparisonType {testContent.ComparisonType}</exception>
+        private static List<MetricsTestResult> ProcessMetricsCorrectnessTest(
+            DataLakeClient dataLakeClient,
+            SparkMetricsTestContent testContent,
+            SparkClient sparkClient,
+            SparkClientSettings sparkClientSettings,
+            SparkWorkerMessageTag messageTag,
+            CancellationToken cancellationToken)
+        {
 
-        //            metricValues = new MetricValues
-        //            {
-        //                Baseline = targetValue,
-        //                Current = metricValue
-        //            };
-        //            break;
-        //        default:
-        //            throw new NotSupportedException($"ComparisonType {testContent.ComparisonType} not supported for SparkWorker");
-        //    }
+            MetricValues metricValues = null;
+            switch (testContent.ComparisonType)
+            {
+                case ComparisonType.DayOverDay:
+                case ComparisonType.WeekOverWeek:
+                case ComparisonType.MonthOverMonth:
+                case ComparisonType.YearOverYear:
+                    metricValues = GetMetricValues(
+                        dataLakeClient,
+                        testContent,
+                        sparkClient,
+                        sparkClientSettings,
+                        messageTag,
+                        cancellationToken);
+                    break;
+                case ComparisonType.VarianceToTarget:
+                    var metricValue = GetMetricValue(
+                        testContent,
+                        sparkClient,
+                        sparkClientSettings,
+                        testContent.GetCurrentStreamPath(),
+                        dataLakeClient,
+                        messageTag,
+                        cancellationToken);
+                    testContent.NotebookParameters["cmdText"] = testContent.NotebookParameters["targetCmdText"];
+                    var targetValue = GetMetricValue(
+                        testContent,
+                        sparkClient,
+                        sparkClientSettings,
+                        testContent.TargetStreamPath != null ? testContent.GetCurrentTargetStreamPath() : testContent.GetCurrentStreamPath(),
+                        dataLakeClient,
+                        messageTag,
+                        cancellationToken);
 
-        //    var results = new List<MetricsTestResult>();
+                    metricValues = new MetricValues
+                    {
+                        Baseline = targetValue,
+                        Current = metricValue
+                    };
+                    break;
+                default:
+                    throw new NotSupportedException($"ComparisonType {testContent.ComparisonType} not supported for SparkWorker");
+            }
 
-        //    foreach (var threshold in testContent.Thresholds)
-        //    {
-        //        var result = new MetricsTestResult
-        //        {
-        //            ComparisonType = testContent.ComparisonType,
-        //            Date = testContent.Date,
-        //            BaselineMetricValue = metricValues.Baseline[threshold.Name],
-        //            MetricValue = metricValues.Current[threshold.Name],
-        //            LowerBoundThreshold = threshold.LowerBound,
-        //            UpperBoundThreshold = threshold.UpperBound,
-        //            PercentDiff = MetricValues.ComputePercentDiff(metricValues, threshold.Name),
-        //            PreviousDate = testContent.GetPreviousDate(),
-        //            TestName = testRun.TestName,
-        //            TestRunId = testRun.Id,
-        //            MetricName = threshold.Name
-        //        };
+            var results = new List<MetricsTestResult>();
 
-        //        logger.LogEntityAsync(result, "SparkMetricsTestResult").Wait();
+            foreach (var threshold in testContent.Thresholds)
+            {
+                var result = new MetricsTestResult
+                {
+                    ComparisonType = testContent.ComparisonType,
+                    Date = testContent.Date,
+                    BaselineMetricValue = metricValues.Baseline[threshold.Name],
+                    MetricValue = metricValues.Current[threshold.Name],
+                    LowerBoundThreshold = threshold.LowerBound,
+                    UpperBoundThreshold = threshold.UpperBound,
+                    PercentDiff = MetricValues.ComputePercentDiff(metricValues, threshold.Name),
+                    PreviousDate = testContent.GetPreviousDate(),
+                    TestName = testRunName,
+                    TestRunId = testRunId,
+                    MetricName = threshold.Name
+                };
 
-        //        results.Add(result);
-        //    }
+                results.Add(result);
+            }
 
-        //    return results;
-        //}
+            return results;
+        }
 
 
-        ///// <summary>
-        ///// Gets the metric values.
-        ///// </summary>
-        ///// <param name="dataLakeClient">The data lake client.</param>
-        ///// <param name="logger">The logger.</param>
-        ///// <param name="testRun">The test run.</param>
-        ///// <param name="testContent">Content of the test.</param>
-        ///// <param name="sparkClient">The spark client.</param>
-        ///// <param name="sparkClientSettings">The spark client settings.</param>
-        ///// <param name="messageTag">The message tag.</param>
-        ///// <returns>MetricValues.</returns>
-        //private static MetricValues GetMetricValues(
-        //    IDataLakeClient dataLakeClient,
-        //    ILogger logger,
-        //    TestRun testRun,
-        //    SparkMetricsTestContent testContent,
-        //    ISparkClient sparkClient,
-        //    SparkClientSettings sparkClientSettings,
-        //    SparkWorkerMessageTag messageTag,
-        //    CancellationToken cancellationToken)
-        //{
-        //    string currentPath = testContent.GetCurrentStreamPath();
-        //    string previousPath = testContent.GetPreviousStreamPath();
+        /// <summary>
+        /// Gets the metric values.
+        /// </summary>
+        /// <param name="dataLakeClient">The data lake client.</param>
+        /// <param name="logger">The logger.</param>
+        /// <param name="testRun">The test run.</param>
+        /// <param name="testContent">Content of the test.</param>
+        /// <param name="sparkClient">The spark client.</param>
+        /// <param name="sparkClientSettings">The spark client settings.</param>
+        /// <param name="messageTag">The message tag.</param>
+        /// <returns>MetricValues.</returns>
+        private static MetricValues GetMetricValues(
+            DataLakeClient dataLakeClient,
+            SparkMetricsTestContent testContent,
+            SparkClient sparkClient,
+            SparkClientSettings sparkClientSettings,
+            SparkWorkerMessageTag messageTag,
+            CancellationToken cancellationToken)
+        {
+            string currentPath = testContent.GetCurrentStreamPath();
+            string previousPath = testContent.GetPreviousStreamPath();
 
-        //    var current = GetMetricValue(
-        //        logger,
-        //        testRun,
-        //        testContent,
-        //        sparkClient,
-        //        sparkClientSettings,
-        //        currentPath,
-        //        dataLakeClient,
-        //        messageTag,
-        //        cancellationToken);
-        //    var previous = GetMetricValue(
-        //        logger,
-        //        testRun,
-        //        testContent,
-        //        sparkClient,
-        //        sparkClientSettings,
-        //        previousPath,
-        //        dataLakeClient,
-        //        messageTag,
-        //        cancellationToken);
+            var current = GetMetricValue(
+                testContent,
+                sparkClient,
+                sparkClientSettings,
+                currentPath,
+                dataLakeClient,
+                messageTag,
+                cancellationToken);
+            var previous = GetMetricValue(
+                testContent,
+                sparkClient,
+                sparkClientSettings,
+                previousPath,
+                dataLakeClient,
+                messageTag,
+                cancellationToken);
 
-        //    var metricValues = new MetricValues
-        //    {
-        //        Baseline = previous,
-        //        Current = current
-        //    };
+            var metricValues = new MetricValues
+            {
+                Baseline = previous,
+                Current = current
+            };
 
-        //    return metricValues;
-        //}
+            return metricValues;
+        }
 
-        ///// <summary>
-        ///// Gets the metric value.
-        ///// </summary>
-        ///// <param name="logger">The logger.</param>
-        ///// <param name="testRun">The test run.</param>
-        ///// <param name="testContent">Content of the test.</param>
-        ///// <param name="sparkClient">The spark client.</param>
-        ///// <param name="sparkClientSettings">The spark client settings.</param>
-        ///// <param name="stream">The stream.</param>
-        ///// <param name="dataLakeClient">The data lake client.</param>
-        ///// <param name="messageTag">The message tag.</param>
-        ///// <returns>System.Nullable&lt;System.Double&gt;.</returns>
-        ///// <exception cref="InvalidOperationException">Stream does not exist : {stream}</exception>
-        //private static IDictionary<string, double> GetMetricValue(
-        //    ILogger logger,
-        //   TestRun testRun,
-        //    SparkMetricsTestContent testContent,
-        //    ISparkClient sparkClient,
-        //    SparkClientSettings sparkClientSettings,
-        //    string stream,
-        //    IDataLakeClient dataLakeClient,
-        //    SparkWorkerMessageTag messageTag,
-        //    CancellationToken cancellationToken)
-        //{
+        /// <summary>
+        /// Gets the metric value.
+        /// </summary>
+        /// <param name="testContent">Content of the test.</param>
+        /// <param name="sparkClient">The spark client.</param>
+        /// <param name="sparkClientSettings">The spark client settings.</param>
+        /// <param name="stream">The stream.</param>
+        /// <param name="dataLakeClient">The data lake client.</param>
+        /// <param name="messageTag">The message tag.</param>
+        /// <returns>System.Nullable&lt;System.Double&gt;.</returns>
+        /// <exception cref="InvalidOperationException">Stream does not exist : {stream}</exception>
+        private static IDictionary<string, double> GetMetricValue(
+            SparkMetricsTestContent testContent,
+            SparkClient sparkClient,
+            SparkClientSettings sparkClientSettings,
+            string stream,
+            DataLakeClient dataLakeClient,
+            SparkWorkerMessageTag messageTag,
+            CancellationToken cancellationToken)
+        {
 
-        //    if (!dataLakeClient.CheckExists(testContent.GetDatalakeStore(), stream))
-        //    {
-        //        throw new FileNotFoundException($"Stream does not exist : {stream}");
-        //    }
+            if (!dataLakeClient.CheckExists(testContent.GetDatalakeStore(), stream))
+            {
+                throw new FileNotFoundException($"Stream does not exist : {stream}");
+            }
 
-        //    var sparkRequest = new SparkClientRequest
-        //    {
-        //        NodeType = sparkClientSettings.NodeType,
-        //        NumWorkersMin = sparkClientSettings.NumWorkersMin,
-        //        NumWorkersMax = sparkClientSettings.NumWorkersMax,
-        //        CostPerNode = SparkCorrectness.GetCostPerNode(sparkClientSettings.NodeTypes, sparkClientSettings.NodeType),
-        //        Libraries = sparkClientSettings.Libraries,
-        //        NotebookPath = testContent.NotebookPath,
-        //        NotebookParameters = testContent.NotebookParameters ?? new Dictionary<string, string>(),
-        //        TestRunId = testRun.Id,
-        //        TimeoutSeconds = sparkClientSettings.TimeoutSeconds
-        //    };
+            var sparkRequest = new SparkClientRequest
+            {
+                NodeType = sparkClientSettings.NodeType,
+                NumWorkersMin = sparkClientSettings.NumWorkersMin,
+                NumWorkersMax = sparkClientSettings.NumWorkersMax,
+                CostPerNode = GetCostPerNode(sparkClientSettings.NodeTypes, sparkClientSettings.NodeType),
+                Libraries = sparkClientSettings.Libraries,
+                NotebookPath = testContent.NotebookPath,
+                NotebookParameters = testContent.NotebookParameters ?? new Dictionary<string, string>(),
+                TestRunId = testRunId,
+                TimeoutSeconds = sparkClientSettings.TimeoutSeconds
+            };
 
-        //    logger.LogInfoAsync("002d1056-984d-4558-8ac7-60d7da619f38", $"Running notebook={testContent.NotebookPath} for DataLakeStore={testContent.GetDatalakeStore()}, Path={stream}", testRun.Id).Wait();
-        //    var mountPoint = SparkCorrectness.GetMountPoint(testContent.GetDatalakeStore(), stream);
-        //    logger.LogInfoAsync("f3d59ead-7890-4ced-9d78-973ff0018237", $"Running notebook={testContent.NotebookPath} for mountPoint={mountPoint}", testRun.Id).Wait();
+            Console.WriteLine($"Running notebook={testContent.NotebookPath} for DataLakeStore={testContent.GetDatalakeStore()}, Path={stream}");
+            var mountPoint = GetMountPoint(testContent.GetDatalakeStore(), stream);
+            Console.WriteLine($"Running notebook={testContent.NotebookPath} for mountPoint={mountPoint}");
 
-        //    string streamPath = null;
-        //    if (testContent.ConvertToParquet)
-        //    {
-        //        var parquetFile = messageTag.MountPointToParquetFile[mountPoint];
-        //        logger.LogInfoAsync("2468acaf-fa9e-425d-9cbd-d5045038baaa", $"Running notebook={testContent.NotebookPath} using parquetFile={parquetFile}", testRun.Id).Wait();
-        //        streamPath = parquetFile;
-        //    }
-        //    else
-        //    {
-        //        streamPath = mountPoint;
-        //    }
+            string streamPath = null;
+            if (testContent.ConvertToParquet)
+            {
+                var parquetFile = messageTag.MountPointToParquetFile[mountPoint];
+                Console.WriteLine($"Running notebook={testContent.NotebookPath} using parquetFile={parquetFile}");
+                streamPath = parquetFile;
+            }
+            else
+            {
+                streamPath = mountPoint;
+            }
 
-        //    sparkRequest.NotebookParameters["streamPath"] = streamPath;
+            sparkRequest.NotebookParameters["streamPath"] = streamPath;
 
-        //    logger.LogInfoAsync("d2970006-675b-45aa-b89d-922047c17d14", $"Notebook parameters : {string.Join(", ", sparkRequest.NotebookParameters.Select(t => t.Key + "=" + t.Value))}", testRun.Id).Wait();
+            Console.WriteLine($"Notebook parameters : {string.Join(", ", sparkRequest.NotebookParameters.Select(t => t.Key + "=" + t.Value))}");
 
-        //    // Log request to OMS
-        //    logger.LogEntityAsync(sparkRequest, "SparkClientRequest").Wait();
+            // Log request to OMS
 
-        //    var response = sparkClient.RunNotebook(sparkRequest, cancellationToken);
-        //    response.TestRunId = testRun.Id;
-        //    logger.LogEntityAsync(response, "SparkClientResponse").Wait();
+            var response = sparkClient.RunNotebook(sparkRequest, cancellationToken);
+            response.TestRunId = testRunId;
 
-        //    if (response.IsRunSuccess())
-        //    {
-        //        // For format reference see:
-        //        // https://pandas.pydata.org/pandas-docs/version/0.24.2/reference/api/pandas.DataFrame.to_json.html
-        //        var resultDataFrame = JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, double>>>(response.RunOutput);
-        //        var resultDictionary = new Dictionary<string, double>();
-        //        foreach (var pair in resultDataFrame)
-        //        {
-        //            // pair.Value is the column name
-        //            if (pair.Value == null || pair.Value.Count == 0)
-        //            {
-        //                throw new InvalidOperationException("Result does not contain any rows");
-        //            }
+            if (response.IsRunSuccess())
+            {
+                // For format reference see:
+                // https://pandas.pydata.org/pandas-docs/version/0.24.2/reference/api/pandas.DataFrame.to_json.html
+                var resultDataFrame = JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, double>>>(response.RunOutput);
+                var resultDictionary = new Dictionary<string, double>();
+                foreach (var pair in resultDataFrame)
+                {
+                    // pair.Value is the column name
+                    if (pair.Value == null || pair.Value.Count == 0)
+                    {
+                        throw new InvalidOperationException("Result does not contain any rows");
+                    }
 
-        //            // We take the first row only
-        //            resultDictionary.Add(pair.Key, pair.Value.First().Value);
-        //        }
-        //        return resultDictionary;
-        //    }
-        //    else
-        //    {
-        //        throw new SparkJobException($"Error getting metric. TestRun = {testRun.Id}, Spark job {response?.Run?.RunId} failed");
-        //    }
-        //}
+                    // We take the first row only
+                    resultDictionary.Add(pair.Key, pair.Value.First().Value);
+                }
+                return resultDictionary;
+            }
+            else
+            {
+                throw new Exception($"Error getting metric. TestRun = {testRunId}, Spark job {response?.Run?.RunId} failed");
+            }
+        }
+
+        /// <summary>
+        /// Gets the cost per node.
+        /// </summary>
+        /// <param name="nodeTypes">The node types.</param>
+        /// <param name="nodeType">Type of the node.</param>
+        /// <returns>System.Double.</returns>
+        /// <exception cref="ArgumentException">Could not find node type {nodeType}</exception>
+        public static double GetCostPerNode(List<NodeTypeExpression> nodeTypes, string nodeType)
+        {
+            var record = nodeTypes.Where(t => t.Type == nodeType).FirstOrDefault();
+            if (record == null)
+            {
+                throw new ArgumentException($"Could not find node type {nodeType}");
+            }
+            return double.Parse(record.Cost);
+        }
+
+        /// <summary>
+        /// Gets the mount point.
+        /// </summary>
+        /// <param name="datalakeStore">The datalake store.</param>
+        /// <param name="streamPath">The stream path.</param>
+        /// <returns>string.</returns>
+        /// <exception cref="ArgumentNullException">datalakeStore
+        /// or
+        /// streamPath</exception>
+        /// <exception cref="InvalidOperationException">Expected 3 tokens in string {datalakeStore}</exception>
+        public static string GetMountPoint(string datalakeStore, string streamPath)
+        {
+            if (string.IsNullOrWhiteSpace(datalakeStore))
+            {
+                throw new ArgumentNullException(nameof(datalakeStore));
+            }
+
+            if (string.IsNullOrWhiteSpace(streamPath))
+            {
+                throw new ArgumentNullException(nameof(streamPath));
+            }
+
+            var tokens = datalakeStore.Split('.');
+
+            if (tokens.Length != 3)
+            {
+                throw new InvalidOperationException($"Expected 3 tokens in string {datalakeStore}");
+            }
+
+            return $"/mnt/{tokens[0]}/{streamPath.TrimStart('/')}";
+        }
     }
 }
 

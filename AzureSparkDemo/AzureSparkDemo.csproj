@@ -79,10 +79,15 @@
   <ItemGroup>
     <Compile Include="Clients\DatabricksClient.cs" />
     <Compile Include="Clients\DataLakeClient.cs" />
+    <Compile Include="Models\MetricsTestResult.cs" />
+    <Compile Include="Models\MetricThreshold.cs" />
+    <Compile Include="Models\MetricValues.cs" />
     <Compile Include="Models\NodeTypeExpression.cs" />
     <Compile Include="Models\SparkClientRequest.cs" />
     <Compile Include="Models\SparkClientResponse.cs" />
     <Compile Include="Models\SparkClientSettings.cs" />
+    <Compile Include="Models\SparkMetricsTestContentcs.cs" />
+    <Compile Include="Models\SparkWorkerMessageTag.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Clients\SparkClient.cs" />
