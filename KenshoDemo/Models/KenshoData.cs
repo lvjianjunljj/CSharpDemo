@@ -1,5 +1,6 @@
 ﻿namespace KenshoDemo.Models
 {
+    using CommonLib;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Converters;
     using System;

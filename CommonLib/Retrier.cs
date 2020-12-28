@@ -1,4 +1,4 @@
-﻿namespace AzureSparkDemo
+﻿namespace CommonLib
 {
     using System;
     using System.Threading;

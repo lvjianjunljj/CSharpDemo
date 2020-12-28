@@ -1,4 +1,4 @@
-﻿namespace CSharpDemo
+﻿namespace CommonLib
 {
     using System;
     using System.Collections;

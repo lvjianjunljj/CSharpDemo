@@ -241,7 +241,6 @@
     <Compile Include="LINQ\ToIEnumerableDemo.cs" />
     <Compile Include="NullablePropertyDemo.cs" />
     <Compile Include="Parallel\TaskTimeOut.cs" />
-    <Compile Include="PropertyComparable.cs" />
     <Compile Include="QPSTestDemo.cs" />
     <Compile Include="RegexDemo.cs" />
     <Compile Include="SerializableMarkDemo.cs" />
@@ -261,8 +260,7 @@
     <Compile Include="ReflectionDemo\ReflectionGetValue.cs" />
     <Compile Include="ReflectionDemo\ReflectionSetValue.cs" />
     <Compile Include="ReflectionDemo\ToStringGetPropertiesDemo.cs" />
-    <Compile Include="RetrierDir\Retrier.cs" />
-    <Compile Include="RetrierDir\RetrierDemo.cs" />
+    <Compile Include="RetrierDemo.cs" />
     <Compile Include="SerializableAttributeDemo.cs" />
     <Compile Include="SingletonDemo\Singleton.cs" />
     <Compile Include="SingletonDemo\StaticVariableDemo.cs" />
@@ -307,6 +305,10 @@
     <ProjectReference Include="..\AzureLib\AzureLib.csproj">
       <Project>{8a3f3ce0-e84d-42bc-846e-7531b5a1b8be}</Project>
       <Name>AzureLib</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CommonLib\CommonLib.csproj">
+      <Project>{5e6a3b93-f6c4-4fbc-9838-5e3088acbcc4}</Project>
+      <Name>CommonLib</Name>
     </ProjectReference>
     <ProjectReference Include="..\CSharpDemoAux\CSharpDemoAux.csproj">
       <Project>{c43ef999-b1ad-4bb8-a0f6-6dffcc2a4f0b}</Project>

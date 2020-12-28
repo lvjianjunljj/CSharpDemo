@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace CSharpDemo.RetrierDir
+﻿namespace CSharpDemo
 {
+    using CommonLib;
+    using System;
+
     class RetrierDemo
     {
         private static int SuccessTryValue = 0;

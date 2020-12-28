@@ -1,6 +1,7 @@
 ﻿namespace AzureSparkDemo.Clients
 {
     using AzureSparkDemo.Models;
+    using CommonLib;
     using Microsoft.Azure.Databricks.Client;
     using System;
     using System.Threading;
