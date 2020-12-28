@@ -58,7 +58,7 @@
             //QueryTestRunCount();
             //QueryKenshoDataset();
             //QueryMonthlyTestRunCount();
-            //QueryTestRuns();
+            QueryTestRuns();
             //QueryTestRunsByDatasets();
             //QueryForbiddenTestRuns();
             //QueryDataCopScores();
@@ -69,7 +69,7 @@
             //QueryTestRunCountByDatasetId();
 
             //DeleteTestRunDemo();
-            DeleteTestRuns();
+            //DeleteTestRuns();
             //DeleteWaitingOrchestrateTestRuns();
             //DeleteCosmosTestRunByResultExpirePeriod();
             // We can use this function to delete instance without any limitation.
