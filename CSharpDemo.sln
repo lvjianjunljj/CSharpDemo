@@ -47,6 +47,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LogAnalyticsDemo", "LogAnal
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KenshoDemo", "KenshoDemo\KenshoDemo.csproj", "{2F34E4D4-BFB1-4424-BB75-5E4F9CE42D9C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureSparkDemo", "AzureSparkDemo\AzureSparkDemo.csproj", "{8189B189-4130-4351-AA8F-D7666908AE61}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -481,6 +483,26 @@ Global
 		{2F34E4D4-BFB1-4424-BB75-5E4F9CE42D9C}.Release|x64.Build.0 = Release|Any CPU
 		{2F34E4D4-BFB1-4424-BB75-5E4F9CE42D9C}.Release|x86.ActiveCfg = Release|Any CPU
 		{2F34E4D4-BFB1-4424-BB75-5E4F9CE42D9C}.Release|x86.Build.0 = Release|Any CPU
+		{8189B189-4130-4351-AA8F-D7666908AE61}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8189B189-4130-4351-AA8F-D7666908AE61}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8189B189-4130-4351-AA8F-D7666908AE61}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{8189B189-4130-4351-AA8F-D7666908AE61}.Debug|ARM.Build.0 = Debug|Any CPU
+		{8189B189-4130-4351-AA8F-D7666908AE61}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{8189B189-4130-4351-AA8F-D7666908AE61}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{8189B189-4130-4351-AA8F-D7666908AE61}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{8189B189-4130-4351-AA8F-D7666908AE61}.Debug|x64.Build.0 = Debug|Any CPU
+		{8189B189-4130-4351-AA8F-D7666908AE61}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{8189B189-4130-4351-AA8F-D7666908AE61}.Debug|x86.Build.0 = Debug|Any CPU
+		{8189B189-4130-4351-AA8F-D7666908AE61}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8189B189-4130-4351-AA8F-D7666908AE61}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8189B189-4130-4351-AA8F-D7666908AE61}.Release|ARM.ActiveCfg = Release|Any CPU
+		{8189B189-4130-4351-AA8F-D7666908AE61}.Release|ARM.Build.0 = Release|Any CPU
+		{8189B189-4130-4351-AA8F-D7666908AE61}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{8189B189-4130-4351-AA8F-D7666908AE61}.Release|ARM64.Build.0 = Release|Any CPU
+		{8189B189-4130-4351-AA8F-D7666908AE61}.Release|x64.ActiveCfg = Release|Any CPU
+		{8189B189-4130-4351-AA8F-D7666908AE61}.Release|x64.Build.0 = Release|Any CPU
+		{8189B189-4130-4351-AA8F-D7666908AE61}.Release|x86.ActiveCfg = Release|Any CPU
+		{8189B189-4130-4351-AA8F-D7666908AE61}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
