@@ -1,15 +1,16 @@
 ﻿namespace AzureSparkDemo
 {
+    using AzureLib.KeyVault;
     using AzureSparkDemo.Clients;
     using AzureSparkDemo.Models;
     using CommonLib.IDEAs;
+    using Microsoft.Azure.Databricks.Client;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
     using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
-    using System.Net;
     using System.Threading;
 
     /// <summary>
@@ -19,13 +20,36 @@
     {
         public static void MainMethod()
         {
-            Console.WriteLine("Hellow Workd");
+            ProcessMetricsCorrectnessDemo();
         }
 
         public const string testDateString = "@testDate";
 
-        private static string testRunName = @"";
-        private static string testRunId = @"";
+        private static string testRunName = @"DemoTestRunName";
+        private static string testRunId = @"DemoTestRunId";
+
+        private static void ProcessMetricsCorrectnessDemo()
+        {
+            string sparkTestContentJsonFilePath =
+                @"D:\data\company_work\M365\IDEAs\datacop\SparkWorker\TestContents\a5e052c3-4b8a-4d41-9259-74c9567c28fd.json";
+
+            Configuration configuration = new Configuration();
+            configuration.LoadConfiguration();
+            Console.WriteLine(configuration.TenantId);
+
+            SparkMetricsTestContent testContent =
+                JsonConvert.DeserializeObject<SparkMetricsTestContent>(File.ReadAllText(sparkTestContentJsonFilePath));
+            var results = ProcessMetricsCorrectnessTest(
+                configuration.DataLakeClient,
+                testContent,
+                configuration.SparkClient,
+                configuration.SparkClientSettings,
+                new CancellationToken());
+            foreach (var result in results)
+            {
+                Console.WriteLine(JObject.Parse(JsonConvert.SerializeObject(result)));
+            }
+        }
 
         /// <summary>
         /// Processes the metrics correctness test.
@@ -34,7 +58,6 @@
         /// <param name="testContent">Content of the test.</param>
         /// <param name="sparkClient">The spark client.</param>
         /// <param name="sparkClientSettings">The spark client settings.</param>
-        /// <param name="messageTag">The message tag.</param>
         /// <returns>SparkMetricsTestResult.</returns>
         /// <exception cref="NotSupportedException">ComparisonType {testContent.ComparisonType}</exception>
         private static List<MetricsTestResult> ProcessMetricsCorrectnessTest(
@@ -42,7 +65,6 @@
             SparkMetricsTestContent testContent,
             SparkClient sparkClient,
             SparkClientSettings sparkClientSettings,
-            SparkWorkerMessageTag messageTag,
             CancellationToken cancellationToken)
         {
 
@@ -58,7 +80,6 @@
                         testContent,
                         sparkClient,
                         sparkClientSettings,
-                        messageTag,
                         cancellationToken);
                     break;
                 case ComparisonType.VarianceToTarget:
@@ -68,7 +89,6 @@
                         sparkClientSettings,
                         testContent.GetCurrentStreamPath(),
                         dataLakeClient,
-                        messageTag,
                         cancellationToken);
                     testContent.NotebookParameters["cmdText"] = testContent.NotebookParameters["targetCmdText"];
                     var targetValue = GetMetricValue(
@@ -77,7 +97,6 @@
                         sparkClientSettings,
                         testContent.TargetStreamPath != null ? testContent.GetCurrentTargetStreamPath() : testContent.GetCurrentStreamPath(),
                         dataLakeClient,
-                        messageTag,
                         cancellationToken);
 
                     metricValues = new MetricValues
@@ -120,19 +139,15 @@
         /// Gets the metric values.
         /// </summary>
         /// <param name="dataLakeClient">The data lake client.</param>
-        /// <param name="logger">The logger.</param>
-        /// <param name="testRun">The test run.</param>
         /// <param name="testContent">Content of the test.</param>
         /// <param name="sparkClient">The spark client.</param>
         /// <param name="sparkClientSettings">The spark client settings.</param>
-        /// <param name="messageTag">The message tag.</param>
         /// <returns>MetricValues.</returns>
         private static MetricValues GetMetricValues(
             DataLakeClient dataLakeClient,
             SparkMetricsTestContent testContent,
             SparkClient sparkClient,
             SparkClientSettings sparkClientSettings,
-            SparkWorkerMessageTag messageTag,
             CancellationToken cancellationToken)
         {
             string currentPath = testContent.GetCurrentStreamPath();
@@ -144,7 +159,6 @@
                 sparkClientSettings,
                 currentPath,
                 dataLakeClient,
-                messageTag,
                 cancellationToken);
             var previous = GetMetricValue(
                 testContent,
@@ -152,7 +166,6 @@
                 sparkClientSettings,
                 previousPath,
                 dataLakeClient,
-                messageTag,
                 cancellationToken);
 
             var metricValues = new MetricValues
@@ -172,7 +185,6 @@
         /// <param name="sparkClientSettings">The spark client settings.</param>
         /// <param name="stream">The stream.</param>
         /// <param name="dataLakeClient">The data lake client.</param>
-        /// <param name="messageTag">The message tag.</param>
         /// <returns>System.Nullable&lt;System.Double&gt;.</returns>
         /// <exception cref="InvalidOperationException">Stream does not exist : {stream}</exception>
         private static IDictionary<string, double> GetMetricValue(
@@ -181,7 +193,6 @@
             SparkClientSettings sparkClientSettings,
             string stream,
             DataLakeClient dataLakeClient,
-            SparkWorkerMessageTag messageTag,
             CancellationToken cancellationToken)
         {
 
@@ -207,17 +218,19 @@
             var mountPoint = GetMountPoint(testContent.GetDatalakeStore(), stream);
             Console.WriteLine($"Running notebook={testContent.NotebookPath} for mountPoint={mountPoint}");
 
-            string streamPath = null;
-            if (testContent.ConvertToParquet)
-            {
-                var parquetFile = messageTag.MountPointToParquetFile[mountPoint];
-                Console.WriteLine($"Running notebook={testContent.NotebookPath} using parquetFile={parquetFile}");
-                streamPath = parquetFile;
-            }
-            else
-            {
-                streamPath = mountPoint;
-            }
+            string streamPath = mountPoint;
+
+            // Disable this function
+            //if (testContent.ConvertToParquet)
+            //{
+            //    var parquetFile = messageTag.MountPointToParquetFile[mountPoint];
+            //    Console.WriteLine($"Running notebook={testContent.NotebookPath} using parquetFile={parquetFile}");
+            //    streamPath = parquetFile;
+            //}
+            //else
+            //{
+            //    streamPath = mountPoint;
+            //}
 
             sparkRequest.NotebookParameters["streamPath"] = streamPath;
 
@@ -262,12 +275,12 @@
         /// <exception cref="ArgumentException">Could not find node type {nodeType}</exception>
         public static double GetCostPerNode(List<NodeTypeExpression> nodeTypes, string nodeType)
         {
-            var record = nodeTypes.Where(t => t.Type == nodeType).FirstOrDefault();
+            var record = nodeTypes.Where(t => t.type == nodeType).FirstOrDefault();
             if (record == null)
             {
                 throw new ArgumentException($"Could not find node type {nodeType}");
             }
-            return double.Parse(record.Cost);
+            return double.Parse(record.cost);
         }
 
         /// <summary>

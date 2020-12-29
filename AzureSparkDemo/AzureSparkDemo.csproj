@@ -63,6 +63,7 @@
       <HintPath>..\packages\NLog.4.4.12\lib\net45\NLog.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Management" />
     <Reference Include="System.Net" />
@@ -77,12 +78,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Clients\DatabricksClient.cs" />
+    <Compile Include="Clients\DatabricksClientWrapper.cs" />
     <Compile Include="Clients\DataLakeClient.cs" />
+    <Compile Include="Configuration.cs" />
+    <Compile Include="Models\GenericConfigSection.cs" />
+    <Compile Include="Models\LibrariesSection.cs" />
     <Compile Include="Models\MetricsTestResult.cs" />
     <Compile Include="Models\MetricThreshold.cs" />
     <Compile Include="Models\MetricValues.cs" />
-    <Compile Include="Models\NodeTypeExpression.cs" />
+    <Compile Include="Models\NodeTypesSection.cs" />
     <Compile Include="Models\SparkClientRequest.cs" />
     <Compile Include="Models\SparkClientResponse.cs" />
     <Compile Include="Models\SparkClientSettings.cs" />
