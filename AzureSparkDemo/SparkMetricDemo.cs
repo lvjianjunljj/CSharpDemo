@@ -262,6 +262,8 @@
             }
             else
             {
+                Console.WriteLine("Error getting metric.");
+                Console.WriteLine(JObject.Parse(JsonConvert.SerializeObject(response)));
                 throw new Exception($"Error getting metric. TestRun = {testRunId}, Spark job {response?.Run?.RunId} failed");
             }
         }

@@ -1,5 +1,6 @@
 ﻿namespace CSharpDemo
 {
+    using CSharpDemo.FileOperation;
     using CSharpDemo.IDEAs;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
@@ -13,7 +14,8 @@
     {
         static void Main(string[] args)
         {
-            AzureCosmosDBOperation.MainMethod();
+            ExcelDemo.MainMethod();
+            //AzureCosmosDBOperation.MainMethod();
             //AzureServiceBus.MainMethod();
 
             //QueryIncidents.MainMethod();

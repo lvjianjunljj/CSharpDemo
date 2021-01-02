@@ -8,10 +8,10 @@
     {
         public static void MainMethod()
         {
-            //PrintDateTime();
+            PrintDateTime();
             //GetStartTimeDemo();
             //CompareWithJsonConvertSerializeObject();
-            TimeZoneDemo();
+            //TimeZoneDemo();
         }
 
         public static void TimeZoneDemo()
@@ -128,10 +128,16 @@
 
         public static void PrintDateTime()
         {
+
+            // 12/30/2020 3:26:51 PM
             Console.WriteLine(DateTime.UtcNow.ToString());
+            // 2020-12-30T15:26:51.0974633Z
             Console.WriteLine(DateTime.UtcNow.ToString("o"));
+            // Wed, 30 Dec 2020 15:26:51 GMT
             Console.WriteLine(DateTime.UtcNow.ToString("r"));
+            // 2020 - 12-30 15:26:51Z
             Console.WriteLine(DateTime.UtcNow.ToString("u"));
+            // 2020 - 12-30T15:26:51
             Console.WriteLine(DateTime.UtcNow.ToString("s"));
         }
 

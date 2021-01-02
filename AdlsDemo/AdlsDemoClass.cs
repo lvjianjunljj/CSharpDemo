@@ -385,9 +385,31 @@
 
         private static void CheckAdlsFileExistsDemo()
         {
+            Console.WriteLine(@"For datalake: 'skypedata-adhoc-c11.azuredatalakestore.net'...");
             Console.WriteLine(dataLakeClient.CheckExists("skypedata-adhoc-c11.azuredatalakestore.net", "local/microsoftteams/aria/processed/dod/bi/panelaction/2020/12/12/panelaction_2020_12_12_10.ss"));
             Console.WriteLine(dataLakeClient.CheckExists("skypedata-adhoc-c11.azuredatalakestore.net", "local/microsoftteams/aria/processed/gcch/bi/panelaction/2020/12/12/panelaction_2020_12_12_10.ss"));
             Console.WriteLine(dataLakeClient.CheckExists("skypedata-adhoc-c11.azuredatalakestore.net", "local/microsoftteams/aria/processed/tfl/prod/bi/panelaction/2020/12/12/panelaction_2020_12_12_10.ss"));
+
+            Console.WriteLine(@"For datalake: 'ideas-prod-build-c14.azuredatalakestore.net'...");
+            Console.WriteLine(dataLakeClient.CheckExists("ideas-prod-build-c14.azuredatalakestore.net", "shares/IDEAs.Prod/Public/Resources/WDATPSkuMapping.ss"));
+            Console.WriteLine(dataLakeClient.CheckDirectoryExists("ideas-prod-build-c14.azuredatalakestore.net", "shares/IDEAs.Prod/Public"));
+
+
+            Console.WriteLine(@"For datalake: 'ideas-prod-c14.azuredatalakestore.net'...");
+            var dirs = dataLakeClient.EnumerateAdlsNexLevelPath("ideas-prod-c14.azuredatalakestore.net", "/");
+            foreach (var dir in dirs)
+            { 
+                Console.WriteLine(dir);
+            }
+            Console.WriteLine("````````````````````````");
+            Console.WriteLine(dataLakeClient.CheckDirectoryExists("ideas-prod-c14.azuredatalakestore.net", "local/resources"));
+            Console.WriteLine(dataLakeClient.CheckDirectoryExists("ideas-prod-c14.azuredatalakestore.net", "public"));
+            Console.WriteLine(dataLakeClient.CheckDirectoryExists("ideas-prod-c14.azuredatalakestore.net", "public/resources"));
+            Console.WriteLine(dataLakeClient.CheckDirectoryExists("ideas-prod-c14.azuredatalakestore.net", "Public"));
+            Console.WriteLine(dataLakeClient.CheckDirectoryExists("ideas-prod-c14.azuredatalakestore.net", "Public/Resources"));
+            Console.WriteLine(dataLakeClient.CheckExists("ideas-prod-c14.azuredatalakestore.net", "Public/Resources/WDATPSkuMapping.ss"));
+
+
             for (int i = 0; i < 10; i++)
             {
                 Console.WriteLine(dataLakeClient.CheckDirectory(

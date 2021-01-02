@@ -219,6 +219,7 @@
     <Compile Include="DynamicDemo.cs" />
     <Compile Include="EnumDemo.cs" />
     <Compile Include="EnumerableDemo.cs" />
+    <Compile Include="ExcelDemo.cs" />
     <Compile Include="ExceptionDemo.cs" />
     <Compile Include="ExplicitOperatorDemo.cs" />
     <Compile Include="FileOperation\AppConfigOperation.cs" />
