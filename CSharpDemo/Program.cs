@@ -14,8 +14,7 @@
     {
         static void Main(string[] args)
         {
-            ExcelDemo.MainMethod();
-            //AzureCosmosDBOperation.MainMethod();
+            AzureCosmosDBOperation.MainMethod();
             //AzureServiceBus.MainMethod();
 
             //QueryIncidents.MainMethod();

@@ -2,6 +2,7 @@
 {
     using AdlsDemo.FileOperation;
     using AzureLib.KeyVault;
+    using CommonLib.IDEAs;
     using Microsoft.Azure.DataLake.Store;
     using Newtonsoft.Json.Linq;
     using System;
@@ -58,148 +59,49 @@
             //CheckShareSettingByJson();
             //CheckPermission();
             //CheckShareSetting();
-
-            //CheckBuildStreamsAvailability();
-        }
-
-        private static void CheckBuildStreamsAvailability()
-        {
-            Console.WriteLine("Check Build streams availability By tsv: ");
-            string tsvFilePath = @"D:\data\company_work\M365\IDEAs\build\sharepaths.tsv";
-            string noShareSettingTsvFilePath = @"D:\data\company_work\M365\IDEAs\build\nosharesettingpaths.tsv";
-            string noPermissionTsvFilePath = @"D:\data\company_work\M365\IDEAs\build\nopermissionpaths.tsv";
-            var dataLakeStore = @"ideas-prod-build-c14.azuredatalakestore.net";
-            HashSet<string> noShareSetting = new HashSet<string>();
-            HashSet<string> noPermission = new HashSet<string>();
-
-            var streamPaths = File.ReadAllLines(tsvFilePath, Encoding.UTF8);
-            foreach (var streamPath in streamPaths)
-            {
-                string rootPath = GetPathPrefix(streamPath.ToString());
-                try
-                {
-                    if (!dataLakeClient.CheckDirectoryExists(dataLakeStore, rootPath))
-                    {
-                        noShareSetting.Add(rootPath);
-                    }
-                }
-                catch (AdlsException e)
-                {
-                    if (e.HttpStatus == HttpStatusCode.Forbidden)
-                    {
-                        Console.WriteLine($"No permission for dataLakeStore '{dataLakeStore}' and path '{rootPath}'");
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-
-                if (!dataLakeClient.CheckPermission(dataLakeStore, streamPath))
-                {
-                    noPermission.Add(streamPath);
-                }
-            }
-
-            Console.WriteLine("noShareSetting: ");
-            var noShareSettingList = noShareSetting.ToList();
-            var noPermissionList = noPermission.ToList();
-            noShareSettingList.Sort();
-            noPermissionList.Sort();
-            foreach (var streamPath in noShareSettingList)
-            {
-                Console.WriteLine(streamPath);
-            }
-            WriteFile.Save(noShareSettingTsvFilePath, noShareSettingList);
-
-            Console.WriteLine("noPermission: ");
-            foreach (var streamPath in noPermissionList)
-            {
-                Console.WriteLine(streamPath);
-            }
-            WriteFile.Save(noPermissionTsvFilePath, noPermissionList);
         }
 
         private static void CheckPermission()
         {
             Console.WriteLine("CheckPermission:");
+            DateTime startDate = DateTime.Now.Date.AddDays(-10);
+            DateTime endDate = DateTime.Now.Date.AddDays(-3);
             var dataLakeStores = new List<string>
             {
                 //@"ideas-ppe-c14.azuredatalakestore.net",
-                //@"ideas-prod-c14.azuredatalakestore.net",
-                //@"ideas-prod-data-c14.azuredatalakestore.net",
+                @"ideas-prod-c14.azuredatalakestore.net",
+                @"ideas-prod-data-c14.azuredatalakestore.net",
                 @"ideas-prod-build-c14.azuredatalakestore.net",
             };
             var pathPrefixs = new List<string>()
             {
-                //"shares/IDEAs.Prod.Data/Publish/Usage/Device/Neutral/Metrics/Field/ModernLife/WindowsEdu/Streams/v1/2020/10/",
-                //"shares/IDEAs.Prod.Data/Publish/Usage/Device/Neutral/Metrics/Field/ModernLife/Win10EduActivationsByTPId/Streams/v1/2020/10/",
-                //"shares/IDEAs.Prod.Data/Publish/Usage/Device/Neutral/Metrics/Field/ModernLife/Win10EduDailyActivations/Streams/v1/2020/10/",
-                //"shares/IDEAs.Prod.Data/Publish/Usage/Device/Neutral/Metrics/Field/ModernLife/WindowsOEMPro/Streams/v1/2020/10/",
-                //"shares/IDEAs.Prod.Data/Publish/Usage/Device/Neutral/Metrics/Field/ModernLife/Win10OEMProActivationsByTPId/Streams/v1/2020/10/",
-                //"shares/IDEAs.Prod.Data/Publish/Usage/Device/Neutral/Metrics/Field/ModernLife/Win10ConsumerOEMProDaily/Streams/v1/2020/10/",
-                //"shares/IDEAs.Prod.Data/Publish/Usage/Device/Neutral/Metrics/Field/ModernLife/WindowsModern/Streams/v1/2020/10/",
-                //"shares/IDEAs.Prod.Data/Publish/Usage/Device/Neutral/Metrics/Field/ModernLife/Win10ModernActivationsByGeo/Streams/v1/2020/10/",
-                //"shares/IDEAs.Prod.Data/Publish/Usage/Device/Neutral/Metrics/Field/ModernLife/Win0ModernDailyActivations/Streams/v1/2020/10/",
-                //"shares/IDEAs.Prod.Data/Publish/Usage/Device/Neutral/Metrics/Field/ModernLife/WindowsConsumer/Streams/v1/2020/10/",
-                //"shares/IDEAs.Prod.Data/Publish/Usage/Device/Neutral/Metrics/Field/ModernLife/Win10ConsumerActivationsByGeo/Streams/v1/2020/10/",
-                //"shares/IDEAs.Prod.Data/Publish/Usage/Tenant/Commercial/Metrics/Field/ModernWorkplace/",
-                //"shares/IDEAs.Prod.Data/Publish/Usage/Tenant/Commercial/Metrics/Field/SecurityAndCompliance/",
-                //"shares/IDEAs.Prod.Data/Publish/Usage/Tenant/Commercial/Metrics/FieldLG/",
-                //"shares/IDEAs.Prod.Data/Publish/Usage/Tenant/Commercial/Metrics/Partner/",
-                //"shares/IDEAs.Prod.Data/Publish/Usage/Tenant/Commercial/Metrics/PartnerLG/",
-                //"shares/IDEAs.Prod.Data/Publish/Usage/Device/Neutral/Metrics/Field/ModernLife/",
-                //"local/Collect/General/DBDigitalAnalytics/KAS/v1/",
-                //"local/Publish/Acquisitions/User/Neutral/LinkedInAudience/Streams/v1/",
-                //"local/Variant/Profiles/Subscription/Consumer/Metrics/Dimensions/DimAcquisitionChannel/Streams/v1/"
-                //"shares/ideas.prod.data/private/Usage/Device/Neutral/Metrics/Field/ModernLife/",
-                //"shares/exchange.storage.prod/local/Aggregated/Datasets/Private/FocusedInbox/FISuccessfulUser/FI_SuccessfulUser_Commercial",
-                //"shares/AD_DataAnalytics/AD_DataAnalytics/",
-                //"shares/AD_DataAnalytics/TenantSaasAppUsage/",
-                //"shares/adPlatform.AudienceIntelligence.Scoring.proxy/PublicShare/UserSegment/Snapshots/IBT/",
-                //"shares/adPlatform.AudienceIntelligence.Scoring.proxy/PublicShare",
-                //"shares/AD_DataAnalytics/AD_DataAnalytics/Resources/Views/IDEAs/IDEAsPolicyMapping.view",
-                //"shares/onedrive.data/public/Resources/Views/Public/ODC_State_Users.view",
-                //"shares/bus.prod/local/office/Odin/Action/OfficeDataAction.view",
-                //"shares/IDEAs.Prod.Data/Private/Profiles/Subscription/Commercial/IDEAsPrivateSubscriptionProfile/Streams/v1"
-                //"shares/IDEAs.Prod.Data/Publish/Profiles/User/Commercial/Internal/IDEAsUserSKUProfile/Streams/v1/2020/11/UserSKUsStats_2020_11_08.ss"
-                //"/shares/User360/UserProfile/resources/LCID_Locale.ss",
-                //"shares/IDEAs.Prod.Data/Publish.Usage.User.Neutral.Reporting.Dashboards.AppDashboard.AverageDAU.Excel/",
-                //"/shares/User360/user360.local/projects/UserSegmentation/UserProfile/",
-                //"/shares/User360_Shared/user360_shared.local/",
-                //"/shares/User360_Shared/user360_shared.local/Upload/Skype/Production/",
-
-                //"/shares/CFR.ppe/MWS/Features/UserAttachment_001D",
-                //"/shares/CFR.ppe/MWS/Features",
-                //"/shares/CFR.ppe/MWS",
-                //"/shares/CFR.ppe",
-                //"/shares/CFR.prod/MWS/Features/UserAttachment_001D",
-                //"/shares/CFR.prod/MWS/Features",
-                //"/shares/CFR.prod/MWS",
-                //"/shares/CFR.prod",
-
-                "shares/IDEAs.Prod.Data/Publish/Profiles/Subscription/Commercial/IDEAsCommercialSubscriptionProfile/Views/v3/IDEAsCommercialSubscriptionProfile.view",
-                "shares/IDEAs.Prod.Data/Collect/Sensitive/PLSMarketingHistory/SFMC/Raw/",
-
-
+                @"Publish/Usage/Tenant/Commercial/ProductivityScore/Prod/ContentCollab/TenantScores_028D/Streams/v1/%Y/%m/TenantScores_028D_%Y_%m_%d.ss",
+                @"shares/IDEAs.Prod.Data/Publish/Usage/Tenant/Commercial/ProductivityScore/Prod/ContentCollab/TenantScores_028D/Streams/v1/%Y/%m/TenantScores_028D_%Y_%m_%d.ss"
             };
+
+            var checkingPaths = new List<string>();
+            foreach (var pathPrefix in pathPrefixs)
+            {
+                string path;
+                if (pathPrefix.ToString().EndsWith(".ss") || pathPrefix.ToString().EndsWith(".view"))
+                {
+                    path = pathPrefix;
+                }
+                else
+                {
+                    path = pathPrefix + "Test.ss";
+                }
+
+                checkingPaths.AddRange(StreamSetUtils.GenerateStreamsetPaths(path, startDate, endDate, null, null, Grain.Daily));
+            }
             foreach (var dataLakeStore in dataLakeStores)
             {
                 Console.WriteLine($"DataLakeStore: {dataLakeStore}");
-                foreach (var pathPrefix in pathPrefixs)
+                foreach (var checkingPath in checkingPaths)
                 {
-                    string path;
-                    if (pathPrefix.ToString().EndsWith(".ss") || pathPrefix.ToString().EndsWith(".view"))
+                    if (!dataLakeClient.CheckPermission(dataLakeStore, checkingPath))
                     {
-                        path = pathPrefix;
-                    }
-                    else
-                    {
-                        path = pathPrefix + "Test.ss";
-                    }
-                    if (!dataLakeClient.CheckPermission(dataLakeStore, path))
-                    {
-                        Console.WriteLine($"Have no permission for pathPrefix: '{path}'");
+                        Console.WriteLine($"Have no permission for pathPrefix: '{checkingPath}'");
                     }
                 }
             }
@@ -392,16 +294,19 @@
 
             Console.WriteLine(@"For datalake: 'ideas-prod-build-c14.azuredatalakestore.net'...");
             Console.WriteLine(dataLakeClient.CheckExists("ideas-prod-build-c14.azuredatalakestore.net", "shares/IDEAs.Prod/Public/Resources/WDATPSkuMapping.ss"));
+            Console.WriteLine(dataLakeClient.CheckExists("ideas-prod-build-c14.azuredatalakestore.net",
+                "shares/IDEAs.Prod.Data/Publish/Usage/Tenant/Commercial/ProductivityScore/Prod/ContentCollab/TenantScores_028D/Streams/v1/2020/12/TenantScores_028D_2020_12_20.ss"));
+            Console.WriteLine(dataLakeClient.CheckExists("ideas-prod-build-c14.azuredatalakestore.net",
+                "shares/IDEAs.Prod.Data/Publish/Usage/Tenant/Commercial/ProductivityScore/Prod/ContentCollab/TenantScores_028D/Streams/v1/2020/12/TenantScores_028D_2020_12_21.ss"));
             Console.WriteLine(dataLakeClient.CheckDirectoryExists("ideas-prod-build-c14.azuredatalakestore.net", "shares/IDEAs.Prod/Public"));
 
 
             Console.WriteLine(@"For datalake: 'ideas-prod-c14.azuredatalakestore.net'...");
-            var dirs = dataLakeClient.EnumerateAdlsNexLevelPath("ideas-prod-c14.azuredatalakestore.net", "/");
-            foreach (var dir in dirs)
-            { 
-                Console.WriteLine(dir);
-            }
-            Console.WriteLine("````````````````````````");
+            Console.WriteLine(dataLakeClient.CheckExists("ideas-prod-build-c14.azuredatalakestore.net",
+                "shares/IDEAs.Prod.Data/Publish/Usage/Tenant/Commercial/ProductivityScore/Prod/ContentCollab/TenantScores_028D/Streams/v1/2020/12/TenantScores_028D_2020_12_20.ss"));
+            Console.WriteLine(dataLakeClient.CheckExists("ideas-prod-build-c14.azuredatalakestore.net",
+                            "shares/IDEAs.Prod.Data/Publish/Usage/Tenant/Commercial/ProductivityScore/Prod/ContentCollab/TenantScores_028D/Streams/v1/2020/12/TenantScores_028D_2020_12_21.ss"));
+
             Console.WriteLine(dataLakeClient.CheckDirectoryExists("ideas-prod-c14.azuredatalakestore.net", "local/resources"));
             Console.WriteLine(dataLakeClient.CheckDirectoryExists("ideas-prod-c14.azuredatalakestore.net", "public"));
             Console.WriteLine(dataLakeClient.CheckDirectoryExists("ideas-prod-c14.azuredatalakestore.net", "public/resources"));

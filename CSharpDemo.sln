@@ -51,6 +51,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureSparkDemo", "AzureSpar
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommonLib", "CommonLib\CommonLib.csproj", "{5E6A3B93-F6C4-4FBC-9838-5E3088ACBCC4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharePointDemo", "SharePointDemo\SharePointDemo.csproj", "{6D215095-B2FE-4B04-86C2-B8C1EF720CE8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -525,6 +527,26 @@ Global
 		{5E6A3B93-F6C4-4FBC-9838-5E3088ACBCC4}.Release|x64.Build.0 = Release|Any CPU
 		{5E6A3B93-F6C4-4FBC-9838-5E3088ACBCC4}.Release|x86.ActiveCfg = Release|Any CPU
 		{5E6A3B93-F6C4-4FBC-9838-5E3088ACBCC4}.Release|x86.Build.0 = Release|Any CPU
+		{6D215095-B2FE-4B04-86C2-B8C1EF720CE8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6D215095-B2FE-4B04-86C2-B8C1EF720CE8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6D215095-B2FE-4B04-86C2-B8C1EF720CE8}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{6D215095-B2FE-4B04-86C2-B8C1EF720CE8}.Debug|ARM.Build.0 = Debug|Any CPU
+		{6D215095-B2FE-4B04-86C2-B8C1EF720CE8}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{6D215095-B2FE-4B04-86C2-B8C1EF720CE8}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{6D215095-B2FE-4B04-86C2-B8C1EF720CE8}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{6D215095-B2FE-4B04-86C2-B8C1EF720CE8}.Debug|x64.Build.0 = Debug|Any CPU
+		{6D215095-B2FE-4B04-86C2-B8C1EF720CE8}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{6D215095-B2FE-4B04-86C2-B8C1EF720CE8}.Debug|x86.Build.0 = Debug|Any CPU
+		{6D215095-B2FE-4B04-86C2-B8C1EF720CE8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6D215095-B2FE-4B04-86C2-B8C1EF720CE8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6D215095-B2FE-4B04-86C2-B8C1EF720CE8}.Release|ARM.ActiveCfg = Release|Any CPU
+		{6D215095-B2FE-4B04-86C2-B8C1EF720CE8}.Release|ARM.Build.0 = Release|Any CPU
+		{6D215095-B2FE-4B04-86C2-B8C1EF720CE8}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{6D215095-B2FE-4B04-86C2-B8C1EF720CE8}.Release|ARM64.Build.0 = Release|Any CPU
+		{6D215095-B2FE-4B04-86C2-B8C1EF720CE8}.Release|x64.ActiveCfg = Release|Any CPU
+		{6D215095-B2FE-4B04-86C2-B8C1EF720CE8}.Release|x64.Build.0 = Release|Any CPU
+		{6D215095-B2FE-4B04-86C2-B8C1EF720CE8}.Release|x86.ActiveCfg = Release|Any CPU
+		{6D215095-B2FE-4B04-86C2-B8C1EF720CE8}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

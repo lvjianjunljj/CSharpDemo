@@ -94,6 +94,10 @@
       <Project>{8a3f3ce0-e84d-42bc-846e-7531b5a1b8be}</Project>
       <Name>AzureLib</Name>
     </ProjectReference>
+    <ProjectReference Include="..\CommonLib\CommonLib.csproj">
+      <Project>{5e6a3b93-f6c4-4fbc-9838-5e3088acbcc4}</Project>
+      <Name>CommonLib</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

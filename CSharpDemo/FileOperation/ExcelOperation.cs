@@ -11,7 +11,7 @@ namespace CSharpDemo.FileOperation
         public static List<List<string>> ReadFile(string filePath, int itemIndex, int rowStart, int rowEnd, int lineStart, int lineEnd)
         {
             List<List<string>> data = new List<List<string>>();
-            _Application app = new Microsoft.Office.Interop.Excel.Application();
+            _Application app = new Application();
             Workbooks wbks = app.Workbooks;
             _Workbook _wbk = wbks.Add(filePath);
             Sheets shs = _wbk.Sheets;
@@ -57,12 +57,17 @@ namespace CSharpDemo.FileOperation
 
         public static void WriteFile(string filePath, Dictionary<string, IEnumerable<IEnumerable<string>>> data)
         {
+            if (!Directory.Exists(Path.GetDirectoryName(filePath)))
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(filePath));
+            }
+
             if (File.Exists(filePath))
             {
                 File.Delete(filePath);
             }
 
-            var xlApplication = new Microsoft.Office.Interop.Excel.Application();
+            var xlApplication = new Application();
             var workbooks = xlApplication.Workbooks;
             Workbook workbook = workbooks.Add();
             bool addNewSheet = false;
@@ -86,6 +91,7 @@ namespace CSharpDemo.FileOperation
                     {
                         worksheet.Cells[lineIndex, cellIndex] = cell;
                         // Relative doc link: https://www.cnblogs.com/kongbailingluangan/p/5428909.html
+                        worksheet.Cells[lineIndex, cellIndex].EntireColumn.AutoFit();
                         //worksheet.Cells[lineIndex, cellIndex].Font.Bold = true;
                         cellIndex++;
                         // This is another function to write value into a cell

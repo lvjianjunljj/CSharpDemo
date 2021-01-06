@@ -22,7 +22,7 @@
         public static void MainMethod()
         {
             // for datacop: "datacop-ppe" and "datacop-prod"
-            Initialize("datacop-ppe");
+            Initialize("datacop-prod");
 
             //UpdateAllAlertSettingsDemo();
             //UpdateAllDatasetTestCreatedBy();
@@ -42,8 +42,8 @@
             //UpsertDatasetTestDemo();
 
 
-            //DisableDatasets();
-            //EnableDataset();
+            DisableDatasets();
+            //EnableDatasets();
             //DisableAllCosmosDatasetTest();
             //EnableAllCosmosDatasetTestSuccessively();
             //EnableAllCosmosDatasetTestWhenNoActiveMessage();
@@ -58,7 +58,7 @@
             //QueryTestRunCount();
             //QueryKenshoDataset();
             //QueryMonthlyTestRunCount();
-            QueryTestRuns();
+            //QueryTestRuns();
             //QueryTestRunsByDatasets();
             //QueryForbiddenTestRuns();
             //QueryDataCopScores();
@@ -1320,14 +1320,49 @@
 
         private static void DisableDatasets()
         {
+            string[] ids = new string[]
+            {
+                "db573a2c-7a89-4ca4-a110-06c7df10ebd4",
+                "2f039ad0-cbf8-4ba8-8019-0f3fce6c1f00"
+            };
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "Dataset");
-            // Collation: asc and desc is ascending and descending
             IList<JObject> datasets = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(
-                @"SELECT * FROM c where c.id != '8a0ad95b-20f6-4da5-9719-b82f59b00691'")).Result;
+                @$"SELECT * FROM c where c.id in ({string.Join(",", ids.Select(id => $"'{id}'"))}) and c.isEnabled = true")).Result;
             foreach (JObject dataset in datasets)
             {
                 Console.WriteLine(dataset["id"]);
                 dataset["isEnabled"] = false;
+                azureCosmosDBClient.UpsertDocumentAsync(dataset).Wait();
+            }
+        }
+
+        private static void EnableDatasets()
+        {
+            string[] ids = new string[]
+            {
+                "d178cf94-07a5-4f1f-9cb0-7e84580a26f4",
+                "4941fd17-20da-4f32-b7be-310499bbc53b",
+                "116cafb5-283a-4445-a95d-74a82af32997",
+                "1fb3a294-ec77-4213-8e81-6f0c704c97f9",
+                "38b41243-1605-4678-8fee-ae1a1f75ec47",
+                "5e9b6e16-add9-4f40-92eb-ea97184cb237",
+                "7d4cc036-95e3-4781-ba3c-3a1b3491e2e8",
+                "cb72b154-bbb8-440d-98e2-e4d88e755a54",
+                "be2e4174-abbb-4f39-a205-c3ca61787903",
+                "462742fd-0522-4c25-9370-5a75878e475e",
+                "9bd4a6c1-ee2f-42b6-b42a-8782aebef3ab",
+                "070678f7-83c2-4280-aa9d-e807a743bd52",
+                "3b702d6b-15ee-4fd3-a037-cedca4869120",
+                "1a8079f8-1885-41ce-8ab5-1717fd885632",
+                "916e9311-8cdb-4cf4-99b5-0b65e562757b"
+            };
+            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "Dataset");
+            IList<JObject> datasets = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(
+                @$"SELECT * FROM c where c.id in ({string.Join(",", ids.Select(id => $"'{id}'"))}) and c.isEnabled = false")).Result;
+            foreach (JObject dataset in datasets)
+            {
+                Console.WriteLine(dataset["id"]);
+                dataset["isEnabled"] = true;
                 azureCosmosDBClient.UpsertDocumentAsync(dataset).Wait();
             }
         }
@@ -1387,31 +1422,6 @@
                 azureCosmosDBClient.UpsertDocumentAsync(dataset).Wait();
             }
             Console.WriteLine(datasets.Count);
-        }
-
-        private static void EnableDataset()
-        {
-            var datasetIds = new string[]
-            {
-                "7299ec58-75d2-4e99-9165-7231268f92c8",
-                "918124d3-b87e-409f-ad1e-804475c04653",
-                "84142b9b-f6d2-4d86-8303-b42cd3145bc3"
-            };
-            HashSet<string> datasetIdSet = new HashSet<string>(datasetIds);
-
-            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "Dataset");
-            // Collation: asc and desc is ascending and descending
-            IList<JObject> datasets = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c")).Result;
-            foreach (JObject dataset in datasets)
-            {
-                string id = dataset["id"].ToString();
-                Console.WriteLine(id);
-                if (datasetIdSet.Contains(id))
-                {
-                    dataset["isEnabled"] = true;
-                    azureCosmosDBClient.UpsertDocumentAsync(dataset).Wait();
-                }
-            }
         }
 
         private static void DisableAllCosmosDatasetTest()
