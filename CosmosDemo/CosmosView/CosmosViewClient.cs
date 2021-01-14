@@ -44,7 +44,6 @@
                     var trimmedCompilationError = GetCosmosCompileErrorMessage(e.Message);
 
                     exceptionMessage = trimmedCompilationError;
-
                 }
             }
             finally

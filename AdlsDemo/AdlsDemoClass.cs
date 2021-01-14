@@ -37,8 +37,8 @@
             string tenantId = @"cdc5aeea-15c5-4db6-b079-fcadd2505dc2";// For tenant Torus
             string clientId = secretProvider.GetSecretAsync("datacop-prod", "AdlsAadAuthAppId").Result;
             string clientKey = secretProvider.GetSecretAsync("datacop-prod", "AdlsAadAuthAppSecret").Result;
-            //clientId = secretProvider.GetSecretAsync("datacop-prod", "IDEAsBuildVNextAppId").Result;
-            //clientKey = secretProvider.GetSecretAsync("datacop-prod", "IDEAsBuildVNextAppSecret").Result;
+            clientId = secretProvider.GetSecretAsync("datacop-prod", "IDEAsBuildVNextAppId").Result;
+            clientKey = secretProvider.GetSecretAsync("datacop-prod", "IDEAsBuildVNextAppSecret").Result;
 
             Console.WriteLine($"clientId: {clientId}");
             Console.WriteLine($"clientKey: {clientKey}");
@@ -287,53 +287,28 @@
 
         private static void CheckAdlsFileExistsDemo()
         {
+            var endDate = DateTime.UtcNow.Date.AddDays(-2);
+            var startDate = endDate.AddDays(-10);
+            string pathFormat = @"shares/IDEAs.Prod.Data/Publish/Usage/User/Commercial/Actions/EXO/Streams/v1/%Y/%m/WorldwidePIIDetectSDFV2Stat_%Y_%m_%d.ss";
+            var streamPaths = StreamSetUtils.GenerateStreamsetPaths(pathFormat, startDate, endDate, null, null, Grain.Daily);
+
+            Console.WriteLine("CheckAdlsFileExistsDemo: ");
             Console.WriteLine(@"For datalake: 'skypedata-adhoc-c11.azuredatalakestore.net'...");
-            Console.WriteLine(dataLakeClient.CheckExists("skypedata-adhoc-c11.azuredatalakestore.net", "local/microsoftteams/aria/processed/dod/bi/panelaction/2020/12/12/panelaction_2020_12_12_10.ss"));
-            Console.WriteLine(dataLakeClient.CheckExists("skypedata-adhoc-c11.azuredatalakestore.net", "local/microsoftteams/aria/processed/gcch/bi/panelaction/2020/12/12/panelaction_2020_12_12_10.ss"));
-            Console.WriteLine(dataLakeClient.CheckExists("skypedata-adhoc-c11.azuredatalakestore.net", "local/microsoftteams/aria/processed/tfl/prod/bi/panelaction/2020/12/12/panelaction_2020_12_12_10.ss"));
 
             Console.WriteLine(@"For datalake: 'ideas-prod-build-c14.azuredatalakestore.net'...");
-            Console.WriteLine(dataLakeClient.CheckExists("ideas-prod-build-c14.azuredatalakestore.net", "shares/IDEAs.Prod/Public/Resources/WDATPSkuMapping.ss"));
-            Console.WriteLine(dataLakeClient.CheckExists("ideas-prod-build-c14.azuredatalakestore.net",
-                "shares/IDEAs.Prod.Data/Publish/Usage/Tenant/Commercial/ProductivityScore/Prod/ContentCollab/TenantScores_028D/Streams/v1/2020/12/TenantScores_028D_2020_12_20.ss"));
-            Console.WriteLine(dataLakeClient.CheckExists("ideas-prod-build-c14.azuredatalakestore.net",
-                "shares/IDEAs.Prod.Data/Publish/Usage/Tenant/Commercial/ProductivityScore/Prod/ContentCollab/TenantScores_028D/Streams/v1/2020/12/TenantScores_028D_2020_12_21.ss"));
-            Console.WriteLine(dataLakeClient.CheckDirectoryExists("ideas-prod-build-c14.azuredatalakestore.net", "shares/IDEAs.Prod/Public"));
+            Console.WriteLine(dataLakeClient.CheckExists("ideas-prod-build-c14.azuredatalakestore.net", @"/shares/CFR.ppe/Internal/Pfizer/MailboxState_2021_01_11.tsv"));
 
+            //foreach (var streamPath in streamPaths)
+            //{
+            //    Console.WriteLine(dataLakeClient.CheckExists("ideas-prod-build-c14.azuredatalakestore.net", streamPath));
+            //}
 
-            Console.WriteLine(@"For datalake: 'ideas-prod-c14.azuredatalakestore.net'...");
-            Console.WriteLine(dataLakeClient.CheckExists("ideas-prod-build-c14.azuredatalakestore.net",
-                "shares/IDEAs.Prod.Data/Publish/Usage/Tenant/Commercial/ProductivityScore/Prod/ContentCollab/TenantScores_028D/Streams/v1/2020/12/TenantScores_028D_2020_12_20.ss"));
-            Console.WriteLine(dataLakeClient.CheckExists("ideas-prod-build-c14.azuredatalakestore.net",
-                            "shares/IDEAs.Prod.Data/Publish/Usage/Tenant/Commercial/ProductivityScore/Prod/ContentCollab/TenantScores_028D/Streams/v1/2020/12/TenantScores_028D_2020_12_21.ss"));
+            //Console.WriteLine(@"For datalake: 'ideas-prod-c14.azuredatalakestore.net'...");
+            //foreach (var streamPath in streamPaths)
+            //{
+            //    Console.WriteLine(dataLakeClient.CheckExists("ideas-prod-c14.azuredatalakestore.net", streamPath));
+            //}
 
-            Console.WriteLine(dataLakeClient.CheckDirectoryExists("ideas-prod-c14.azuredatalakestore.net", "local/resources"));
-            Console.WriteLine(dataLakeClient.CheckDirectoryExists("ideas-prod-c14.azuredatalakestore.net", "public"));
-            Console.WriteLine(dataLakeClient.CheckDirectoryExists("ideas-prod-c14.azuredatalakestore.net", "public/resources"));
-            Console.WriteLine(dataLakeClient.CheckDirectoryExists("ideas-prod-c14.azuredatalakestore.net", "Public"));
-            Console.WriteLine(dataLakeClient.CheckDirectoryExists("ideas-prod-c14.azuredatalakestore.net", "Public/Resources"));
-            Console.WriteLine(dataLakeClient.CheckExists("ideas-prod-c14.azuredatalakestore.net", "Public/Resources/WDATPSkuMapping.ss"));
-
-
-            for (int i = 0; i < 10; i++)
-            {
-                Console.WriteLine(dataLakeClient.CheckDirectory(
-                    "ideas-prod-build-c14.azuredatalakestore.net",
-                    $@"shares/IDEAs.Prod.Data/Publish/Profiles/User/Commercial/Validation/TenantMaibox/Streams/v2/2020/12/TenantMailbox_StatsMonitor_2020_12_1{i}.ss"));
-            }
-
-            DateTime now = DateTime.UtcNow.Date;
-            for (int i = 0; i < 60; i++)
-            {
-                DateTime date = now.AddDays(-i);
-                Console.WriteLine($"For date: {date:yyyy}-{date:MM}-{date:dd}");
-                Console.WriteLine(dataLakeClient.CheckExists("ideas-prod-data-c14.azuredatalakestore.net",
-                    $"local/Publish/Usage/User/Neutral/Reporting/Dashboards/AppDashboard/External/NPS/Streams/v1/{date:yyyy}/{date:MM}/NPSJson_{date:yyyy}_{date:MM}_{date:dd}.ndjson"));
-                Console.WriteLine(dataLakeClient.CheckExists("ideas-prod-data-c14.azuredatalakestore.net",
-                    $"local/Publish/Usage/User/Neutral/Reporting/Dashboards/AppDashboard/External/NPS/Streams/v1/{date:yyyy}/{date:MM}/NPSJson_{date:yyyy}_{date:MM}_{date:dd}.json"));
-                Console.WriteLine(dataLakeClient.CheckExists("ideas-prod-data-c14.azuredatalakestore.net",
-                    $"local/Publish/Usage/User/Neutral/Reporting/Dashboards/AppDashboard/External/NPS/Streams/v1/{date:yyyy}/{date:MM}/NPS_{date:yyyy}_{date:MM}_{date:dd}.ss"));
-            }
             // We don't have access to store "ideas-ppe-c14.azuredatalakestore.net". It will throw exception: forbidden
             //Console.WriteLine(dataLakeClient.CheckExists("ideas-ppe-c14.azuredatalakestore.net", "/local/build/user/dekashet/TeamsMeetingProdAfterTimeZoneFixApril18th/directViewCodeWithAdjustEndDate.csv"));
         }
