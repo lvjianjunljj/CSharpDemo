@@ -35,16 +35,34 @@
             ISecretProvider secretProvider = KeyVaultSecretProvider.Instance;
             //tenantId = @"72f988bf-86f1-41af-91ab-2d7cd011db47";// For tenant Microsoft
             string tenantId = @"cdc5aeea-15c5-4db6-b079-fcadd2505dc2";// For tenant Torus
+
             string clientId = secretProvider.GetSecretAsync("datacop-prod", "AdlsAadAuthAppId").Result;
             string clientKey = secretProvider.GetSecretAsync("datacop-prod", "AdlsAadAuthAppSecret").Result;
-            clientId = secretProvider.GetSecretAsync("datacop-prod", "IDEAsBuildVNextAppId").Result;
-            clientKey = secretProvider.GetSecretAsync("datacop-prod", "IDEAsBuildVNextAppSecret").Result;
+            Console.WriteLine($"For AAD application 'AdlsAadAuthApp'");
 
             Console.WriteLine($"clientId: {clientId}");
             Console.WriteLine($"clientKey: {clientKey}");
             dataLakeClient = new DataLakeClient(tenantId, clientId, clientKey);
+            RunDemo();
 
-            CheckAdlsFileExistsDemo();
+
+
+
+            clientId = secretProvider.GetSecretAsync("datacop-prod", "IDEAsBuildVNextAppId").Result;
+            clientKey = secretProvider.GetSecretAsync("datacop-prod", "IDEAsBuildVNextAppSecret").Result;
+            Console.WriteLine($"For AAD application 'IDEAsBuildVNextApp'");
+
+            Console.WriteLine($"clientId: {clientId}");
+            Console.WriteLine($"clientKey: {clientKey}");
+            dataLakeClient = new DataLakeClient(tenantId, clientId, clientKey);
+            RunDemo();
+        }
+
+        private static void RunDemo()
+        {
+            //CheckAdlsFileExistsDemo();
+            CheckAdlsDirectoryDemo();
+            //GetAclStatusDemo();
             //GetIDEAsProdAdlsFileSizeDemo();
             //GetObdTestFileSizeDemo();
             //InsertAdlsFileDemo();
@@ -295,8 +313,16 @@
             Console.WriteLine("CheckAdlsFileExistsDemo: ");
             Console.WriteLine(@"For datalake: 'skypedata-adhoc-c11.azuredatalakestore.net'...");
 
+
+            Console.WriteLine(@"For datalake: 'ideas-sensitive-build-c14.azuredatalakestore.net'...");
+            Console.WriteLine(dataLakeClient.CheckExists("ideas-sensitive-build-c14.azuredatalakestore.net",
+                @"/shares/IDEAs.Prod.Data/Private/Features/TPID/Commercial/FeatureStore/pbi/Views/v1/pbi.view"));
+
             Console.WriteLine(@"For datalake: 'ideas-prod-build-c14.azuredatalakestore.net'...");
-            Console.WriteLine(dataLakeClient.CheckExists("ideas-prod-build-c14.azuredatalakestore.net", @"/shares/CFR.ppe/Internal/Pfizer/MailboxState_2021_01_11.tsv"));
+            Console.WriteLine(dataLakeClient.CheckExists("ideas-prod-build-c14.azuredatalakestore.net",
+                @"/shares/IDEAs.Prod.Data/Publish/Usage/User/Commercial/CustomerFacing/Ppe/Cubes/TeamsActivityUserRange/Streams/v1/2021/01/TeamsActivityUser_180D_2021_01_11.ss"));
+            Console.WriteLine(dataLakeClient.CheckExists("ideas-prod-build-c14.azuredatalakestore.net",
+                @"/shares/CFR.ppe/Internal/Pfizer/MailboxState_2021_01_11.tsv"));
 
             //foreach (var streamPath in streamPaths)
             //{
@@ -311,6 +337,78 @@
 
             // We don't have access to store "ideas-ppe-c14.azuredatalakestore.net". It will throw exception: forbidden
             //Console.WriteLine(dataLakeClient.CheckExists("ideas-ppe-c14.azuredatalakestore.net", "/local/build/user/dekashet/TeamsMeetingProdAfterTimeZoneFixApril18th/directViewCodeWithAdjustEndDate.csv"));
+        }
+
+        private static void CheckAdlsDirectoryDemo()
+        {
+            Console.WriteLine("CheckAdlsDirectoryDemo: ");
+
+            Console.WriteLine(@"For datalake: 'skypedata-adhoc-c11.azuredatalakestore.net'...");
+
+
+            Console.WriteLine(@"For datalake: 'ideas-ppe-c14.azuredatalakestore.net'...");
+            Console.WriteLine(dataLakeClient.CheckDirectory("ideas-prod-build-c14.azuredatalakestore.net",
+                @"/shares/IDEAs.Ppe/Publish.Usage.User.Commercial.Samples.Raw/"));
+
+
+            Console.WriteLine(@"For datalake: 'ideas-prod-c14.azuredatalakestore.net'...");
+            Console.WriteLine(dataLakeClient.CheckDirectory("ideas-prod-c14.azuredatalakestore.net",
+                "local/Partner/PreRelease/dev/countedactions/powerpoint/2021/01/PowerPointDailyUsage_2021_01_10.ss"));
+            var allLevelPaths = GetAllLevelPaths("/shares/IDEAs.Prod.Data/Publish/Usage/Tenant/Commercial/ProductivityScore/Prod/Meeting/TenantScores_028D/Streams/v1/2021/01/TenantScores_028D_2021_01_10.ss");
+            foreach (var levelPath in allLevelPaths)
+            {
+                Console.WriteLine(levelPath);
+                Console.WriteLine(dataLakeClient.CheckDirectory("ideas-prod-c14.azuredatalakestore.net", levelPath));
+            }
+            allLevelPaths = GetAllLevelPaths("/shares/IDEAs.Prod.Data/Publish/Usage/User/Commercial/Actions/EXO/Streams/v1/2021/01/WorldwidePIIDetectSDFV2Stat_2021_01_10.ss");
+            foreach (var levelPath in allLevelPaths)
+            {
+                Console.WriteLine(levelPath);
+                Console.WriteLine(dataLakeClient.CheckDirectory("ideas-prod-c14.azuredatalakestore.net", levelPath));
+            }
+
+            Console.WriteLine(@"For datalake: 'ideas-prod-build-c14.azuredatalakestore.net'...");
+            Console.WriteLine(dataLakeClient.CheckDirectory("ideas-prod-build-c14.azuredatalakestore.net",
+                @"/shares/IDEAs.Prod.Data/Private/"));
+            Console.WriteLine(dataLakeClient.CheckDirectory("ideas-prod-build-c14.azuredatalakestore.net",
+                @"/shares/IDEAs.Prod.Data/Collect/"));
+            Console.WriteLine(dataLakeClient.CheckDirectory("ideas-prod-build-c14.azuredatalakestore.net",
+                @"/shares/IDEAs.Prod.Data/"));
+            Console.WriteLine(dataLakeClient.CheckDirectory("ideas-prod-build-c14.azuredatalakestore.net",
+                @"/shares/"));
+            // So wired this output is "Forbidden"
+            Console.WriteLine(dataLakeClient.CheckDirectory("ideas-prod-build-c14.azuredatalakestore.net",
+                @"/"));
+
+
+            Console.WriteLine(@"For datalake: 'ideas-sensitive-build-c14.azuredatalakestore.net'...");
+            Console.WriteLine(dataLakeClient.CheckDirectory("ideas-sensitive-build-c14.azuredatalakestore.net",
+                @"/shares/IDEAs.Prod.Data/Private/"));
+            Console.WriteLine(dataLakeClient.CheckDirectory("ideas-sensitive-build-c14.azuredatalakestore.net",
+                @"/shares/IDEAs.Prod.Data/"));
+            Console.WriteLine(dataLakeClient.CheckDirectory("ideas-sensitive-build-c14.azuredatalakestore.net",
+                @"/shares/"));
+            Console.WriteLine(dataLakeClient.CheckDirectory("ideas-sensitive-build-c14.azuredatalakestore.net",
+                @"/"));
+        }
+
+        private static void GetAclStatusDemo()
+        {
+            Console.WriteLine("GetAclStatusDemo: ");
+
+            Console.WriteLine(@"For datalake: 'skypedata-adhoc-c11.azuredatalakestore.net'...");
+
+
+            Console.WriteLine(@"For datalake: 'ideas-sensitive-build-c14.azuredatalakestore.net'...");
+
+            // Remvoe the fucntion GetAclStatus
+            //Console.WriteLine(@"For datalake: 'ideas-prod-build-c14.azuredatalakestore.net'...");
+            //dataLakeClient.GetAclStatus("ideas-prod-build-c14.azuredatalakestore.net",
+            //    @"/shares/IDEAs.Prod.Data/Private/");
+            //dataLakeClient.GetAclStatus("ideas-prod-build-c14.azuredatalakestore.net",
+            //    @"/shares/CFR.ppe/Internal/Pfizer/MailboxState_2021_01_11.tsv");
+            //dataLakeClient.GetAclStatus("ideas-prod-build-c14.azuredatalakestore.net",
+            //    @"/shares/IDEAs.Prod.Data/Publish/Usage/User/Commercial/CustomerFacing/Ppe/Cubes/TeamsActivityUserRange/Streams/v1/2021/01/TeamsActivityUser_180D_2021_01_11.ss");
         }
 
         private static void TorusAccessCFRFileDemo()
@@ -470,6 +568,30 @@
             }
 
             return pathPrefix;
+        }
+
+        private static IList<string> GetAllLevelPaths(string streamPath)
+        {
+            IList<string> result = new List<string>();
+            streamPath = streamPath.Trim('/');
+            if (string.IsNullOrEmpty(streamPath))
+            {
+                return result;
+            }
+
+            string pathPrefix = string.Empty;
+            var splits = streamPath.Split(new char[] { '/' });
+
+            for (int i = 0; i < splits.Length; i++)
+            {
+                pathPrefix += "/" + splits[i];
+                if (i > 0)
+                {
+                    result.Add(pathPrefix);
+                }
+            }
+
+            return result;
         }
     }
 }

@@ -41,8 +41,9 @@
             //UpsertDatasetDemo();
             //UpsertDatasetTestDemo();
 
+            GetOneTestRunForEveryDataset();
 
-            DisableDatasets();
+            //DisableDatasets();
             //EnableDatasets();
             //DisableAllCosmosDatasetTest();
             //EnableAllCosmosDatasetTestSuccessively();
@@ -279,6 +280,44 @@
             }
             File.WriteAllText(@"D:\data\company_work\M365\IDEAs\pathsWithoutDate2.json", sb.ToString());
             Console.WriteLine(datasets.Count);
+        }
+
+        private static void GetOneTestRunForEveryDataset()
+        {
+            AzureCosmosDBClient datasetCosmosDBClient = new AzureCosmosDBClient("DataCop", "Dataset");
+            AzureCosmosDBClient testRunCosmosDBClient = new AzureCosmosDBClient("DataCop", "PartitionedTestRun");
+            // Collation: asc and desc is ascending and descending
+            IList<JObject> azureDatasets = datasetCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(
+                @"SELECT * FROM c where c.dataFabric = 'CosmosView' and c.createdBy = 'BuildDeployment'")).Result;
+            JArray abortedTestRuns = new JArray();
+            foreach (JObject azureDataset in azureDatasets)
+            {
+                string datasetId = azureDataset["id"].ToString();
+                Console.WriteLine(datasetId);
+                IList<JObject> azureSuccessTestRuns = testRunCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(
+                $@"SELECT top 10 * FROM c where c.datasetId = '{datasetId}' and c.status = 'Success' order by c.createTime desc")).Result;
+                if (azureSuccessTestRuns.Count > 0)
+                {
+                    continue;
+                }
+
+                IList<JObject> azureAbortedTestRuns = testRunCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(
+                $@"SELECT top 10 * FROM c where c.datasetId = '{datasetId}' and c.status = 'Aborted' order by c.createTime desc")).Result;
+                if (azureAbortedTestRuns.Count == 0)
+                {
+                    Console.WriteLine($"No usefully testRun of dataset : '{datasetId}'");
+                    continue;
+                }
+                string status = azureAbortedTestRuns[0]["status"].ToString();
+                Console.WriteLine(azureAbortedTestRuns[0]["status"]);
+                if (status.Equals("Aborted"))
+                {
+                    abortedTestRuns.Add(azureAbortedTestRuns[0]);
+                }
+            }
+            Console.WriteLine(azureDatasets.Count);
+            Console.WriteLine(abortedTestRuns.Count);
+            File.WriteAllText(@"D:\data\company_work\M365\IDEAs\datacop\cosmosworker\testRuns.json", abortedTestRuns.ToString());
         }
 
         private static string GetADLSStreamPaths(Func<string, string> getPathFunc)
@@ -1322,8 +1361,10 @@
         {
             string[] ids = new string[]
             {
-                "db573a2c-7a89-4ca4-a110-06c7df10ebd4",
-                "2f039ad0-cbf8-4ba8-8019-0f3fce6c1f00"
+                "00D3EA46-3658-43CD-8288-41C0F908FB50",
+                "E7575A0C-A7D4-45B7-9FA8-DCFB5ECBA47E",
+                "04BC25E4-6D3F-418D-8B90-182E957D5EE2",
+                "BCEE3FD4-1A54-43B3-82D1-3C2FED5C8419"
             };
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "Dataset");
             IList<JObject> datasets = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(
