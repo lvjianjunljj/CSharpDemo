@@ -7,6 +7,7 @@
     using Newtonsoft.Json.Linq;
     using System;
     using System.Collections.Generic;
+    using System.Configuration;
     using System.Diagnostics;
     using System.IO;
     using System.Linq;
@@ -16,7 +17,6 @@
     {
         static void Main(string[] args)
         {
-            //RegexDemo.MainMethod();
             //AzureCosmosDBOperation.MainMethod();
             //AzureServiceBus.MainMethod();
 

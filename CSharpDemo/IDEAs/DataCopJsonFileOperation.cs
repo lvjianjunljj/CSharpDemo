@@ -28,8 +28,50 @@
             //UpdateCosmosViewScripts();
             //UpdateCosmosVCToBuild();
             //UpdateStoreForSpark();
-            UpsertDatasetsIntoDB();
-            UpsertDatasetTestsIntoDB();
+            //UpsertDatasetsIntoDB();
+            //UpsertDatasetTestsIntoDB();
+
+            ShowEnabledDatasets();
+        }
+
+        private static void ShowEnabledDatasets()
+        {
+            string rootFolder = Path.Combine(FolderPath, @"PROD\CFR");
+            var datasetJsonFilePaths = ReadFile.GetAllFilePath(rootFolder);
+
+            HashSet<string> datasetIds = new HashSet<string>();
+            //Dictionary<string, JObject> datasetTests = new Dictionary<string, JObject>();
+
+            foreach (var datasetJsonFilePath in datasetJsonFilePaths)
+            {
+                if (
+                    //!datasetJsonFilePath.ToLower().Contains(@"\cfrinbuild2") &&   // They are all in the folder "CFRInBuild2"
+                    (datasetJsonFilePath.ToLower().Contains(@"\dataset") || datasetJsonFilePath.ToLower().Contains(@"\monitor")))
+                {
+                    string fileContent = ReadFile.ThirdMethod(datasetJsonFilePath);
+                    JsonSerializerSettings serializer = new JsonSerializerSettings
+                    {
+                        DateParseHandling = DateParseHandling.None
+                    };
+                    JObject jObject = JsonConvert.DeserializeObject<JObject>(fileContent, serializer);
+
+                    if (datasetJsonFilePath.ToLower().Contains(@"\dataset"))
+                    {
+                        if (bool.Parse(jObject["isEnabled"].ToString()))
+                        {
+                            datasetIds.Add(jObject["id"].ToString());
+                        }
+                    }
+                    else
+                    {
+                        if (jObject["status"].ToString().Equals("Enabled") &&
+                            datasetIds.Contains(jObject["datasetId"].ToString()))
+                        {
+                            Console.WriteLine(jObject["id"]);
+                        }
+                    }
+                }
+            }
         }
 
         private static void UpsertDatasetsIntoDB()

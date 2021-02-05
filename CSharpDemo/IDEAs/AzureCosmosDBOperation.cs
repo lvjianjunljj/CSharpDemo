@@ -41,7 +41,7 @@
             //UpsertDatasetDemo();
             //UpsertDatasetTestDemo();
 
-            GetOneTestRunForEveryDataset();
+            //GetOneTestRunForEveryDataset();
 
             //DisableDatasets();
             //EnableDatasets();
@@ -57,6 +57,7 @@
             //QueryMonitroReportDemo();
             //QueryServiceMonitorDemo();
             //QueryTestRunCount();
+            //QueryAlertCount();
             //QueryKenshoDataset();
             //QueryMonthlyTestRunCount();
             //QueryTestRuns();
@@ -103,6 +104,7 @@
             //DisableAbortedTest();
 
             //UpdateSqlDatasetKeyVaultName();
+            UpdateTestRunStatus();
             //CreateContainers();
             //ShowADLSStreamPathPrefix();
             //ShowADLSStreamPathWithoutDate();
@@ -1465,6 +1467,23 @@
             Console.WriteLine(datasets.Count);
         }
 
+        private static void UpdateTestRunStatus()
+        {
+            Console.WriteLine("UpdateTestRunStatus");
+            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "PartitionedTestRun");
+            // Collation: asc and desc is ascending and descending
+            IList<JObject> testRuns = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(
+                new SqlQuerySpec(@"SELECT * FROM c WHERE contains(c.message, 'E_VCCLIENT_USER_FAILURE') and not  contains(c.message, '0x83090b74') and c.status != 'Failed' and c.createTime > '2021-01-28T0' order by c.createTime desc")).Result;
+            foreach (JObject testRun in testRuns)
+            {
+                Console.WriteLine(testRun["id"]);
+                Console.WriteLine(testRun["status"]);
+                testRun["status"] = "Failed";
+                azureCosmosDBClient.UpsertDocumentAsync(testRun).Wait();
+            }
+            Console.WriteLine(testRuns.Count);
+        }
+
         private static void DisableAllCosmosDatasetTest()
         {
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "DatasetTest");
@@ -1796,6 +1815,22 @@
                     "PartitionedTestRun",
                     new List<string> { $"c._ts > {startTs}", $"c._ts < {endTs}", "c.lastModifiedBy = 'AlertService'" });
                 Console.WriteLine($"{startDate:o}: {count}");
+            }
+        }
+
+        private static void QueryAlertCount()
+        {
+            var startTime = new DateTime(2021, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc);
+            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "Alert");
+
+            for (int i = 0; i < 30; i++)
+            {
+                var startDate = startTime.AddDays(i);
+                var endDate = startDate.AddDays(1);
+                string sqlQueryString = $"SELECT count(0) as count_num FROM c where (c.dataFabric= 'ADLS' or c.dataFabric= 'CosmosStream') and c.timestamp > '{startDate:o}' and c.timestamp < '{endDate:o}'";
+                IList<JObject> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(sqlQueryString)).Result;
+
+                Console.WriteLine($"{startDate:o} - {endDate:o}: {list[0]["count_num"]}");
             }
         }
 
