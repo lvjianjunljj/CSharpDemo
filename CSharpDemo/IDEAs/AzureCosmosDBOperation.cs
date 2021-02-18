@@ -41,7 +41,7 @@
             //UpsertDatasetDemo();
             //UpsertDatasetTestDemo();
 
-            //GetOneTestRunForEveryDataset();
+            GetTestRunMessagesForEveryDataset();
 
             //DisableDatasets();
             //EnableDatasets();
@@ -104,7 +104,7 @@
             //DisableAbortedTest();
 
             //UpdateSqlDatasetKeyVaultName();
-            UpdateTestRunStatus();
+            //UpdateTestRunStatus();
             //CreateContainers();
             //ShowADLSStreamPathPrefix();
             //ShowADLSStreamPathWithoutDate();
@@ -284,42 +284,109 @@
             Console.WriteLine(datasets.Count);
         }
 
-        private static void GetOneTestRunForEveryDataset()
+        private static void GetTestRunMessagesForEveryDataset()
         {
             AzureCosmosDBClient datasetCosmosDBClient = new AzureCosmosDBClient("DataCop", "Dataset");
             AzureCosmosDBClient testRunCosmosDBClient = new AzureCosmosDBClient("DataCop", "PartitionedTestRun");
             // Collation: asc and desc is ascending and descending
             IList<JObject> azureDatasets = datasetCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(
                 @"SELECT * FROM c where c.dataFabric = 'CosmosView' and c.createdBy = 'BuildDeployment'")).Result;
-            JArray abortedTestRuns = new JArray();
+            Console.WriteLine($"azureDataset count: '{azureDatasets.Count}'");
+
+            JArray allTestRunMessages = new JArray();
+            JArray selectErrorTestRunMessages = new JArray();
+            JArray defaultDateErrorTestRunMessages = new JArray();
+            JArray otherTestRunMessages = new JArray();
             foreach (JObject azureDataset in azureDatasets)
             {
                 string datasetId = azureDataset["id"].ToString();
+                string datasetName = azureDataset["name"].ToString();
                 Console.WriteLine(datasetId);
-                IList<JObject> azureSuccessTestRuns = testRunCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(
-                $@"SELECT top 10 * FROM c where c.datasetId = '{datasetId}' and c.status = 'Success' order by c.createTime desc")).Result;
-                if (azureSuccessTestRuns.Count > 0)
+                IList<JObject> successTestRuns = testRunCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(
+                    $@"SELECT top 10 * FROM c where c.datasetId = '{datasetId}' and " +
+                    $@"c.status = 'Success' and c.createTime > '2021-02-03' order by c.createTime desc")).Result;
+
+                if (successTestRuns.Count > 0)
                 {
                     continue;
                 }
 
-                IList<JObject> azureAbortedTestRuns = testRunCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(
-                $@"SELECT top 10 * FROM c where c.datasetId = '{datasetId}' and c.status = 'Aborted' order by c.createTime desc")).Result;
-                if (azureAbortedTestRuns.Count == 0)
+                IList<JObject> testRuns = testRunCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(
+                $@"SELECT top 20 * FROM c where c.datasetId = '{datasetId}' and c.createTime > '2021-02-03' order by c.createTime desc")).Result;
+                if (testRuns.Count == 0)
                 {
                     Console.WriteLine($"No usefully testRun of dataset : '{datasetId}'");
                     continue;
                 }
-                string status = azureAbortedTestRuns[0]["status"].ToString();
-                Console.WriteLine(azureAbortedTestRuns[0]["status"]);
-                if (status.Equals("Aborted"))
+
+                JObject testRunMessage = new JObject();
+                testRunMessage["datasetId"] = datasetId;
+                testRunMessage["datasetName"] = datasetName;
+                var messages = new JArray();
+                var testRunIds = new JArray();
+                var cosmosVC = string.Empty;
+                var cosmosScriptContent = string.Empty;
+
+                bool selectError = false;
+                bool greterDateError = false;
+                foreach (var testRun in testRuns)
                 {
-                    abortedTestRuns.Add(azureAbortedTestRuns[0]);
+                    if (!string.IsNullOrEmpty(cosmosVC) && !testRun["testContent"]["cosmosVC"].ToString().Equals(cosmosVC))
+                    {
+                        Console.WriteLine("Different cosmosVC: ");
+                        Console.WriteLine(testRun["id"]);
+                        Console.WriteLine(cosmosVC);
+                        Console.WriteLine(testRun["testContent"]["cosmosVC"].ToString());
+                    }
+                    if (!string.IsNullOrEmpty(cosmosScriptContent) && !testRun["testContent"]["cosmosScriptContent"].ToString().Equals(cosmosScriptContent))
+                    {
+                        Console.WriteLine("Different cosmosScriptContent: ");
+                        Console.WriteLine(testRun["id"]);
+                        Console.WriteLine(cosmosScriptContent);
+                        Console.WriteLine(testRun["testContent"]["cosmosScriptContent"].ToString());
+                    }
+
+                    cosmosVC = testRun["testContent"]["cosmosVC"].ToString();
+                    cosmosScriptContent = testRun["testContent"]["cosmosScriptContent"].ToString();
+                    testRunIds.Add(testRun["id"]);
+                    messages.Add(testRun["message"]);
+
+                    if (testRun["message"].ToString().Contains(@"E_CSC_USER_INVALIDCSHARP_0103: C# error CS0103: The name '"))
+                    {
+                        selectError = true;
+                    }
+
+                    if (testRun["message"].ToString().Contains("cannot be greater than") &&
+                        testRun["message"].ToString().Contains("0001-01-01"))
+                    {
+                        greterDateError = true;
+                    }
+                }
+
+                testRunMessage["cosmosVC"] = cosmosVC;
+                testRunMessage["cosmosScriptContent"] = cosmosScriptContent;
+                testRunMessage["testRunIds"] = testRunIds;
+                testRunMessage["messages"] = messages;
+
+                allTestRunMessages.Add(testRunMessage);
+
+                if (selectError)
+                {
+                    selectErrorTestRunMessages.Add(testRunMessage);
+                }
+                else if (greterDateError)
+                {
+                    defaultDateErrorTestRunMessages.Add(testRunMessage);
+                }
+                else
+                {
+                    otherTestRunMessages.Add(testRunMessage);
                 }
             }
-            Console.WriteLine(azureDatasets.Count);
-            Console.WriteLine(abortedTestRuns.Count);
-            File.WriteAllText(@"D:\data\company_work\M365\IDEAs\datacop\cosmosworker\testRuns.json", abortedTestRuns.ToString());
+            File.WriteAllText(@"D:\data\company_work\M365\IDEAs\datacop\cosmosworker\builddeployment\allTestRuns.json", allTestRunMessages.ToString());
+            File.WriteAllText(@"D:\data\company_work\M365\IDEAs\datacop\cosmosworker\builddeployment\selectErrorTestRunMessages.json", selectErrorTestRunMessages.ToString());
+            File.WriteAllText(@"D:\data\company_work\M365\IDEAs\datacop\cosmosworker\builddeployment\defaultDateErrorTestRunMessages.json", defaultDateErrorTestRunMessages.ToString());
+            File.WriteAllText(@"D:\data\company_work\M365\IDEAs\datacop\cosmosworker\builddeployment\otherTestRunMessages.json", otherTestRunMessages.ToString());
         }
 
         private static string GetADLSStreamPaths(Func<string, string> getPathFunc)

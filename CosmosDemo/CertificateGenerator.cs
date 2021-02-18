@@ -7,7 +7,7 @@
 
     class CertificateGenerator
     {
-        private const string thumbprint = "BDC2710155BEF26111F05E348E9319E63DD856E7";
+        private const string thumbprint = "FE691CD55F376229FBC311253958241927826BE2";
         // <summary>
         /// Gets the certificate by thumbprint.
         /// </summary>

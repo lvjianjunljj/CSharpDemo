@@ -37,25 +37,24 @@
         private static void ShowEnabledDatasets()
         {
             string rootFolder = Path.Combine(FolderPath, @"PROD\CFR");
-            var datasetJsonFilePaths = ReadFile.GetAllFilePath(rootFolder);
+            var jsonFilePaths = ReadFile.GetAllFilePath(rootFolder);
 
             HashSet<string> datasetIds = new HashSet<string>();
-            //Dictionary<string, JObject> datasetTests = new Dictionary<string, JObject>();
-
-            foreach (var datasetJsonFilePath in datasetJsonFilePaths)
+            Dictionary<string, JObject> datasetTests = new Dictionary<string, JObject>();
+            foreach (var jsonFilePath in jsonFilePaths)
             {
                 if (
                     //!datasetJsonFilePath.ToLower().Contains(@"\cfrinbuild2") &&   // They are all in the folder "CFRInBuild2"
-                    (datasetJsonFilePath.ToLower().Contains(@"\dataset") || datasetJsonFilePath.ToLower().Contains(@"\monitor")))
+                    (jsonFilePath.ToLower().Contains(@"\dataset") || jsonFilePath.ToLower().Contains(@"\monitor")))
                 {
-                    string fileContent = ReadFile.ThirdMethod(datasetJsonFilePath);
+                    string fileContent = ReadFile.ThirdMethod(jsonFilePath);
                     JsonSerializerSettings serializer = new JsonSerializerSettings
                     {
                         DateParseHandling = DateParseHandling.None
                     };
                     JObject jObject = JsonConvert.DeserializeObject<JObject>(fileContent, serializer);
 
-                    if (datasetJsonFilePath.ToLower().Contains(@"\dataset"))
+                    if (jsonFilePath.ToLower().Contains(@"\dataset"))
                     {
                         if (bool.Parse(jObject["isEnabled"].ToString()))
                         {
@@ -64,12 +63,23 @@
                     }
                     else
                     {
-                        if (jObject["status"].ToString().Equals("Enabled") &&
-                            datasetIds.Contains(jObject["datasetId"].ToString()))
+                        if (jObject["status"].ToString().Equals("Enabled"))
                         {
-                            Console.WriteLine(jObject["id"]);
+                            datasetTests.Add(jsonFilePath, jObject);
                         }
                     }
+                }
+            }
+
+            foreach (var datasetTest in datasetTests)
+            {
+                var datasetTestPath = datasetTest.Key;
+                var datasetTestJson = datasetTest.Value;
+                if (datasetIds.Contains(datasetTestJson["datasetId"].ToString()))
+                {
+                    Console.WriteLine(datasetTestJson["id"]);
+                    datasetTestJson["status"] = "Disabled";
+                    WriteFile.FirstMethod(datasetTestPath, datasetTestJson.ToString());
                 }
             }
         }

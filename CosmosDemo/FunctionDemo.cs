@@ -5,6 +5,7 @@
     using ScopeClient;
     using System;
     using System.Collections.Generic;
+    using System.IO;
 
     public class FunctionDemo
     {
@@ -12,7 +13,7 @@
         {
             //CheckStreamExists();
             //CheckRowCount();
-            CheckDirectoryExists();
+            //CheckDirectoryExists();
 
             //GetRowCountIteratively("2019-07-10T00:00:00.0000000Z");
 
@@ -22,7 +23,8 @@
             //CompareStreamInfoRowCount();
 
             //UploadFileDemo();
-
+            //DownloadFileDemo();
+            DownloadViewScripts();
             // 
 
             /*
@@ -47,6 +49,7 @@
 
             //stream = "https://cosmos14.osdinfra.net/cosmos/Ideas.prod//users/jianjlv/datacop_service_monitor_test_2019_12_07.ss";
             stream = @"https://cosmos14.osdinfra.net/cosmos/ideas.ppe/shares/bus.prod/local/office/Odin/Action/OfficeDataAction.view";
+            stream = @"https://cosmos14.osdinfra.net/cosmos/Ideas.prod.build/shares/IDEAs.Prod.Data/Publish/Profiles/Tenant/Commercial/IDEAsTenantProfile/Views/v1/IDEAsTenantProfile.view";
             Console.WriteLine(CosmosClient.CheckStreamExists(stream));
         }
 
@@ -67,6 +70,7 @@
             directoryPath = @"https://cosmos14.osdinfra.net/cosmos/Ideas.prod//shares/IDEAs.Prod.Data/Publish/Usage/User/Commercial/CountedActions/TeamsApps/Streams/v1/";
             directoryPath = @"https://cosmos14.osdinfra.net/cosmos/Ideas.prod.build/local/";
             directoryPath = @"https://cosmos14.osdinfra.net/cosmos/IDEAs.ppe/shares/IDEAs.Prod.Data/Publish/Usage/Device/Neutral/Metrics/Field/ModernLife/WindowsModern/Streams/v1/2020/10/";
+            directoryPath = @"https://cosmos14.osdinfra.net/cosmos/Ideas.prod.build/shares/IDEAs.Prod.Data/Publish/Profiles/Tenant/Commercial/";
 
 
             Console.WriteLine(CosmosClient.CheckDirectoryExists(directoryPath));
@@ -125,12 +129,52 @@
             }
         }
 
+        public static void DownloadFileDemo()
+        {
+            string streamPath = "https://cosmos14.osdinfra.net/cosmos/Ideas.prod.build/" +
+                "shares/IDEAs.Prod.Data/Publish/Profiles/Tenant/Commercial/IDEAsTenantProfile/Views/v1/IDEAsTenantProfile.view";
+
+            var stream = CosmosClient.ReadStream(streamPath);
+            StreamReader reader = new StreamReader(stream);
+            File.WriteAllText(@"D:\data\company_work\M365\IDEAs\datacop\cosmosworker\marked_aborted\IDEAsTenantProfile.view", reader.ReadToEnd());
+        }
+
+        private static void DownloadViewScripts()
+        {
+            var testRunsJArrayPath = @"D:\data\company_work\M365\IDEAs\datacop\cosmosworker\builddeployment\testRuns.json";
+            JArray testRuns = JArray.Parse(File.ReadAllText(testRunsJArrayPath));
+            foreach (var testRun in testRuns)
+            {
+                var datasetId = testRun["datasetId"].ToString();
+                var cosmosVC = testRun["cosmosVC"].ToString();
+                var cosmosScriptContent = testRun["cosmosScriptContent"].ToString();
+                Console.WriteLine(datasetId);
+
+                if (!cosmosVC.EndsWith("/"))
+                {
+                    Console.WriteLine(datasetId);
+                    Console.WriteLine(cosmosVC);
+                    cosmosVC += "/";
+                }
+
+                var startContent = "ViewSamples = VIEW \"";
+                var endContent = "\"";
+                cosmosScriptContent = cosmosScriptContent.Substring(startContent.Length);
+                var scriptRelativePath = cosmosScriptContent.Substring(0, cosmosScriptContent.IndexOf(endContent));
+                var scriptPath = cosmosVC + scriptRelativePath;
+                var stream = CosmosClient.ReadStream(scriptPath);
+                StreamReader reader = new StreamReader(stream);
+
+                File.WriteAllText($@"D:\data\company_work\M365\IDEAs\datacop\cosmosworker\builddeployment\views\{datasetId}.view", reader.ReadToEnd());
+            }
+        }
+
         public static void GetFileStream()
         {
             string streamPath = "https://cosmos14.osdinfra.net/cosmos/IDEAs.Prod/local/Scheduled/Datasets/Public/Profiles/Tenants/TenantsHistory.ss";
 
             var stream = CosmosClient.ReadStream(streamPath);
-            System.IO.StreamReader reader = new System.IO.StreamReader(stream);
+            StreamReader reader = new StreamReader(stream);
             Console.WriteLine(reader.ReadToEnd());
         }
 
