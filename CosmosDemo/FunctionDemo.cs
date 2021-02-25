@@ -141,7 +141,8 @@
 
         private static void DownloadViewScripts()
         {
-            var testRunsJArrayPath = @"D:\data\company_work\M365\IDEAs\datacop\cosmosworker\builddeployment\testRuns.json";
+            var testRunsJArrayPath = @"D:\data\company_work\M365\IDEAs\datacop\cosmosworker\builddeployment\allTestRuns.json";
+            var viewsFolder = @"D:\IDEAs\repos\CosmosViewMonitor\cosmos_views";
             JArray testRuns = JArray.Parse(File.ReadAllText(testRunsJArrayPath));
             foreach (var testRun in testRuns)
             {
@@ -165,7 +166,7 @@
                 var stream = CosmosClient.ReadStream(scriptPath);
                 StreamReader reader = new StreamReader(stream);
 
-                File.WriteAllText($@"D:\data\company_work\M365\IDEAs\datacop\cosmosworker\builddeployment\views\{datasetId}.view", reader.ReadToEnd());
+                File.WriteAllText(Path.Combine(viewsFolder, $"{datasetId}.view"), reader.ReadToEnd());
             }
         }
 

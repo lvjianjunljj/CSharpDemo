@@ -245,6 +245,7 @@
     <Compile Include="IcMTest\FireIncident.cs" />
     <Compile Include="IcMTest\MultiRequestError.cs" />
     <Compile Include="IDEAs\AzureCosmosDBOperation.cs" />
+    <Compile Include="IDEAs\CosmosViewErrorMessageOperation.cs" />
     <Compile Include="IDEAs\DataCopJsonFileOperation.cs" />
     <Compile Include="IDisposableImplementDemo.cs" />
     <Compile Include="InvalidCastExceptionDemo\BaseClass.cs" />

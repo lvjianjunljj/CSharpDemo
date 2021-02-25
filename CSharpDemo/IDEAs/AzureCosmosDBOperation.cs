@@ -286,6 +286,8 @@
 
         private static void GetTestRunMessagesForEveryDataset()
         {
+            string folderPath = @"D:\data\company_work\M365\IDEAs\datacop\cosmosworker\builddeployment";
+
             AzureCosmosDBClient datasetCosmosDBClient = new AzureCosmosDBClient("DataCop", "Dataset");
             AzureCosmosDBClient testRunCosmosDBClient = new AzureCosmosDBClient("DataCop", "PartitionedTestRun");
             // Collation: asc and desc is ascending and descending
@@ -294,9 +296,6 @@
             Console.WriteLine($"azureDataset count: '{azureDatasets.Count}'");
 
             JArray allTestRunMessages = new JArray();
-            JArray selectErrorTestRunMessages = new JArray();
-            JArray defaultDateErrorTestRunMessages = new JArray();
-            JArray otherTestRunMessages = new JArray();
             foreach (JObject azureDataset in azureDatasets)
             {
                 string datasetId = azureDataset["id"].ToString();
@@ -327,8 +326,6 @@
                 var cosmosVC = string.Empty;
                 var cosmosScriptContent = string.Empty;
 
-                bool selectError = false;
-                bool greterDateError = false;
                 foreach (var testRun in testRuns)
                 {
                     if (!string.IsNullOrEmpty(cosmosVC) && !testRun["testContent"]["cosmosVC"].ToString().Equals(cosmosVC))
@@ -350,17 +347,6 @@
                     cosmosScriptContent = testRun["testContent"]["cosmosScriptContent"].ToString();
                     testRunIds.Add(testRun["id"]);
                     messages.Add(testRun["message"]);
-
-                    if (testRun["message"].ToString().Contains(@"E_CSC_USER_INVALIDCSHARP_0103: C# error CS0103: The name '"))
-                    {
-                        selectError = true;
-                    }
-
-                    if (testRun["message"].ToString().Contains("cannot be greater than") &&
-                        testRun["message"].ToString().Contains("0001-01-01"))
-                    {
-                        greterDateError = true;
-                    }
                 }
 
                 testRunMessage["cosmosVC"] = cosmosVC;
@@ -369,24 +355,8 @@
                 testRunMessage["messages"] = messages;
 
                 allTestRunMessages.Add(testRunMessage);
-
-                if (selectError)
-                {
-                    selectErrorTestRunMessages.Add(testRunMessage);
-                }
-                else if (greterDateError)
-                {
-                    defaultDateErrorTestRunMessages.Add(testRunMessage);
-                }
-                else
-                {
-                    otherTestRunMessages.Add(testRunMessage);
-                }
             }
-            File.WriteAllText(@"D:\data\company_work\M365\IDEAs\datacop\cosmosworker\builddeployment\allTestRuns.json", allTestRunMessages.ToString());
-            File.WriteAllText(@"D:\data\company_work\M365\IDEAs\datacop\cosmosworker\builddeployment\selectErrorTestRunMessages.json", selectErrorTestRunMessages.ToString());
-            File.WriteAllText(@"D:\data\company_work\M365\IDEAs\datacop\cosmosworker\builddeployment\defaultDateErrorTestRunMessages.json", defaultDateErrorTestRunMessages.ToString());
-            File.WriteAllText(@"D:\data\company_work\M365\IDEAs\datacop\cosmosworker\builddeployment\otherTestRunMessages.json", otherTestRunMessages.ToString());
+            File.WriteAllText(Path.Combine(folderPath, @"allTestRuns.json"), allTestRunMessages.ToString());
         }
 
         private static string GetADLSStreamPaths(Func<string, string> getPathFunc)
