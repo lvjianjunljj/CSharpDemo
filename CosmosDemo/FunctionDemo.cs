@@ -143,13 +143,31 @@
         {
             var testRunsJArrayPath = @"D:\data\company_work\M365\IDEAs\datacop\cosmosworker\builddeployment\allTestRuns.json";
             var viewsFolder = @"D:\IDEAs\repos\CosmosViewMonitor\cosmos_views";
+
+            // Remove all the files in the folder first to make sure it does not contains the view we don't need.
+            DirectoryInfo di = new DirectoryInfo(viewsFolder);
+
+            foreach (FileInfo file in di.GetFiles())
+            {
+                file.Delete();
+            }
+            foreach (DirectoryInfo dir in di.GetDirectories())
+            {
+                dir.Delete(true);
+            }
+
             JArray testRuns = JArray.Parse(File.ReadAllText(testRunsJArrayPath));
+            JArray datasetViewDict = new JArray();
             foreach (var testRun in testRuns)
             {
+                JObject datasetViewMap = new JObject();
                 var datasetId = testRun["datasetId"].ToString();
+                var datasetName = testRun["datasetName"].ToString();
+
                 var cosmosVC = testRun["cosmosVC"].ToString();
                 var cosmosScriptContent = testRun["cosmosScriptContent"].ToString();
                 Console.WriteLine(datasetId);
+                datasetViewMap["datasetId"] = datasetId;
 
                 if (!cosmosVC.EndsWith("/"))
                 {
@@ -158,16 +176,34 @@
                     cosmosVC += "/";
                 }
 
+                // Search logic
                 var startContent = "ViewSamples = VIEW \"";
                 var endContent = "\"";
                 cosmosScriptContent = cosmosScriptContent.Substring(startContent.Length);
                 var scriptRelativePath = cosmosScriptContent.Substring(0, cosmosScriptContent.IndexOf(endContent));
+
+
                 var scriptPath = cosmosVC + scriptRelativePath;
                 var stream = CosmosClient.ReadStream(scriptPath);
                 StreamReader reader = new StreamReader(stream);
 
-                File.WriteAllText(Path.Combine(viewsFolder, $"{datasetId}.view"), reader.ReadToEnd());
+                var viewFileName = datasetName.Replace(@"/", @"_") + @".view";
+                datasetViewMap["viewFileName"] = viewFileName;
+                string fileLocalPath = Path.Combine(viewsFolder, viewFileName);
+
+                if (File.Exists(fileLocalPath))
+                {
+                    Console.WriteLine($"Duplicated view file local path: {fileLocalPath}");
+                }
+                else
+                {
+                    File.WriteAllText(fileLocalPath, reader.ReadToEnd());
+                    datasetViewDict.Add(datasetViewMap);
+                }
+
             }
+
+            File.WriteAllText(Path.Combine(viewsFolder, @"datasetViewDict.json"), datasetViewDict.ToString());
         }
 
         public static void GetFileStream()

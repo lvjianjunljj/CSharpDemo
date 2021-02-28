@@ -287,7 +287,9 @@
         private static void GetTestRunMessagesForEveryDataset()
         {
             string folderPath = @"D:\data\company_work\M365\IDEAs\datacop\cosmosworker\builddeployment";
-
+            DateTime nowDate = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, DateTime.UtcNow.Day);
+            // Just collect the testRuns created by the last ten days.
+            string startDateStrFilter = nowDate.AddDays(-10).ToString("s");
             AzureCosmosDBClient datasetCosmosDBClient = new AzureCosmosDBClient("DataCop", "Dataset");
             AzureCosmosDBClient testRunCosmosDBClient = new AzureCosmosDBClient("DataCop", "PartitionedTestRun");
             // Collation: asc and desc is ascending and descending
@@ -303,15 +305,22 @@
                 Console.WriteLine(datasetId);
                 IList<JObject> successTestRuns = testRunCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(
                     $@"SELECT top 10 * FROM c where c.datasetId = '{datasetId}' and " +
-                    $@"c.status = 'Success' and c.createTime > '2021-02-03' order by c.createTime desc")).Result;
+                    $@"c.status = 'Success' and c.createTime > '{startDateStrFilter}' order by c.createTime desc")).Result;
 
                 if (successTestRuns.Count > 0)
                 {
                     continue;
                 }
 
+                // Disable the cosmos view datasets without successful testRuns.
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"Disable the cosmos view dataset '{datasetId}' without successful testRuns");
+                Console.ForegroundColor = ConsoleColor.Gray;
+                azureDataset["isEnabled"] = false;
+                datasetCosmosDBClient.UpsertDocumentAsync(azureDataset).Wait();
+
                 IList<JObject> testRuns = testRunCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(
-                $@"SELECT top 20 * FROM c where c.datasetId = '{datasetId}' and c.createTime > '2021-02-03' order by c.createTime desc")).Result;
+                $@"SELECT top 20 * FROM c where c.datasetId = '{datasetId}' and c.createTime > '{startDateStrFilter}' order by c.createTime desc")).Result;
                 if (testRuns.Count == 0)
                 {
                     Console.WriteLine($"No usefully testRun of dataset : '{datasetId}'");
