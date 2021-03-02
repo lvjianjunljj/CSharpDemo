@@ -18,9 +18,13 @@
         private static Regex NamespaceNotExistMatchRegex = new Regex(
             @"E_CSC_USER_INVALIDCSHARP_0234: C# error CS0234: The type or namespace name '(?<namespace_1>.*)' does not exist in the namespace '(?<namespace_2>.*)'");
         private static Regex CloumnTypeMatchRegex = new Regex(
-            @"column '(?<type_1>.*)' of type '(?<type_2>.*)'");
+            @"column '(?<column>.*)' of type '(?<type>.*)'");
         private static Regex ExpectedTokenMatchRegex = new Regex(
                         @"Correct the script syntax, using expected token\(s\) as a guide\.\.\.\. at token '(?<token>.*)'");
+        private static Regex NoStructuredStreamTokenMatchRegex = new Regex(
+                        @"Verify that streamset parameters are correct and that it contains at least one structured stream\.\.\.\. at token '(?<stream>.*)'");
+        private static Regex NoViewStreamInfoMatchRegex = new Regex(
+                        @"Could not get stream info for (?<view>.*\.view)");
 
         public static void MainMethod()
         {
@@ -61,33 +65,96 @@
             var testRunMessagesPath = @"D:\data\company_work\M365\IDEAs\datacop\cosmosworker\builddeployment\allTestRuns.json";
             JArray testRunMessages = JArray.Parse(File.ReadAllText(testRunMessagesPath));
 
-
-            int missCount = 0;
+            JArray detailsJArray = new JArray();
+            var nameNotExistLines = new List<string>() { @"Wrong column name(The name 'XXXX' does not exist in the current context):", "View name\tName\tRepo name\tView file link\tJson file link\tOwner" };
+            var namespaceNotExistLines = new List<string>() { @"Leak of reference(The type or namespace name 'XXXX' does not exist in the namespace 'YYYY'): ", "View name\tTarget namespace\tSource namespace\tRepo name\tView file link\tJson file link\tOwner" };
+            var cloumnTypeLines = new List<string>() { @"Wrong column type(column 'XXXX' of type 'YYYY'):", "View name\tColumn\tType\tRepo name\tView file link\tJson file link\tOwner" };
+            var expectedTokenLines = new List<string>() { @"Wrong token(Correct the script syntax, using expected token(s) as a guide.... at token 'XXXX'): ", "View name\tToken\tRepo name\tView file link\tJson file link\tOwner" };
+            var structuredStreamTokenLines = new List<string>() { @"Stream set issue(Verify that streamset parameters are correct and that it contains at least one structured stream.... at token 'XXXX'): ", "View name\tStructured Stream\tRepo name\tView file link\tJson file link\tOwner" };
+            var viewStreamInfoLines = new List<string>() { @"No view stream(Could not get stream info for XXXX): ", "View name\tStream\tRepo name\tView file link\tJson file link\tOwner" };
+            var missedMessageLines = new List<string>() { @"Missed messages: ", "View name\tMissed message\tRepo name\tView file link\tJson file link\tOwner" };
             foreach (var testRunMessage in testRunMessages)
             {
-                string datasetId = testRunMessage["datasetId"].ToString();
+                JObject detailJson = new JObject();
+                //string datasetId = testRunMessage["datasetId"].ToString();
                 var messages = testRunMessage["messages"].ToArray();
 
                 var datasetName = testRunMessage["datasetName"].ToString();
                 var splits = datasetName.Split('/');
                 var viewName = splits[0];
                 var version = splits.Length > 1 ? splits[1] : string.Empty;
+                detailJson["viewName"] = viewName;
 
                 var viewFileInfo = GetViewFileInfo(viewFileInfos, viewName, version);
                 if (viewFileInfo == null)
                 {
                     continue;
                 }
-                var viewGitLink = GenerateGitInfo(viewFileInfo.ViewFilePath, out string viewOwnerName, out string viewOwnerEmail);
-                var jsonGitLink = GenerateGitInfo(viewFileInfo.JsonFilePath, out string jsonOwnerName, out string jsonOwnerEmail);
-                Console.WriteLine($"{viewFileInfo.ViewName}\t{viewOwnerName}\t{viewOwnerEmail}");
-                Console.WriteLine(viewGitLink);
-                Console.WriteLine(jsonGitLink);
 
-                Test(messages);
+                var viewGitLink = GenerateGitInfo(viewFileInfo.ViewFilePath, out string repoName, out string viewOwnerName, out string viewOwnerEmail);
+                var jsonGitLink = GenerateGitInfo(viewFileInfo.JsonFilePath, out string _, out string jsonOwnerName, out string jsonOwnerEmail);
+                //Console.WriteLine($"{viewFileInfo.ViewName}\t{viewOwnerName}\t{viewOwnerEmail}");
+
+                var tag = ClassifyErrorMessages(messages, out string errorContent, out string errorMessage);
+                detailJson["errorMessage"] = errorMessage;
+
+                var lineMessage = $"{viewName}\t{errorContent}\t{repoName}\t{viewGitLink}\t{jsonGitLink}\t{viewOwnerName}";
+                switch (tag)
+                {
+                    case 1:
+                        nameNotExistLines.Add(lineMessage);
+                        break;
+                    case 2:
+                        namespaceNotExistLines.Add(lineMessage);
+                        break;
+                    case 3:
+                        cloumnTypeLines.Add(lineMessage);
+                        break;
+                    case 4:
+                        expectedTokenLines.Add(lineMessage);
+                        break;
+                    case 5:
+                        structuredStreamTokenLines.Add(lineMessage);
+                        break;
+                    case 6:
+                        viewStreamInfoLines.Add(lineMessage);
+                        break;
+                    case 7:
+                        missedMessageLines.Add(lineMessage);
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine(testRunMessage["datasetId"]);
+                        //The default foreground color for console is gray.
+                        Console.ForegroundColor = ConsoleColor.Gray;
+                        break;
+                    default:
+                        Console.WriteLine($"Wrong tag value: {tag}");
+                        break;
+                }
+
+                detailsJArray.Add(detailJson);
             }
-            Console.WriteLine($"missCount: {missCount}");
-            Console.WriteLine(@"End CollectErrorMessage...");
+
+            var lines = new List<string>();
+            lines.AddRange(nameNotExistLines);
+            lines.Add(string.Empty);
+            lines.AddRange(namespaceNotExistLines);
+            lines.Add(string.Empty);
+            lines.AddRange(cloumnTypeLines);
+            lines.Add(string.Empty);
+            lines.AddRange(expectedTokenLines);
+            lines.Add(string.Empty);
+            lines.AddRange(structuredStreamTokenLines);
+            lines.Add(string.Empty);
+            lines.AddRange(viewStreamInfoLines);
+            lines.Add(string.Empty);
+            lines.AddRange(missedMessageLines);
+
+            File.WriteAllLines(@"D:\data\company_work\M365\IDEAs\datacop\cosmosworker\builddeployment\messageLines.tsv", lines);
+            File.WriteAllText(@"D:\data\company_work\M365\IDEAs\datacop\cosmosworker\builddeployment\details_attach.json", detailsJArray.ToString());
+
+
+            Console.WriteLine($"missCount: {missedMessageLines.Count}");
+            Console.WriteLine(@"End CollecterrorContent...");
         }
 
         private static ViewFileInfo GetViewFileInfo(HashSet<ViewFileInfo> viewFileInfos, string viewName, string version)
@@ -145,10 +212,10 @@
             }
         }
 
-        private static string GenerateGitInfo(string viewFilePath, out string ownerName, out string ownerEmail)
+        private static string GenerateGitInfo(string viewFilePath, out string repoName, out string ownerName, out string ownerEmail)
         {
             var splits = viewFilePath.Split(new char[] { '\\' });
-            string repoName = splits[3];
+            repoName = splits[3];
             string gitLink = GitRootLink + repoName + @"?path=";
 
             for (int i = 4; i < splits.Length; i++)
@@ -200,27 +267,30 @@
             return ownerName;
         }
 
-        private static void Test(JToken[] messages)
+        // errorContent is the main content in the table, errorMessage is the exception string list from compile
+        private static int ClassifyErrorMessages(JToken[] messages, out string errorContent, out string errorMessage)
         {
+            errorMessage = string.Empty;
             string name = string.Empty;
             foreach (var message in messages)
             {
-                //Console.WriteLine(message);
                 var nameNotExistMatch = NameNotExistMatchRegex.Match(message.ToString());
                 if (nameNotExistMatch.Success)
                 {
                     var curName = nameNotExistMatch.Result("${name}").ToString();
+                    var curValue = nameNotExistMatch.Value;
                     if (string.IsNullOrEmpty(name) || !name.Equals(curName))
                     {
+                        errorMessage = message.ToString();
                         name = curName;
-                        Console.WriteLine($"name: {name}");
                     }
                 }
             }
 
             if (!string.IsNullOrEmpty(name))
             {
-                return;
+                errorContent = name;
+                return 1;
             }
 
             string namespace_1 = string.Empty;
@@ -237,71 +307,113 @@
                         !namespace_1.Equals(cur_namespace_1) ||
                         !namespace_2.Equals(cur_namespace_2))
                     {
+                        errorMessage = message.ToString();
                         namespace_1 = cur_namespace_1;
                         namespace_2 = cur_namespace_2;
-                        Console.WriteLine($"namespace_1: {namespace_1}");
                     }
                 }
             }
 
             if (!string.IsNullOrEmpty(namespace_1) || !string.IsNullOrEmpty(namespace_2))
             {
-                return;
+                errorContent = $"{namespace_1}\t{namespace_2}";
+                return 2;
             }
 
-            string cloumnType_1 = string.Empty;
-            string cloumnType_2 = string.Empty;
+            string cloumn = string.Empty;
+            string type = string.Empty;
             foreach (var message in messages)
             {
-                //Console.WriteLine(message);
-                var rowsetCloumnTypeMatch = CloumnTypeMatchRegex.Match(message.ToString());
-                if (rowsetCloumnTypeMatch.Success)
+                var cloumnTypeMatch = CloumnTypeMatchRegex.Match(message.ToString());
+                if (cloumnTypeMatch.Success)
                 {
-                    var cur_cloumnType_1 = rowsetCloumnTypeMatch.Result("${type_1}").ToString();
-                    var cur_cloumnType_2 = rowsetCloumnTypeMatch.Result("${type_2}").ToString();
-                    if (string.IsNullOrEmpty(cloumnType_1) ||
-                        string.IsNullOrEmpty(cloumnType_2) ||
-                        !cloumnType_1.Equals(cur_cloumnType_1) ||
-                        !cloumnType_2.Equals(cur_cloumnType_2))
+                    var cur_cloumn = cloumnTypeMatch.Result("${column}").ToString();
+                    var cur_type = cloumnTypeMatch.Result("${type}").ToString();
+                    if (string.IsNullOrEmpty(cloumn) ||
+                        string.IsNullOrEmpty(type) ||
+                        !cloumn.Equals(cur_cloumn) ||
+                        !type.Equals(cur_type))
                     {
-                        cloumnType_1 = cur_cloumnType_1;
-                        cloumnType_2 = cur_cloumnType_2;
-                        Console.WriteLine($"cloumnType_1: {cloumnType_1}");
+                        errorMessage = message.ToString();
+                        cloumn = cur_cloumn;
+                        type = cur_type;
                     }
                 }
             }
 
-            if (!string.IsNullOrEmpty(cloumnType_1) || !string.IsNullOrEmpty(cloumnType_2))
+            if (!string.IsNullOrEmpty(cloumn) || !string.IsNullOrEmpty(type))
             {
-                return;
+                errorContent = $"{cloumn}\t{type}";
+                return 3;
             }
 
             string token = string.Empty;
             foreach (var message in messages)
             {
-                //Console.WriteLine(message);
                 var expectedTokenMatch = ExpectedTokenMatchRegex.Match(message.ToString());
                 if (expectedTokenMatch.Success)
                 {
                     var curToken = expectedTokenMatch.Result("${token}").ToString();
                     if (string.IsNullOrEmpty(token) || !token.Equals(curToken))
                     {
+                        errorMessage = message.ToString();
                         token = curToken;
-                        Console.WriteLine($"token: {token}");
                     }
                 }
             }
 
             if (!string.IsNullOrEmpty(token))
             {
-                return;
+                errorContent = token;
+                return 4;
             }
 
-            //Console.ForegroundColor = ConsoleColor.Red;
-            //Console.WriteLine(testRunMessage["datasetId"]);
-            // The default foreground color for console is gray.
-            //Console.ForegroundColor = ConsoleColor.Gray;
+            string stream = string.Empty;
+            foreach (var message in messages)
+            {
+                var expectedTokenMatch = NoStructuredStreamTokenMatchRegex.Match(message.ToString());
+                if (expectedTokenMatch.Success)
+                {
+                    var curStream = expectedTokenMatch.Result("${stream}").ToString();
+                    if (string.IsNullOrEmpty(token) || !token.Equals(curStream))
+                    {
+                        errorMessage = message.ToString();
+                        stream = curStream;
+                    }
+                }
+            }
+
+            if (!string.IsNullOrEmpty(stream))
+            {
+                errorContent = stream;
+                return 5;
+            }
+
+            string view = string.Empty;
+            foreach (var message in messages)
+            {
+                var noViewStreamInfoMatch = NoViewStreamInfoMatchRegex.Match(message.ToString());
+                if (noViewStreamInfoMatch.Success)
+                {
+                    var curView = noViewStreamInfoMatch.Result("${view}").ToString();
+                    if (string.IsNullOrEmpty(token) || !token.Equals(curView))
+                    {
+                        errorMessage = message.ToString();
+                        view = curView;
+                    }
+                }
+            }
+
+            if (!string.IsNullOrEmpty(view))
+            {
+                errorContent = view;
+                return 6;
+            }
+
+            errorContent = @"";
+            return 7;
         }
+
     }
 
     [Serializable]
