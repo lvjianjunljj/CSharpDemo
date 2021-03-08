@@ -15,10 +15,10 @@
         public static void MainMethod()
         {
             //SendHttpWebRequest();
-            SendSubmitJobRequestWithDictBody();
+            SendSubmitJobRequestWithDictBodyDemo();
         }
 
-        private static void SendSubmitJobRequestWithDictBody()
+        private static void SendSubmitJobRequestWithDictBodyDemo()
         {
             string scriptStr = File.ReadAllText(@"D:\data\company_work\M365\IDEAs\cloudscope\employees_test_script.script");
 
@@ -37,6 +37,7 @@
 
             };
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            //client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "Your Oauth token");
             HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, url);
 
             request.Content = new FormUrlEncodedContent(values);
@@ -128,6 +129,31 @@
                 var responseString = Encoding.Default.GetString(response);
                 Console.WriteLine(responseString);
             }
+        }
+
+        public static string GetAccessTokenV1(string tenantId, string clientId, string clientSecret, string resource)
+        {
+            // URL "https://login.microsoftonline.com/cdc5aeea-15c5-4db6-b079-fcadd2505dc2/oauth2/v2.0/token" is for the v2 token,
+            // the 'scope' is like this "api://ead06413-cb7c-408e-a533-2cdbe58bf3a6/.default" (The parameters is also differnet)
+            // This url is for the v1 token, the resource is like this "api://ead06413-cb7c-408e-a533-2cdbe58bf3a6"
+            string url = $"https://login.microsoftonline.com/{tenantId}/oauth2/token";
+            HttpClient client = new HttpClient();
+            var values = new Dictionary<string, string>
+            {
+                { "grant_type","client_credentials"},
+                { "client_id",clientId},
+                { "client_secret",clientSecret},
+                { "resource",resource},
+            };
+            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, url);
+
+            request.Content = new FormUrlEncodedContent(values);
+            var response = client.SendAsync(request).Result;
+
+            var responseString = response.Content.ReadAsStringAsync().Result;
+            JObject json = JObject.Parse(responseString);
+            return json["access_token"].ToString();
         }
     }
 }

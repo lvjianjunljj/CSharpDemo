@@ -29,9 +29,11 @@
             //AzureActiveDirectoryToken.MainMethod();
             //AzureKeyVaultDemo.MainMethod();
             //CsprojCheck.MainMethod();
-            CosmosViewErrorMessageOperation.MainMethod();
+            //CosmosViewErrorMessageOperation.MainMethod();
 
             //CommandRunDemo.MainMethod();
+            CloudScopeOperation.MainMethod();
+
 
             if (Debugger.IsAttached)
             {

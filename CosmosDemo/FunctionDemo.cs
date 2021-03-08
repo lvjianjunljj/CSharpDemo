@@ -131,17 +131,16 @@
 
         public static void DownloadFileDemo()
         {
-            string streamPath = "https://cosmos14.osdinfra.net/cosmos/Ideas.prod.build/" +
-                "shares/IDEAs.Prod.Data/Publish/Profiles/Tenant/Commercial/IDEAsTenantProfile/Views/v1/IDEAsTenantProfile.view";
+            string streamPath = "https://cosmos14.osdinfra.net/cosmos/ideas.prod.build/shares/IDEAs.Prod.Data/Variant/Profiles/Subscription/Consumer/Test/ConsumerSubscription/Views/v1/TestMCPInterface.view";
 
             var stream = CosmosClient.ReadStream(streamPath);
             StreamReader reader = new StreamReader(stream);
-            File.WriteAllText(@"D:\data\company_work\M365\IDEAs\datacop\cosmosworker\marked_aborted\IDEAsTenantProfile.view", reader.ReadToEnd());
+            File.WriteAllText(@"D:\data\company_work\M365\IDEAs\datacop\cosmosworker\marked_aborted\TestMCPInterface.view", reader.ReadToEnd());
         }
 
         private static void DownloadViewScripts()
         {
-            var testRunsJArrayPath = @"D:\data\company_work\M365\IDEAs\datacop\cosmosworker\builddeployment\allTestRuns.json";
+            var testRunMessagesPath = @"D:\data\company_work\M365\IDEAs\datacop\cosmosworker\builddeployment\allTestRuns.json";
             var viewsFolder = @"D:\IDEAs\repos\CosmosViewMonitor\cosmos_views";
 
             // Remove all the files in the folder first to make sure it does not contains the view we don't need.
@@ -156,16 +155,16 @@
                 dir.Delete(true);
             }
 
-            JArray testRuns = JArray.Parse(File.ReadAllText(testRunsJArrayPath));
+            JArray testRunMessages = JArray.Parse(File.ReadAllText(testRunMessagesPath));
             JArray datasetViewDict = new JArray();
-            foreach (var testRun in testRuns)
+            foreach (var testRunMessage in testRunMessages)
             {
                 JObject datasetViewMap = new JObject();
-                var datasetId = testRun["datasetId"].ToString();
-                var datasetName = testRun["datasetName"].ToString();
+                var datasetId = testRunMessage["datasetId"].ToString();
+                var datasetName = testRunMessage["datasetName"].ToString();
 
-                var cosmosVC = testRun["cosmosVC"].ToString();
-                var cosmosScriptContent = testRun["cosmosScriptContent"].ToString();
+                var cosmosVC = testRunMessage["cosmosVC"].ToString();
+                var cosmosScriptContent = testRunMessage["cosmosScriptContent"].ToString();
                 Console.WriteLine(datasetId);
                 datasetViewMap["datasetId"] = datasetId;
 

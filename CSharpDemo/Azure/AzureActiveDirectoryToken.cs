@@ -24,6 +24,7 @@
 
         // This is the tenant id for Microsoft
         private static string microsoftTenantId = @"72f988bf-86f1-41af-91ab-2d7cd011db47";
+        private static string torusTenantId = @"cdc5aeea-15c5-4db6-b079-fcadd2505dc2";
         private static string client_id = @"";
         private static string client_secret = @"";
         private static string resource = @"";
@@ -97,6 +98,17 @@
             {
                 { "Authorization", $"Bearer {authenticationResult.AccessToken}" }
             };
+        }
+
+        public static async Task<string> GetAccessTokenV1Async(string tenantId, string clientId, string clientSecret, string resource)
+        {
+            var authenticationContext = new AuthenticationContext($"https://login.microsoftonline.com/{tenantId}", TokenCache.DefaultShared);
+
+            ClientCredential clientCred = new ClientCredential(clientId, clientSecret);
+            // Function AcquireTokenAsync() has multiple overloads
+            var authenticationResult = await authenticationContext.AcquireTokenAsync(resource, clientCred);
+
+            return authenticationResult.AccessToken;
         }
     }
 }

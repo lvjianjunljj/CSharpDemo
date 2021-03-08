@@ -66,13 +66,13 @@
             JArray testRunMessages = JArray.Parse(File.ReadAllText(testRunMessagesPath));
 
             JArray detailsJArray = new JArray();
-            var nameNotExistLines = new List<string>() { @"Wrong column name(The name 'XXXX' does not exist in the current context):", "View name\tName\tRepo name\tView file link\tJson file link\tOwner" };
-            var namespaceNotExistLines = new List<string>() { @"Leak of reference(The type or namespace name 'XXXX' does not exist in the namespace 'YYYY'): ", "View name\tTarget namespace\tSource namespace\tRepo name\tView file link\tJson file link\tOwner" };
-            var cloumnTypeLines = new List<string>() { @"Wrong column type(column 'XXXX' of type 'YYYY'):", "View name\tColumn\tType\tRepo name\tView file link\tJson file link\tOwner" };
-            var expectedTokenLines = new List<string>() { @"Wrong token(Correct the script syntax, using expected token(s) as a guide.... at token 'XXXX'): ", "View name\tToken\tRepo name\tView file link\tJson file link\tOwner" };
-            var structuredStreamTokenLines = new List<string>() { @"Stream set issue(Verify that streamset parameters are correct and that it contains at least one structured stream.... at token 'XXXX'): ", "View name\tStructured Stream\tRepo name\tView file link\tJson file link\tOwner" };
-            var viewStreamInfoLines = new List<string>() { @"No view stream(Could not get stream info for XXXX): ", "View name\tStream\tRepo name\tView file link\tJson file link\tOwner" };
-            var missedMessageLines = new List<string>() { @"Missed messages: ", "View name\tMissed message\tRepo name\tView file link\tJson file link\tOwner" };
+            var nameNotExistLines = new List<string>() { @"Wrong column name(The name 'XXXX' does not exist in the current context):", "View name\tName\tView file link\tJson file link\tOwner" };
+            var namespaceNotExistLines = new List<string>() { @"Leak of reference(The type or namespace name 'XXXX' does not exist in the namespace 'YYYY'): ", "View name\tTarget namespace\tSource namespace\tView file link\tJson file link\tOwner" };
+            var cloumnTypeLines = new List<string>() { @"Wrong column type(column 'XXXX' of type 'YYYY'):", "View name\tColumn\tType\tView file link\tJson file link\tOwner" };
+            var expectedTokenLines = new List<string>() { @"Wrong token(Correct the script syntax, using expected token(s) as a guide.... at token 'XXXX'): ", "View name\tToken\tView file link\tJson file link\tOwner" };
+            var structuredStreamTokenLines = new List<string>() { @"Stream set issue(Verify that streamset parameters are correct and that it contains at least one structured stream.... at token 'XXXX'): ", "View name\tStructured Stream\tView file link\tJson file link\tOwner" };
+            var viewStreamInfoLines = new List<string>() { @"No view stream(Could not get stream info for XXXX): ", "View name\tStream\tView file link\tJson file link\tOwner" };
+            var missedMessageLines = new List<string>() { @"Missed messages: ", "View name\tMissed message\tView file link\tJson file link\tOwner" };
             foreach (var testRunMessage in testRunMessages)
             {
                 JObject detailJson = new JObject();
@@ -91,18 +91,21 @@
                     continue;
                 }
 
-                var viewGitLink = GenerateGitInfo(viewFileInfo.ViewFilePath, out string repoName, out string viewOwnerName, out string viewOwnerEmail);
+                var viewGitLink = GenerateGitInfo(viewFileInfo.ViewFilePath, out string _, out string viewOwnerName, out string viewOwnerEmail);
                 var jsonGitLink = GenerateGitInfo(viewFileInfo.JsonFilePath, out string _, out string jsonOwnerName, out string jsonOwnerEmail);
                 //Console.WriteLine($"{viewFileInfo.ViewName}\t{viewOwnerName}\t{viewOwnerEmail}");
 
                 var tag = ClassifyErrorMessages(messages, out string errorContent, out string errorMessage);
                 detailJson["errorMessage"] = errorMessage;
 
-                var lineMessage = $"{viewName}\t{errorContent}\t{repoName}\t{viewGitLink}\t{jsonGitLink}\t{viewOwnerName}";
+                var lineMessage = $"{viewName}\t{errorContent}\t{viewGitLink}\t{jsonGitLink}\t{viewOwnerName}";
                 switch (tag)
                 {
                     case 1:
-                        nameNotExistLines.Add(lineMessage);
+                        if (!errorContent.Equals("worldwide") && !errorContent.Equals("True") && !errorContent.Equals("False"))
+                        {
+                            nameNotExistLines.Add(lineMessage);
+                        }
                         break;
                     case 2:
                         namespaceNotExistLines.Add(lineMessage);

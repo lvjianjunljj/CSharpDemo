@@ -40,8 +40,8 @@
             //InsertCFRMonitorConfig();
             //UpsertDatasetDemo();
             //UpsertDatasetTestDemo();
+            //UpdateBuildDeploymentViewBooleanParameters();
 
-            GetTestRunMessagesForEveryDataset();
 
             //DisableDatasets();
             //EnableDatasets();
@@ -49,6 +49,8 @@
             //EnableAllCosmosDatasetTestSuccessively();
             //EnableAllCosmosDatasetTestWhenNoActiveMessage();
 
+            //QueryTestRunStatusForDatasets();
+            GetTestRunMessagesForEveryDataset();
             //QueryAlertSettingDemo();
             //QueryScheduleMonitorReportDemo();
             //QueryAlertSettingInDatasetTestsDemo();
@@ -304,7 +306,7 @@
                 string datasetName = azureDataset["name"].ToString();
                 Console.WriteLine(datasetId);
                 IList<JObject> successTestRuns = testRunCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(
-                    $@"SELECT top 10 * FROM c where c.datasetId = '{datasetId}' and " +
+                    $@"SELECT top 5 * FROM c where c.datasetId = '{datasetId}' and " +
                     $@"c.status = 'Success' and c.createTime > '{startDateStrFilter}' order by c.createTime desc")).Result;
 
                 if (successTestRuns.Count > 0)
@@ -313,11 +315,11 @@
                 }
 
                 // Disable the cosmos view datasets without successful testRuns.
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"Disable the cosmos view dataset '{datasetId}' without successful testRuns");
-                Console.ForegroundColor = ConsoleColor.Gray;
-                azureDataset["isEnabled"] = false;
-                datasetCosmosDBClient.UpsertDocumentAsync(azureDataset).Wait();
+                //Console.ForegroundColor = ConsoleColor.Red;
+                //Console.WriteLine($"Disable the cosmos view dataset '{datasetId}' without successful testRuns");
+                //Console.ForegroundColor = ConsoleColor.Gray;
+                //azureDataset["isEnabled"] = false;
+                //datasetCosmosDBClient.UpsertDocumentAsync(azureDataset).Wait();
 
                 IList<JObject> testRuns = testRunCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(
                 $@"SELECT top 20 * FROM c where c.datasetId = '{datasetId}' and c.createTime > '{startDateStrFilter}' order by c.createTime desc")).Result;
@@ -332,6 +334,7 @@
                 testRunMessage["datasetName"] = datasetName;
                 var messages = new JArray();
                 var testRunIds = new JArray();
+                var testDates = new JArray();
                 var cosmosVC = string.Empty;
                 var cosmosScriptContent = string.Empty;
 
@@ -344,6 +347,7 @@
                         Console.WriteLine(cosmosVC);
                         Console.WriteLine(testRun["testContent"]["cosmosVC"].ToString());
                     }
+
                     if (!string.IsNullOrEmpty(cosmosScriptContent) && !testRun["testContent"]["cosmosScriptContent"].ToString().Equals(cosmosScriptContent))
                     {
                         Console.WriteLine("Different cosmosScriptContent: ");
@@ -356,11 +360,13 @@
                     cosmosScriptContent = testRun["testContent"]["cosmosScriptContent"].ToString();
                     testRunIds.Add(testRun["id"]);
                     messages.Add(testRun["message"]);
+                    testDates.Add(testRun["testDate"]);
                 }
 
                 testRunMessage["cosmosVC"] = cosmosVC;
                 testRunMessage["cosmosScriptContent"] = cosmosScriptContent;
                 testRunMessage["testRunIds"] = testRunIds;
+                testRunMessage["testDates"] = testDates;
                 testRunMessage["messages"] = messages;
 
                 allTestRunMessages.Add(testRunMessage);
@@ -1445,6 +1451,9 @@
                 "1a8079f8-1885-41ce-8ab5-1717fd885632",
                 "916e9311-8cdb-4cf4-99b5-0b65e562757b"
             };
+            JArray jsons = JArray.Parse(File.ReadAllText(@"D:\data\company_work\M365\IDEAs\datacop\cosmosworker\builddeployment\allTestRuns.json"));
+            ids = jsons.Select(j => j["datasetId"].ToString()).ToArray();
+
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "Dataset");
             IList<JObject> datasets = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(
                 @$"SELECT * FROM c where c.id in ({string.Join(",", ids.Select(id => $"'{id}'"))}) and c.isEnabled = false")).Result;
@@ -1453,6 +1462,25 @@
                 Console.WriteLine(dataset["id"]);
                 dataset["isEnabled"] = true;
                 azureCosmosDBClient.UpsertDocumentAsync(dataset).Wait();
+            }
+            Console.WriteLine(datasets.Count);
+        }
+
+        private static void QueryTestRunStatusForDatasets()
+        {
+            JArray jsons = JArray.Parse(File.ReadAllText(@"D:\data\company_work\M365\IDEAs\datacop\cosmosworker\builddeployment\allTestRuns.json"));
+            var datasetIds = jsons.Select(j => j["datasetId"].ToString()).ToArray();
+
+            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "PartitionedTestRun");
+            foreach (var datasetId in datasetIds)
+            {
+                //Console.WriteLine($"datasetId: {datasetId}");
+                IList<JObject> testRuns = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(
+                    new SqlQuerySpec($"SELECT top 1 c.status FROM c where c.datasetId = '{datasetId}' order by c.createTime desc")).Result;
+                foreach (var testRun in testRuns)
+                {
+                    Console.WriteLine(testRun["status"]);
+                }
             }
         }
 
@@ -1464,6 +1492,78 @@
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "Dataset");
             azureCosmosDBClient.UpsertDocumentAsync(demoDatasetJson).Wait();
             Console.WriteLine("End.");
+        }
+
+        private static void UpdateBuildDeploymentViewBooleanParameters()
+        {
+            AzureCosmosDBClient datasetCosmosDBClient = new AzureCosmosDBClient("DataCop", "Dataset");
+            AzureCosmosDBClient datasetTestCosmosDBClient = new AzureCosmosDBClient("DataCop", "DatasetTest");
+            // Collation: asc and desc is ascending and descending
+            IList<JObject> datasets = datasetCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(
+                new SqlQuerySpec(@"SELECT * FROM c WHERE c.createdBy = 'BuildDeployment' and c.dataFabric = 'CosmosView'")).Result;
+            IList<JObject> datasetTests = datasetTestCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(
+                new SqlQuerySpec(@"SELECT * FROM c WHERE c.createdBy = 'BuildDeployment' and c.testContentType = 'CosmosViewAvailability'")).Result;
+
+            Console.WriteLine(@"Update datasets: ");
+            foreach (JObject dataset in datasets)
+            {
+                var change = false;
+                foreach (var parameter in dataset["cosmosViewParameters"].ToArray())
+                {
+                    if (parameter["value"].ToString().Equals("True"))
+                    {
+                        change = true;
+                        parameter["value"] = "true";
+                    }
+
+                    if (parameter["value"].ToString().Equals("False"))
+                    {
+                        change = true;
+                        parameter["value"] = "false";
+                    }
+                }
+
+                if (change)
+                {
+                    Console.WriteLine(dataset["id"].ToString());
+                    //datasetCosmosDBClient.UpsertDocumentAsync(dataset).Wait();
+                }
+            }
+
+            Console.WriteLine(@"Update datasetTests: ");
+            foreach (JObject datasetTest in datasetTests)
+            {
+                var change = false;
+                foreach (var parameter in datasetTest["testContent"]["otherParameters"].ToArray())
+                {
+                    if (parameter["value"].ToString().Equals("True"))
+                    {
+                        change = true;
+                        parameter["value"] = "true";
+                    }
+
+                    if (parameter["value"].ToString().Equals("False"))
+                    {
+                        change = true;
+                        parameter["value"] = "false";
+                    }
+                }
+
+                var cosmosScriptContent = datasetTest["testContent"]["cosmosScriptContent"].ToString();
+                if (cosmosScriptContent.Contains(" = True") || cosmosScriptContent.Contains(" = False"))
+                {
+                    change = true;
+                    datasetTest["testContent"]["cosmosScriptContent"] = cosmosScriptContent
+                                                                                          .Replace(" = True", " = true")
+                                                                                          .Replace(" = False", " = false");
+                }
+
+                if (change)
+                {
+                    Console.WriteLine(datasetTest["id"].ToString());
+                    datasetTestCosmosDBClient.UpsertDocumentAsync(datasetTest).Wait();
+                }
+            }
         }
 
         private static void UpsertDatasetTestDemo()
