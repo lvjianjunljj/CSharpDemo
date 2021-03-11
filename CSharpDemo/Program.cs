@@ -31,7 +31,6 @@
             //CsprojCheck.MainMethod();
             //CosmosViewErrorMessageOperation.MainMethod();
 
-            //CommandRunDemo.MainMethod();
             CloudScopeOperation.MainMethod();
 
 

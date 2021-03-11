@@ -1,51 +1,90 @@
 ﻿namespace CSharpDemo.IDEAs
 {
+    using AzureLib.KeyVault;
     using CSharpDemo.Azure;
-    using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
     using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Net.Http;
     using System.Net.Http.Headers;
-    using System.Security;
     using System.Text.RegularExpressions;
-    using System.Threading;
 
     class CloudScopeOperation
     {
-        private static string CloudScopeSubmitJobUrl = @"http://cloudscope-prod-gdpr.asecloudscopeprod.p.azurewebsites.net/api/virtualCluster/ideas-prod-c14/submitJob?workloadQueueName=Gdpr";
+        private static string CloudScopeSubmitJobUrl = @"http://cloudscope-prod-gdpr.asecloudscopeprod.p.azurewebsites.net/api/virtualCluster/ideas-prod-c14/submitJob?workloadQueueName=gdpr";
         private static string CloudScopeJobInfoUrlFormat = @"http://cloudscope-prod-gdpr.asecloudscopeprod.p.azurewebsites.net/api/virtualCluster/ideas-prod-c14/jobInfo/{0}";
-        private static string TenantId;
-        private static string ClientId;
-        private static string ClientSecret;
-        private static string Resource;
+        private static string TestRunMessagesPath = @"D:\data\company_work\M365\IDEAs\datacop\cosmosworker\builddeployment\allTestRuns.json";
+        private static string JobStatusesPath = @"D:\data\company_work\M365\IDEAs\datacop\cosmosworker\builddeployment\allJobStatuses_prod.json";
+
         private static string Token;
 
         public static void MainMethod()
         {
-            Initialize();
-            SubmitFailedCosmosjob();
+            Initialize(@"datacop-prod");
+            //AddDatasetNames();
+            //SubmitFailedCosmosjob();
             UpdateJobStatuses();
         }
 
-        private static void Initialize()
+        private static void Initialize(string keyVaultName)
         {
             // PPE resource: api://ead06413-cb7c-408e-a533-2cdbe58bf3a6
             // Prod resource； api://9576eb06-ef2f-4f45-a131-e33d0e7ffb00
-            Token = AzureActiveDirectoryToken.GetAccessTokenV1Async(TenantId, ClientId, ClientSecret, Resource).Result;
+
+            // For ideas-prod-c14
+            string tenantId = @"cdc5aeea-15c5-4db6-b079-fcadd2505dc2";
+            string resource = @"api://9576eb06-ef2f-4f45-a131-e33d0e7ffb00";
+            // For ideas-prod-build-c14
+            // string tenantId = @"72f988bf-86f1-41af-91ab-2d7cd011db47";
+            //string resource = @"api://d42d6163-88e5-4339-bbb3-28ec2fb3c574";
+
+            ISecretProvider secretProvider = KeyVaultSecretProvider.Instance;
+            string clientId = secretProvider.GetSecretAsync(keyVaultName, "GdprClientId").Result;
+            string clientSecret = secretProvider.GetSecretAsync(keyVaultName, "GdprClientSecret").Result;
+            Token = AzureActiveDirectoryToken.GetAccessTokenV1Async(tenantId, clientId, clientSecret, resource).Result;
+        }
+
+        private static void AddDatasetNames()
+        {
+            // Need to run CosmosDemo.FunctionDemo.DownloadViewScripts() first.
+            Console.WriteLine(@"Sending submit job requests start...");
+
+            JArray testRunMessages = JArray.Parse(File.ReadAllText(TestRunMessagesPath));
+            JArray jobStatuses = JArray.Parse(File.ReadAllText(JobStatusesPath));
+            var jobStatuses2 = new JArray();
+            var dict = new Dictionary<string, string>();
+            foreach (var testRunMessage in testRunMessages)
+            {
+                Console.WriteLine(testRunMessage["datasetId"]);
+                Console.WriteLine(testRunMessage["datasetName"]);
+                dict.Add(testRunMessage["datasetId"].ToString(), testRunMessage["datasetName"].ToString());
+            }
+
+            foreach (var jobStatus in jobStatuses)
+            {
+                var jobStatus2 = new JObject();
+                jobStatus2["datasetId"] = jobStatus["datasetId"];
+                jobStatus2["datasetName"] = dict[jobStatus["datasetId"].ToString()];
+                jobStatus2["testDates"] = jobStatus["testDates"];
+                jobStatus2["jobIds"] = jobStatus["jobIds"];
+                jobStatus2["states"] = jobStatus["states"];
+                jobStatus2["errors"] = jobStatus["errors"];
+                jobStatuses2.Add(jobStatus2);
+            }
+
+            File.WriteAllText(JobStatusesPath.Replace(".json", "2.json"), jobStatuses2.ToString());
+            Console.WriteLine(@"Sending submit job requests end...");
         }
 
         private static void SubmitFailedCosmosjob()
         {
             // Need to run CosmosDemo.FunctionDemo.DownloadViewScripts() first.
-            Console.WriteLine(@"Sneding submit job requests start...");
+            Console.WriteLine(@"Sending submit job requests start...");
 
-            var testRunMessagesPath = @"D:\data\company_work\M365\IDEAs\datacop\cosmosworker\builddeployment\allTestRuns.json";
-            var jobStatusesPath = @"D:\data\company_work\M365\IDEAs\datacop\cosmosworker\builddeployment\allJobStatuses.json";
             var viewsFolder = @"D:\IDEAs\repos\CosmosViewMonitor\cosmos_views";
 
-            JArray testRunMessages = JArray.Parse(File.ReadAllText(testRunMessagesPath));
+            JArray testRunMessages = JArray.Parse(File.ReadAllText(TestRunMessagesPath));
             JArray datasetViewDict = JArray.Parse(File.ReadAllText(Path.Combine(viewsFolder, @"datasetViewDict.json")));
 
             Dictionary<string, string> viewFilePaths = new Dictionary<string, string>();
@@ -58,11 +97,13 @@
             var jobStatuses = new JArray();
             foreach (var testRunMessage in testRunMessages)
             {
-                var datasetId = testRunMessage["datasetId"].ToString();
                 var testDateStrs = JArray.Parse(testRunMessage["testDates"].ToString());
-                var jobStatus = new JObject();
-                jobStatus["datasetId"] = datasetId;
-                jobStatus["testDates"] = testDateStrs;
+                var jobStatus = new JObject
+                {
+                    ["datasetId"] = testRunMessage["datasetId"].ToString(),
+                    ["datasetName"] = testRunMessage["datasetName"].ToString(),
+                    ["testDates"] = testDateStrs,
+                };
                 var jobIds = new JArray();
                 var jobIdDict = new Dictionary<string, string>();
                 foreach (var testDateStr in testDateStrs)
@@ -80,15 +121,6 @@
                     .Replace("@@NextDate@@", "\"" + nextDate.ToString() + "\"");
                     scriptToCompile = scriptToCompile.Replace("PARAMS()", ""); // Remove empty PARAMS clause.
 
-                    //var scriptParams = new JObject();
-                    //var parameters = GetParameters(cosmosScriptContent);
-                    //foreach (var parameter in parameters)
-                    //{
-                    //    scriptParams[parameter.Key] = parameter.Value;
-                    //}
-                    //var response = SendSubmitJobRequest(viewFilePaths[datasetId], gdprToken, scriptParams);
-
-
                     // Cosmos view is like a function and cosmosScriptContent is to call this function with some input, we need to submit a process to adla.
                     // So we cannot just submit a cosmos view to adla.
                     var response = SendSubmitJobRequest(scriptToCompile, Token);
@@ -102,32 +134,36 @@
                 jobStatuses.Add(jobStatus);
             }
 
-            File.WriteAllText(jobStatusesPath, jobStatuses.ToString());
-            Console.WriteLine(@"Sneding submit job requests end...");
+            File.WriteAllText(JobStatusesPath, jobStatuses.ToString());
+            Console.WriteLine(@"Sending submit job requests end...");
         }
 
         private static void UpdateJobStatuses()
         {
             Console.WriteLine(@"Writing job statuses start...");
-            var jobStatusesPath = @"D:\data\company_work\M365\IDEAs\datacop\cosmosworker\builddeployment\allJobStatuses.json";
-            JArray jobStatuses = JArray.Parse(File.ReadAllText(jobStatusesPath));
+            JArray jobStatuses = JArray.Parse(File.ReadAllText(JobStatusesPath));
             JArray newJobStatuses = new JArray();
             foreach (var jobStatus in jobStatuses)
             {
-                var newJobStatus = new JObject();
                 var jobIds = JArray.Parse(jobStatus["jobIds"].ToString());
-                newJobStatus["jobIds"] = jobIds;
-                newJobStatus["datasetId"] = jobStatus["datasetId"];
-                newJobStatus["testDates"] = jobStatus["testDates"];
-                JArray states = new JArray();
-                JArray errors = new JArray();
+                var newJobStatus = new JObject
+                {
+                    ["datasetId"] = jobStatus["datasetId"],
+                    ["datasetName"] = jobStatus["datasetName"].ToString(),
+                    ["testDates"] = jobStatus["testDates"],
+                    ["jobIds"] = jobIds
+                };
+
+                var states = new JArray();
+                var errors = new JArray();
 
                 foreach (var jobId in jobIds)
                 {
                     var response = SendJobInfoRequest(jobId.ToString(), Token);
                     var json = JObject.Parse(response);
                     var state = json["CosmosState"].ToString().Equals("None") ? json["CloudScopeSubmissionState"] : json["CosmosState"];
-                    var error = string.IsNullOrEmpty(json["Error"].ToString()) ? json["CloudScopeSubmissionError"] : json["Error"];
+                    var error = string.IsNullOrEmpty(json["Error"].ToString()) || json["Error"].ToString().Equals("Intermittent CloudScope Failure") ?
+                        json["CloudScopeSubmissionError"] : json["Error"];
                     states.Add(state);
                     errors.Add(error);
                 }
@@ -136,7 +172,7 @@
 
                 newJobStatuses.Add(newJobStatus);
             }
-            File.WriteAllText(jobStatusesPath, newJobStatuses.ToString());
+            File.WriteAllText(JobStatusesPath, newJobStatuses.ToString());
             Console.WriteLine(@"Writing job statuses end...");
         }
 
