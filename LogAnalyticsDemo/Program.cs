@@ -1,5 +1,6 @@
 ﻿namespace LogAnalyticsDemo
 {
+    using AzureLib.KeyVault;
     using System;
     using System.Diagnostics;
 
@@ -9,7 +10,7 @@
         {
 
             //ADFLogQueryDemo.MainMethod();
-            CloudScopeLogQueryDemo.MainMethod();
+            //CloudScopeLogQueryDemo.MainMethod();
 
             if (Debugger.IsAttached)
             {

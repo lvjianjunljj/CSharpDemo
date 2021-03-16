@@ -4,7 +4,6 @@
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
     using System;
-    using System.Collections.Generic;
     using System.Diagnostics;
 
     class CloudScopeLogQueryDemo
@@ -27,17 +26,18 @@
 
         private static void CloudScopeLogQuery()
         {
-            var dict = cloudScopeLogProvider.GetTraces(null);
-            Console.WriteLine(JObject.Parse(JsonConvert.SerializeObject(dict)));
+            var dict = cloudScopeLogProvider.GetTraces();
+            Console.WriteLine(JArray.Parse(JsonConvert.SerializeObject(dict)));
         }
 
         private static void Initialize(string keyVaultName)
         {
             ISecretProvider secretProvider = KeyVaultSecretProvider.Instance;
-            string workspaceId = secretProvider.GetSecretAsync(keyVaultName, "CloudScopeLogMonitorWorkspaceId").Result;
+            string applicationId = secretProvider.GetSecretAsync(keyVaultName, "CloudScopeLogMonitorApplicationId").Result;
             string clientId = secretProvider.GetSecretAsync(keyVaultName, "BuildLogMonitorClientId").Result;
             string clientKey = secretProvider.GetSecretAsync(keyVaultName, "BuildLogMonitorClientKey").Result;
-            cloudScopeLogProvider = new CloudScopeLogProvider(workspaceId, clientId, clientKey);
+
+            cloudScopeLogProvider = new CloudScopeLogProvider(applicationId, clientId, clientKey);
         }
     }
 }

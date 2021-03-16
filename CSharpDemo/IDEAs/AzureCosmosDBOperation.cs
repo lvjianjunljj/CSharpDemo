@@ -50,7 +50,7 @@
             //EnableAllCosmosDatasetTestWhenNoActiveMessage();
 
             //QueryTestRunStatusForDatasets();
-            GetTestRunMessagesForEveryDataset();
+            //GetTestRunMessagesForEveryDataset();
             //QueryAlertSettingDemo();
             //QueryScheduleMonitorReportDemo();
             //QueryAlertSettingInDatasetTestsDemo();
@@ -1505,6 +1505,7 @@
                 new SqlQuerySpec(@"SELECT * FROM c WHERE c.createdBy = 'BuildDeployment' and c.testContentType = 'CosmosViewAvailability'")).Result;
 
             Console.WriteLine(@"Update datasets: ");
+            var count = 0;
             foreach (JObject dataset in datasets)
             {
                 var change = false;
@@ -1526,11 +1527,15 @@
                 if (change)
                 {
                     Console.WriteLine(dataset["id"].ToString());
-                    //datasetCosmosDBClient.UpsertDocumentAsync(dataset).Wait();
+                    datasetCosmosDBClient.UpsertDocumentAsync(dataset).Wait();
+                    count++;
                 }
             }
 
+            Console.WriteLine($"Changed datasets count: {count}");
+
             Console.WriteLine(@"Update datasetTests: ");
+            count = 0;
             foreach (JObject datasetTest in datasetTests)
             {
                 var change = false;
@@ -1562,8 +1567,11 @@
                 {
                     Console.WriteLine(datasetTest["id"].ToString());
                     datasetTestCosmosDBClient.UpsertDocumentAsync(datasetTest).Wait();
+                    count++;
                 }
             }
+
+            Console.WriteLine($"Changed datasetTests count: {count}");
         }
 
         private static void UpsertDatasetTestDemo()
