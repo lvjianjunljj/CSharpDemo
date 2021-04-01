@@ -19,7 +19,7 @@ namespace AzureLib.KeyVault
         public static void MainMethod()
         {
             //FailedGetAllSecretDemo();
-            MigrateDataBuildSecrets();
+            //MigrateDataBuildSecrets();
         }
 
         public static void FailedGetAllSecretDemo()

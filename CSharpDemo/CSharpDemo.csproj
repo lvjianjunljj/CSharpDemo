@@ -241,6 +241,7 @@
     <Compile Include="ExplicitOperatorDemo.cs" />
     <Compile Include="FileOperation\AppConfigOperation.cs" />
     <Compile Include="FileOperation\ExcelOperation.cs" />
+    <Compile Include="GameOperations.cs" />
     <Compile Include="GetStrValue.cs" />
     <Compile Include="HttpRequestDemo.cs" />
     <Compile Include="IcMTest\FireIncident.cs" />

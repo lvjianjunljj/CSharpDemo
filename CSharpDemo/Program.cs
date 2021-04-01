@@ -19,7 +19,7 @@
     {
         static void Main(string[] args)
         {
-            AzureCosmosDBOperation.MainMethod();
+            //AzureCosmosDBOperation.MainMethod();
             //AzureServiceBus.MainMethod();
 
             //QueryIncidents.MainMethod();
@@ -33,6 +33,8 @@
             //CosmosViewErrorMessageOperation.MainMethod();
 
             //CloudScopeOperation.MainMethod();
+
+            GameOperations.MainMethod();
 
 
             if (Debugger.IsAttached)

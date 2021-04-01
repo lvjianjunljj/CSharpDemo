@@ -80,7 +80,7 @@
             // Construct and execute the query to get all triggers whose last run failed recently.
             string queryString = "traces ";
             queryString += $"| where timestamp > ago(1h) ";
-            queryString += $"| where customDimensions contains \"53d48be7-bd87-4517-a3a4-25f4c5a5eb72\" ";
+            queryString += $"| where customDimensions['tagId'] == '53d48be7-bd87-4517-a3a4-25f4c5a5eb72' ";
 
             var results = client.QueryAsync(query: queryString).Result.Results.ToList();
             return results;

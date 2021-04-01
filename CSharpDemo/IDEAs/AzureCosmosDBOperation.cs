@@ -41,7 +41,7 @@
             //InsertCFRMonitorConfig();
             //UpsertDatasetDemo();
             //UpsertDatasetTestDemo();
-            UpdateBuildDeploymentViewBooleanParameters();
+            //UpdateBuildDeploymentViewBooleanParameters();
 
 
             //DisableDatasets();
@@ -50,7 +50,7 @@
             //EnableAllCosmosDatasetTestSuccessively();
             //EnableAllCosmosDatasetTestWhenNoActiveMessage();
 
-            //GetTestRunMessagesForEveryDataset();
+            GetTestRunMessagesForEveryDataset();
             //QueryTestRunStatusForDatasets();
             //GetDataFactoriesInCosmosViewMonitors();
 
@@ -294,7 +294,7 @@
             AzureCosmosDBClient datasetTestCosmosDBClient = new AzureCosmosDBClient("DataCop", "DatasetTest");
             // Collation: asc and desc is ascending and descending
             IList<JObject> azureDatasetTests = datasetTestCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(
-                "SELECT * FROM c where c.id = '733CD6B0-90E4-45BB-9700-60E9088C1DAD'")).Result;
+                "SELECT * FROM c where c.testContentType = 'CosmosViewAvailability' and c.createdBy = 'BuildDeployment'")).Result;
             Console.WriteLine($"azureDataset count: '{azureDatasetTests.Count}'");
 
             int count = 0;
@@ -305,7 +305,6 @@
                 azureDatasetTest["testContent"]["cosmosScriptContent"] = azureDatasetTest["testContent"]["cosmosScriptContent"].ToString().Replace(
                     "OUTPUT ViewSamples TO \"/my/output.tsv\" USING DefaultTextOutputter();",
                     "Count = SELECT COUNT() AS NumSessions FROM ViewSamples; OUTPUT Count TO SSTREAM \"/my/output.ss\";");
-                azureDatasetTest["testContent"]["cosmosScriptContent"] = azureDatasetTest["testContent"]["cosmosScriptContent"] + ";";
                 Console.WriteLine(azureDatasetTest["testContent"]["cosmosScriptContent"]);
                 datasetTestCosmosDBClient.UpsertDocumentAsync(azureDatasetTest).Wait();
             }
@@ -319,10 +318,11 @@
             // Just collect the testRuns created by the last thirty days.
             string startDateStrFilter = nowDate.AddDays(-30).ToString("s");
             AzureCosmosDBClient datasetCosmosDBClient = new AzureCosmosDBClient("DataCop", "Dataset");
+            AzureCosmosDBClient datasetTestCosmosDBClient = new AzureCosmosDBClient("DataCop", "DatasetTest");
             AzureCosmosDBClient testRunCosmosDBClient = new AzureCosmosDBClient("DataCop", "PartitionedTestRun");
             // Collation: asc and desc is ascending and descending
             IList<JObject> azureDatasets = datasetCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(
-                @"SELECT * FROM c where c.dataFabric = 'CosmosView' and c.createdBy = 'BuildDeployment'")).Result;
+                @"SELECT * FROM c where c.dataFabric = 'CosmosView' and c.createdBy = 'BuildDeployment' and c.isEnabled = true")).Result;
             Console.WriteLine($"azureDataset count: '{azureDatasets.Count}'");
 
             JArray allTestRunMessages = new JArray();
@@ -331,12 +331,24 @@
                 string datasetId = azureDataset["id"].ToString();
                 string datasetName = azureDataset["name"].ToString();
                 Console.WriteLine(datasetId);
+
+
                 IList<JObject> successTestRuns = testRunCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(
-                    $@"SELECT top 5 * FROM c where c.datasetId = '{datasetId}' and " +
+                    $@"SELECT top 10 * FROM c where c.datasetId = '{datasetId}' and " +
                     $@"c.status = 'Success' and c.createTime > '{startDateStrFilter}' order by c.createTime desc")).Result;
+
+                IList<JObject> datasetTests = datasetTestCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(
+                    $@"SELECT * FROM c where c.datasetId = '{datasetId}'")).Result;
 
                 if (successTestRuns.Count > 0)
                 {
+                    Console.WriteLine($@"There is success testRuns for dataset '{datasetId}'");
+                    continue;
+                }
+
+                if (datasetTests.Count == 0)
+                {
+                    Console.WriteLine($@"There is no mapping datasetTest for dataset '{datasetId}'");
                     continue;
                 }
 
@@ -366,24 +378,17 @@
 
                 foreach (var testRun in testRuns)
                 {
-                    if (!string.IsNullOrEmpty(cosmosVC) && !testRun["testContent"]["cosmosVC"].ToString().Equals(cosmosVC))
+                    // Just set the cosmosVC/cosmosScriptContent as the latest one
+                    if (!string.IsNullOrEmpty(cosmosVC))
                     {
-                        Console.WriteLine("Different cosmosVC: ");
-                        Console.WriteLine(testRun["id"]);
-                        Console.WriteLine(cosmosVC);
-                        Console.WriteLine(testRun["testContent"]["cosmosVC"].ToString());
+                        cosmosVC = testRun["testContent"]["cosmosVC"].ToString();
                     }
 
                     if (!string.IsNullOrEmpty(cosmosScriptContent) && !testRun["testContent"]["cosmosScriptContent"].ToString().Equals(cosmosScriptContent))
                     {
-                        Console.WriteLine("Different cosmosScriptContent: ");
-                        Console.WriteLine(testRun["id"]);
-                        Console.WriteLine(cosmosScriptContent);
-                        Console.WriteLine(testRun["testContent"]["cosmosScriptContent"].ToString());
+                        cosmosScriptContent = testRun["testContent"]["cosmosScriptContent"].ToString();
                     }
 
-                    cosmosVC = testRun["testContent"]["cosmosVC"].ToString();
-                    cosmosScriptContent = testRun["testContent"]["cosmosScriptContent"].ToString();
                     testRunIds.Add(testRun["id"]);
                     messages.Add(testRun["message"]);
                     testDates.Add(testRun["testDate"]);
@@ -1536,10 +1541,20 @@
         private static void UpsertDatasetDemo()
         {
             Console.WriteLine("Upsert demo Dataset.");
-            string demoDatasetFilePath = @"D:\data\company_work\M365\IDEAs\datacop\LogAnalyticsWorker\dataset.json";
+            string demoDatasetFilePath = @"D:\data\company_work\M365\IDEAs\datacop\LogAnalytics\dataset.json";
             var demoDatasetJson = JObject.Parse(File.ReadAllText(demoDatasetFilePath));
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "Dataset");
             azureCosmosDBClient.UpsertDocumentAsync(demoDatasetJson).Wait();
+            Console.WriteLine("End.");
+        }
+
+        private static void UpsertDatasetTestDemo()
+        {
+            Console.WriteLine("Upsert demo DatasetTest.");
+            string demoDatasetTestFilePath = @"D:\data\company_work\M365\IDEAs\datacop\LogAnalytics\datasetTest.json";
+            var demoDatasetTestJson = JObject.Parse(File.ReadAllText(demoDatasetTestFilePath));
+            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "DatasetTest");
+            azureCosmosDBClient.UpsertDocumentAsync(demoDatasetTestJson).Wait();
             Console.WriteLine("End.");
         }
 
@@ -1621,16 +1636,6 @@
             }
 
             Console.WriteLine($"Changed datasetTests count: {count}");
-        }
-
-        private static void UpsertDatasetTestDemo()
-        {
-            Console.WriteLine("Upsert demo DatasetTest.");
-            string demoDatasetTestFilePath = @"D:\data\company_work\M365\IDEAs\datacop\LogAnalyticsWorker\datasetTest.json";
-            var demoDatasetTestJson = JObject.Parse(File.ReadAllText(demoDatasetTestFilePath));
-            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "DatasetTest");
-            azureCosmosDBClient.UpsertDocumentAsync(demoDatasetTestJson).Wait();
-            Console.WriteLine("End.");
         }
 
         private static void DisableAllBuildDeploymentDataset()

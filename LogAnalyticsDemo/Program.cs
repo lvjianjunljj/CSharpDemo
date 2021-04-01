@@ -10,7 +10,7 @@
         {
 
             //ADFLogQueryDemo.MainMethod();
-            //CloudScopeLogQueryDemo.MainMethod();
+            CloudScopeLogQueryDemo.MainMethod();
 
             if (Debugger.IsAttached)
             {
