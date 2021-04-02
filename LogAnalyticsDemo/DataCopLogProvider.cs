@@ -3,11 +3,8 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using Kusto.Cloud.Platform.Utils;
     using Microsoft.Azure.OperationalInsights;
     using Microsoft.Rest.Azure.Authentication;
-    using Newtonsoft.Json;
-    using Newtonsoft.Json.Linq;
 
     public class DataCopLogProvider
     {

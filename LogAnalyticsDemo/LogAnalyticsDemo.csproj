@@ -304,9 +304,6 @@
     <Compile Include="DataCopLogQueryDemo.cs" />
     <Compile Include="CloudScopeLogProvider.cs" />
     <Compile Include="CloudScopeLogQueryDemo.cs" />
-    <Compile Include="BuildLogEntry.cs" />
-    <Compile Include="BuildLogProvider.cs" />
-    <Compile Include="BuildLogQueryDemo.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

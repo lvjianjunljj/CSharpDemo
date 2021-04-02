@@ -8,7 +8,6 @@
     {
         static void Main(string[] args)
         {
-            //BuildLogQueryDemo.MainMethod();
             //CloudScopeLogQueryDemo.MainMethod();
             DataCopLogQueryDemo.MainMethod();
 

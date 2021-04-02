@@ -1,12 +1,9 @@
-﻿
-namespace LogAnalyticsDemo
+﻿namespace LogAnalyticsDemo
 {
     using AzureLib.KeyVault;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
     using System;
-    using System.Collections.Generic;
-    using System.Diagnostics;
 
     class DataCopLogQueryDemo
     {
@@ -17,12 +14,6 @@ namespace LogAnalyticsDemo
             Console.WriteLine("Start Log Analytics demo process: ");
             Initialize(@"datacop-prod");
             CosmosWorkerLogDemo();
-
-            if (Debugger.IsAttached)
-            {
-                Console.WriteLine("press enter key to exit...");
-                Console.ReadLine();
-            }
         }
 
         private static void CosmosWorkerLogDemo()
@@ -32,7 +23,12 @@ namespace LogAnalyticsDemo
             queryString += @"| where Message endswith 'Success\'.' ";
             queryString += @"| project TestRunId_g";
             var queryResult = datacopLogProvider.GetQueryresult(queryString);
-            Console.WriteLine(JArray.Parse(JsonConvert.SerializeObject(queryResult)));
+            var testRunIds = JArray.Parse(JsonConvert.SerializeObject(queryResult));
+            Console.WriteLine("Output testRun ids: ");
+            foreach (var testRunId in testRunIds)
+            {
+                Console.WriteLine(testRunId["TestRunId_g"]);
+            }
         }
 
         private static void Initialize(string keyVaultName)
