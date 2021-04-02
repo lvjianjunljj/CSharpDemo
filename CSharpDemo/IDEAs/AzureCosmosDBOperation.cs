@@ -2,10 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
-    using Microsoft.Azure.Documents;
-    using Microsoft.Azure.Documents.Client;
     using Newtonsoft.Json.Linq;
-    using CSharpDemo.Azure.CosmosDB;
     using System.Threading;
     using Newtonsoft.Json;
     using AzureLib.KeyVault;
@@ -16,6 +13,7 @@
     using System.Text;
     using System.Diagnostics;
     using CommonLib.IDEAs;
+    using AzureLib.CosmosDB;
 
     public class AzureCosmosDBOperation
     {
@@ -136,8 +134,8 @@
             string authTestRunsQueryStr = @"SELECT distinct c.datasetId FROM c WHERE (c.status = 'Success' or c.status = 'Failed') and (c.dataFabric = 'ADLS' or contains(c.dataFabric, 'Cosmos')) and c.createTime > '2020-10-07'  order by c.createTime desc";
             string datasetInfosQueryStr = @"SELECT * FROM c WHERE c.isEnabled = true and (c.dataFabric = 'ADLS' or contains(c.dataFabric, 'Cosmos'))";
 
-            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "PartitionedTestRun");
-            IList<JObject> nonAuthTestRuns = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(nonAuthTestRunsQueryStr)).Result;
+            var azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "PartitionedTestRun");
+            IList<JObject> nonAuthTestRuns = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>((nonAuthTestRunsQueryStr)).Result;
             Dictionary<string, JObject> datasets = GetIdJTokenDict(datasetInfosQueryStr, "Dataset");
 
             Console.WriteLine("nonAuthTestRuns");
@@ -195,7 +193,7 @@
             Console.WriteLine();
 
             Console.WriteLine("authTestRuns");
-            IList<JObject> authTestRuns = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(authTestRunsQueryStr)).Result;
+            IList<JObject> authTestRuns = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>((authTestRunsQueryStr)).Result;
             Dictionary<string, HashSet<string>> authDict = new Dictionary<string, HashSet<string>>();
             foreach (JObject authTestRun in authTestRuns)
             {
@@ -293,7 +291,7 @@
         {
             AzureCosmosDBClient datasetTestCosmosDBClient = new AzureCosmosDBClient("DataCop", "DatasetTest");
             // Collation: asc and desc is ascending and descending
-            IList<JObject> azureDatasetTests = datasetTestCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(
+            IList<JObject> azureDatasetTests = datasetTestCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>((
                 "SELECT * FROM c where c.testContentType = 'CosmosViewAvailability' and c.createdBy = 'BuildDeployment'")).Result;
             Console.WriteLine($"azureDataset count: '{azureDatasetTests.Count}'");
 
@@ -321,7 +319,7 @@
             AzureCosmosDBClient datasetTestCosmosDBClient = new AzureCosmosDBClient("DataCop", "DatasetTest");
             AzureCosmosDBClient testRunCosmosDBClient = new AzureCosmosDBClient("DataCop", "PartitionedTestRun");
             // Collation: asc and desc is ascending and descending
-            IList<JObject> azureDatasets = datasetCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(
+            IList<JObject> azureDatasets = datasetCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>((
                 @"SELECT * FROM c where c.dataFabric = 'CosmosView' and c.createdBy = 'BuildDeployment' and c.isEnabled = true")).Result;
             Console.WriteLine($"azureDataset count: '{azureDatasets.Count}'");
 
@@ -333,11 +331,11 @@
                 Console.WriteLine(datasetId);
 
 
-                IList<JObject> successTestRuns = testRunCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(
+                IList<JObject> successTestRuns = testRunCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>((
                     $@"SELECT top 10 * FROM c where c.datasetId = '{datasetId}' and " +
                     $@"c.status = 'Success' and c.createTime > '{startDateStrFilter}' order by c.createTime desc")).Result;
 
-                IList<JObject> datasetTests = datasetTestCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(
+                IList<JObject> datasetTests = datasetTestCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>((
                     $@"SELECT * FROM c where c.datasetId = '{datasetId}'")).Result;
 
                 if (successTestRuns.Count > 0)
@@ -359,7 +357,7 @@
                 //azureDataset["isEnabled"] = false;
                 //datasetCosmosDBClient.UpsertDocumentAsync(azureDataset).Wait();
 
-                IList<JObject> testRuns = testRunCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(
+                IList<JObject> testRuns = testRunCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>((
                 $@"SELECT top 20 * FROM c where c.datasetId = '{datasetId}' and c.createTime > '{startDateStrFilter}' order by c.createTime desc")).Result;
                 if (testRuns.Count == 0)
                 {
@@ -484,7 +482,7 @@
         private static Dictionary<string, JObject> GetIdJTokenDict(string queryStr, string collectionId)
         {
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", collectionId);
-            IList<JObject> jObjects = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(queryStr)).Result;
+            IList<JObject> jObjects = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>((queryStr)).Result;
             Dictionary<string, JObject> dict = new Dictionary<string, JObject>();
 
             foreach (JObject jObject in jObjects)
@@ -574,7 +572,7 @@
             {
                 AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", collectionId);
                 IList<JObject> items = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(
-                new SqlQuerySpec(@"SELECT * FROM c")).Result;
+                (@"SELECT * FROM c")).Result;
                 Console.WriteLine($"{collectionId}:{items.Count}");
             }
         }
@@ -584,7 +582,7 @@
         {
             AzureCosmosDBClient datasetCosmosDBClient = new AzureCosmosDBClient("DataCop", "Dataset");
             // Collation: asc and desc is ascending and descending
-            IList<JObject> azureDatasets = datasetCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c WHERE contains(c.id, 'CFR')")).Result;
+            IList<JObject> azureDatasets = datasetCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>((@"SELECT * FROM c WHERE contains(c.id, 'CFR')")).Result;
             foreach (JObject azureDataset in azureDatasets)
             {
                 string id = azureDataset["id"].ToString();
@@ -598,7 +596,7 @@
             Console.WriteLine(datasetIdsStr);
 
             AzureCosmosDBClient datasetTestCosmosDBClient = new AzureCosmosDBClient("DataCop", "DatasetTest");
-            IList<JObject> azureDatasetTests = datasetTestCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec($@"SELECT * FROM c WHERE c.datasetId in ({datasetIdsStr}) and c.status = 'Enabled'")).Result;
+            IList<JObject> azureDatasetTests = datasetTestCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(($@"SELECT * FROM c WHERE c.datasetId in ({datasetIdsStr}) and c.status = 'Enabled'")).Result;
             foreach (JObject azureDatasetTest in azureDatasetTests)
             {
                 string id = azureDatasetTest["id"].ToString();
@@ -614,9 +612,9 @@
         {
             AzureCosmosDBClient datasetCosmosDBClient = new AzureCosmosDBClient("DataCop", "Dataset");
             AzureCosmosDBClient datasetTestCosmosDBClient = new AzureCosmosDBClient("DataCop", "DatasetTest");
-            IList<JObject> azureDatasets = datasetCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c WHERE contains(c.id, 'CFR')")).Result;
+            IList<JObject> azureDatasets = datasetCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>((@"SELECT * FROM c WHERE contains(c.id, 'CFR')")).Result;
             var datasetIdsStr = string.Join(",", azureDatasets.Select(d => $"'{d["id"]}'"));
-            IList<JObject> azureDatasetTests = datasetTestCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec($@"SELECT * FROM c WHERE c.datasetId in ({datasetIdsStr}) and c.status = 'Enabled'")).Result;
+            IList<JObject> azureDatasetTests = datasetTestCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(($@"SELECT * FROM c WHERE c.datasetId in ({datasetIdsStr}) and c.status = 'Enabled'")).Result;
             var azureDatasetDict = new Dictionary<string, JObject>();
             var azureDatasetTestDict = new Dictionary<string, JObject>();
 
@@ -690,8 +688,8 @@
             AzureCosmosDBClient azureDatasetCosmosDB = new AzureCosmosDBClient("DataCop", "Dataset");
 
             // Collation: asc and desc is ascending and descending
-            IList<JObject> datasetList = azureDatasetCosmosDB.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c where c.dataFabric = 'ADLS' and c.isEnabled = true")).Result;
-            IList<JObject> completenessDatasetTestList = azureDatasetTestCosmosDB.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c where c.testContentType = 'AdlsCompleteness' and c.status = 'Enabled' and c.createdBy = 'DefaultTestGenerator' and c.lastModifiedBy = 'DefaultTestGenerator' order by c.lastModifiedTime")).Result;
+            IList<JObject> datasetList = azureDatasetCosmosDB.GetAllDocumentsInQueryAsync<JObject>((@"SELECT * FROM c where c.dataFabric = 'ADLS' and c.isEnabled = true")).Result;
+            IList<JObject> completenessDatasetTestList = azureDatasetTestCosmosDB.GetAllDocumentsInQueryAsync<JObject>((@"SELECT * FROM c where c.testContentType = 'AdlsCompleteness' and c.status = 'Enabled' and c.createdBy = 'DefaultTestGenerator' and c.lastModifiedBy = 'DefaultTestGenerator' order by c.lastModifiedTime")).Result;
 
             HashSet<string> datasetIdSet = new HashSet<string>();
             Dictionary<string, List<JObject>> completenessDatasetIdTestDict = new Dictionary<string, List<JObject>>();
@@ -740,8 +738,8 @@
             AzureCosmosDBClient azureDatasetCosmosDB = new AzureCosmosDBClient("DataCop", "Dataset");
 
             // Collation: asc and desc is ascending and descending
-            IList<JObject> datasetList = azureDatasetCosmosDB.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c where c.dataFabric = 'ADLS' and c.isEnabled = true")).Result;
-            IList<JObject> completenessDatasetTestList = azureDatasetTestCosmosDB.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c where c.testContentType = 'AdlsCompleteness' and c.status = 'Enabled' order by c.lastModifiedTime")).Result;
+            IList<JObject> datasetList = azureDatasetCosmosDB.GetAllDocumentsInQueryAsync<JObject>((@"SELECT * FROM c where c.dataFabric = 'ADLS' and c.isEnabled = true")).Result;
+            IList<JObject> completenessDatasetTestList = azureDatasetTestCosmosDB.GetAllDocumentsInQueryAsync<JObject>((@"SELECT * FROM c where c.testContentType = 'AdlsCompleteness' and c.status = 'Enabled' order by c.lastModifiedTime")).Result;
 
             HashSet<string> datasetIdSet = new HashSet<string>();
             Dictionary<string, List<string>> completenessDatasetIdCountDict = new Dictionary<string, List<string>>();
@@ -792,8 +790,8 @@
         {
             AzureCosmosDBClient azureDatasetCosmosDB = new AzureCosmosDBClient("DataCop", "Dataset");
             AzureCosmosDBClient azureDatasetTestCosmosDB = new AzureCosmosDBClient("DataCop", "DatasetTest");
-            IList<JObject> adlsDatasetTestJObjectList = azureDatasetTestCosmosDB.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c where (c.testContentType = 'AdlsCompleteness' or c.testContentType = 'AdlsAvailability') and c.status = 'Enabled'")).Result;
-            IList<JObject> datasetJObjectList = azureDatasetCosmosDB.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c where c.dataFabric = 'ADLS' and c.isEnabled = true")).Result;
+            IList<JObject> adlsDatasetTestJObjectList = azureDatasetTestCosmosDB.GetAllDocumentsInQueryAsync<JObject>((@"SELECT * FROM c where (c.testContentType = 'AdlsCompleteness' or c.testContentType = 'AdlsAvailability') and c.status = 'Enabled'")).Result;
+            IList<JObject> datasetJObjectList = azureDatasetCosmosDB.GetAllDocumentsInQueryAsync<JObject>((@"SELECT * FROM c where c.dataFabric = 'ADLS' and c.isEnabled = true")).Result;
 
             foreach (var datasetJObject in datasetJObjectList)
             {
@@ -830,8 +828,8 @@
         {
             AzureCosmosDBClient azureDatasetCosmosDB = new AzureCosmosDBClient("DataCop", "Dataset");
             AzureCosmosDBClient azureDatasetTestCosmosDB = new AzureCosmosDBClient("DataCop", "DatasetTest");
-            IList<JObject> cosmosDatasetTestJObjectList = azureDatasetTestCosmosDB.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c where (c.testContentType = 'CosmosCompleteness' or c.testContentType = 'CosmosAvailability') and c.status = 'Enabled'")).Result;
-            IList<JObject> datasetJObjectList = azureDatasetCosmosDB.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c where c.dataFabric = 'Cosmos' and c.isEnabled = true")).Result;
+            IList<JObject> cosmosDatasetTestJObjectList = azureDatasetTestCosmosDB.GetAllDocumentsInQueryAsync<JObject>((@"SELECT * FROM c where (c.testContentType = 'CosmosCompleteness' or c.testContentType = 'CosmosAvailability') and c.status = 'Enabled'")).Result;
+            IList<JObject> datasetJObjectList = azureDatasetCosmosDB.GetAllDocumentsInQueryAsync<JObject>((@"SELECT * FROM c where c.dataFabric = 'Cosmos' and c.isEnabled = true")).Result;
 
             foreach (var datasetJObject in datasetJObjectList)
             {
@@ -865,7 +863,7 @@
         {
             string cfrId = "da71491f-c49a-475e-9d54-d2fde4a6403f";
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "AlertSettings");
-            IList<JObject> alertSettings = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c")).Result;
+            IList<JObject> alertSettings = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>((@"SELECT * FROM c")).Result;
             foreach (var alertSetting in alertSettings)
             {
                 if (alertSetting["id"].ToString().Equals(cfrId)) continue;
@@ -883,9 +881,9 @@
         {
             AzureCosmosDBClient azureDatasetTestCosmosDB = new AzureCosmosDBClient("DataCop", "DatasetTest");
             AzureCosmosDBClient azureDatasetCosmosDB = new AzureCosmosDBClient("DataCop", "Dataset");
-            IList<JObject> availabilityDatasetIdJObjectList = azureDatasetTestCosmosDB.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT c.datasetId FROM c where c.testCategory = 'Availability' and c.status = 'Enabled'")).Result;
-            IList<JObject> completenessDatasetIdJObjectList = azureDatasetTestCosmosDB.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT c.datasetId FROM c where c.testCategory = 'Completeness' and c.status = 'Enabled'")).Result;
-            IList<JObject> datasetIdJObjectList = azureDatasetCosmosDB.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT c.id FROM c where c.dataFabric != 'SQL' and c.isEnabled = true")).Result;
+            IList<JObject> availabilityDatasetIdJObjectList = azureDatasetTestCosmosDB.GetAllDocumentsInQueryAsync<JObject>((@"SELECT c.datasetId FROM c where c.testCategory = 'Availability' and c.status = 'Enabled'")).Result;
+            IList<JObject> completenessDatasetIdJObjectList = azureDatasetTestCosmosDB.GetAllDocumentsInQueryAsync<JObject>((@"SELECT c.datasetId FROM c where c.testCategory = 'Completeness' and c.status = 'Enabled'")).Result;
+            IList<JObject> datasetIdJObjectList = azureDatasetCosmosDB.GetAllDocumentsInQueryAsync<JObject>((@"SELECT c.id FROM c where c.dataFabric != 'SQL' and c.isEnabled = true")).Result;
 
 
             HashSet<string> availabilityDatasetIdStringSet = new HashSet<string>();
@@ -927,9 +925,9 @@
             AzureCosmosDBClient azureDatasetTestCosmosDB = new AzureCosmosDBClient("DataCop", "DatasetTest");
             AzureCosmosDBClient azureDatasetCosmosDB = new AzureCosmosDBClient("DataCop", "Dataset");
             // Collation: asc and desc is ascending and descending
-            IList<JObject> availabilityList = azureDatasetTestCosmosDB.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c where c.testContentType = 'AdlsAvailability' and c.status = 'Enabled'")).Result;
+            IList<JObject> availabilityList = azureDatasetTestCosmosDB.GetAllDocumentsInQueryAsync<JObject>((@"SELECT * FROM c where c.testContentType = 'AdlsAvailability' and c.status = 'Enabled'")).Result;
 
-            IList<JObject> completenessList = azureDatasetTestCosmosDB.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c where c.testContentType = 'AdlsCompleteness' and c.status = 'Enabled'")).Result;
+            IList<JObject> completenessList = azureDatasetTestCosmosDB.GetAllDocumentsInQueryAsync<JObject>((@"SELECT * FROM c where c.testContentType = 'AdlsCompleteness' and c.status = 'Enabled'")).Result;
 
             Dictionary<string, int> completenessDatasetIdDict = new Dictionary<string, int>();
             foreach (JObject jObject in completenessList)
@@ -1001,7 +999,7 @@
 
         private static bool CheckDatasetEnabled(AzureCosmosDBClient azureDatasetCosmosDB, string datasetId)
         {
-            IList<JObject> availabilityList = azureDatasetCosmosDB.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec($@"SELECT * FROM c where c.id = '{datasetId}'")).Result;
+            IList<JObject> availabilityList = azureDatasetCosmosDB.GetAllDocumentsInQueryAsync<JObject>(($@"SELECT * FROM c where c.id = '{datasetId}'")).Result;
             if (availabilityList.Count != 1)
             {
                 Console.WriteLine($"Cannot get the dataset with id '{datasetId}'");
@@ -1034,7 +1032,7 @@
             AzureCosmosDBClient.Key = fromKey;
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient(databaseId, collectionId);
 
-            IList<JObject> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(queryStr)).Result;
+            IList<JObject> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>((queryStr)).Result;
 
             // This is a funny thing. azureCosmosDBClient has not been changed.
             // Root cause is that we use the single module
@@ -1062,7 +1060,7 @@
         {
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "Alert");
             // Collation: asc and desc is ascending and descending
-            IList<JObject> alerts = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c where c.testCategory = 'None' ORDER BY c.issuedOnDate ASC")).Result;
+            IList<JObject> alerts = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>((@"SELECT * FROM c where c.testCategory = 'None' ORDER BY c.issuedOnDate ASC")).Result;
             foreach (JObject alert in alerts)
             {
                 try
@@ -1074,7 +1072,8 @@
                         continue;
                     }
                     alert["testCategory"] = testRun["testCategory"];
-                    ResourceResponse<Document> resource = azureCosmosDBClient.UpsertDocumentAsync(alert).Result;
+                    var statusCode = azureCosmosDBClient.UpsertDocumentAsync(alert).Result;
+                    Console.WriteLine($"Status Code: {statusCode}");
                 }
                 catch (Exception e)
                 {
@@ -1089,7 +1088,7 @@
         {
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "TestRun");
             // Collation: asc and desc is ascending and descending
-            IList<JObject> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec($@"SELECT * FROM c where c.id = '{testRunId}'")).Result;
+            IList<JObject> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(($@"SELECT * FROM c where c.id = '{testRunId}'")).Result;
             return list.Count > 0 ? list[0] : null;
         }
 
@@ -1132,7 +1131,7 @@
 
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "AlertSettings");
             // Collation: asc and desc is ascending and descending
-            IList<JObject> alertSettings = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c")).Result;
+            IList<JObject> alertSettings = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>((@"SELECT * FROM c")).Result;
             foreach (JObject alertSetting in alertSettings)
             {
                 Console.WriteLine(alertSetting["id"].ToString());
@@ -1147,7 +1146,7 @@
 
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "Dataset");
             // Collation: asc and desc is ascending and descending
-            IList<JObject> datasets = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c where c.dataFabric = 'ADLS' and c.isEnabled = false and not is_defined(c.connectionInfo.streamPath)")).Result;
+            IList<JObject> datasets = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>((@"SELECT * FROM c where c.dataFabric = 'ADLS' and c.isEnabled = false and not is_defined(c.connectionInfo.streamPath)")).Result;
             foreach (var dataset in datasets)
             {
                 count++;
@@ -1223,9 +1222,9 @@
             AzureCosmosDBClient datasetAzureCosmosDBClient = new AzureCosmosDBClient("DataCop", "Dataset");
             AzureCosmosDBClient datasetTestAzureCosmosDBClient = new AzureCosmosDBClient("DataCop", "DatasetTest");
             // Collation: asc and desc is ascending and descending
-            IList<JToken> datasets = datasetAzureCosmosDBClient.GetAllDocumentsInQueryAsync<JToken>(new SqlQuerySpec(@"SELECT * FROM c where c.dataFabric = 'ADLS' and c.isEnabled = true")).Result;
-            IList<JObject> adlsCompletenessTests = datasetTestAzureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c where c.testContentType = 'AdlsCompleteness' and c.status = 'Enabled'")).Result;
-            IList<JObject> cosmosCompletenessTests = datasetTestAzureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c where c.testContentType = 'CosmosCompleteness' and c.status = 'Enabled'")).Result;
+            IList<JToken> datasets = datasetAzureCosmosDBClient.GetAllDocumentsInQueryAsync<JToken>((@"SELECT * FROM c where c.dataFabric = 'ADLS' and c.isEnabled = true")).Result;
+            IList<JObject> adlsCompletenessTests = datasetTestAzureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>((@"SELECT * FROM c where c.testContentType = 'AdlsCompleteness' and c.status = 'Enabled'")).Result;
+            IList<JObject> cosmosCompletenessTests = datasetTestAzureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>((@"SELECT * FROM c where c.testContentType = 'CosmosCompleteness' and c.status = 'Enabled'")).Result;
 
             foreach (JObject dataset in datasets)
             {
@@ -1327,7 +1326,7 @@
         {
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "DatasetTest");
             // Collation: asc and desc is ascending and descending
-            IList<JObject> datasetTests = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c where c.createdBy = 'jianjlv'")).Result;
+            IList<JObject> datasetTests = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>((@"SELECT * FROM c where c.createdBy = 'jianjlv'")).Result;
             foreach (JObject datasetTest in datasetTests)
             {
                 Console.WriteLine(datasetTest["id"].ToString());
@@ -1346,7 +1345,7 @@
 
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "PartitionedTestRun");
             // Collation: asc and desc is ascending and descending
-            IList<JObject> testRuns = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec($@"SELECT * FROM c WHERE c.dataFabric= 'Cosmos' and c.resultExpirePeriod = '{oldResultExpirePeriod}'")).Result;
+            IList<JObject> testRuns = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(($@"SELECT * FROM c WHERE c.dataFabric= 'Cosmos' and c.resultExpirePeriod = '{oldResultExpirePeriod}'")).Result;
 
             Console.WriteLine($"testRuns.Count: {testRuns.Count}");
             foreach (JObject testRun in testRuns)
@@ -1376,7 +1375,7 @@
                     {
                         int count = 0;
                         // Collation: asc and desc is ascending and descending
-                        IList<JObject> testRuns = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec($@"SELECT * FROM c WHERE c.dataFabric= 'Cosmos' and c.createTime > '2019-09-09T05:{min}:{sec}.{millisec}' and c.createTime < '2019-09-09T05:{min}:{sec}.{millisec + 1}' order by c.startTime desc")).Result;
+                        IList<JObject> testRuns = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(($@"SELECT * FROM c WHERE c.dataFabric= 'Cosmos' and c.createTime > '2019-09-09T05:{min}:{sec}.{millisec}' and c.createTime < '2019-09-09T05:{min}:{sec}.{millisec + 1}' order by c.startTime desc")).Result;
 
                         Console.WriteLine($"testRuns.Count: {testRuns.Count}");
                         foreach (JObject testRun in testRuns)
@@ -1411,7 +1410,7 @@
             HashSet<string> set = new HashSet<string>();
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "Dataset");
             // Collation: asc and desc is ascending and descending
-            IList<JObject> datasets = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c where c.dataFabric = 'CosmosStream' and c.isEnabled = true")).Result;
+            IList<JObject> datasets = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>((@"SELECT * FROM c where c.dataFabric = 'CosmosStream' and c.isEnabled = true")).Result;
             var count = 0;
             foreach (JObject dataset in datasets)
             {
@@ -1452,7 +1451,7 @@
                 "BCEE3FD4-1A54-43B3-82D1-3C2FED5C8419"
             };
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "Dataset");
-            IList<JObject> datasets = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(
+            IList<JObject> datasets = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>((
                 @$"SELECT * FROM c where c.id in ({string.Join(",", ids.Select(id => $"'{id}'"))}) and c.isEnabled = true")).Result;
             foreach (JObject dataset in datasets)
             {
@@ -1486,7 +1485,7 @@
             ids = jsons.Select(j => j["datasetId"].ToString()).ToArray();
 
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "Dataset");
-            IList<JObject> datasets = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(
+            IList<JObject> datasets = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>((
                 @$"SELECT * FROM c where c.id in ({string.Join(",", ids.Select(id => $"'{id}'"))}) and c.isEnabled = false")).Result;
             foreach (JObject dataset in datasets)
             {
@@ -1507,7 +1506,7 @@
             {
                 Console.WriteLine($"datasetId: {datasetId}");
                 IList<JObject> testRuns = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(
-                    new SqlQuerySpec($"SELECT top 5 c.status FROM c where c.datasetId = '{datasetId}' order by c.createTime desc")).Result;
+                    ($"SELECT top 5 c.status FROM c where c.datasetId = '{datasetId}' order by c.createTime desc")).Result;
                 foreach (var testRun in testRuns)
                 {
                     Console.WriteLine(testRun["status"]);
@@ -1519,7 +1518,7 @@
         {
             HashSet<string> dataFactoriesSet = new HashSet<string>();
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "Dataset");
-            IList<JObject> datasets = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(
+            IList<JObject> datasets = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>((
                 @"SELECT distinct c.buildEntityId FROM c WHERE c.dataFabric = 'CosmosView' and c.createdBy = 'BuildDeployment'")).Result;
             foreach (JObject dataset in datasets)
             {
@@ -1564,9 +1563,9 @@
             AzureCosmosDBClient datasetTestCosmosDBClient = new AzureCosmosDBClient("DataCop", "DatasetTest");
             // Collation: asc and desc is ascending and descending
             IList<JObject> datasets = datasetCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(
-                new SqlQuerySpec(@"SELECT * FROM c WHERE c.createdBy = 'BuildDeployment' and c.dataFabric = 'CosmosView'")).Result;
+                (@"SELECT * FROM c WHERE c.createdBy = 'BuildDeployment' and c.dataFabric = 'CosmosView'")).Result;
             IList<JObject> datasetTests = datasetTestCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(
-                new SqlQuerySpec(@"SELECT * FROM c WHERE c.createdBy = 'BuildDeployment' and c.testContentType = 'CosmosViewAvailability'")).Result;
+                (@"SELECT * FROM c WHERE c.createdBy = 'BuildDeployment' and c.testContentType = 'CosmosViewAvailability'")).Result;
 
             Console.WriteLine(@"Update datasets: ");
             var count = 0;
@@ -1643,7 +1642,7 @@
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "Dataset");
             // Collation: asc and desc is ascending and descending
             IList<JObject> datasets = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(
-                new SqlQuerySpec(@"SELECT * FROM c WHERE c.createdBy = 'BuildDeployment'")).Result;
+                (@"SELECT * FROM c WHERE c.createdBy = 'BuildDeployment'")).Result;
             foreach (JObject dataset in datasets)
             {
                 Console.WriteLine(dataset["id"].ToString());
@@ -1654,7 +1653,7 @@
                 //string id = dataset["id"].ToString();
                 //Console.WriteLine(id);
                 //string documentLink = GetDocumentLink("DataCop", "Dataset", id);
-                //ResourceResponse<Document> resource = azureCosmosDBClient.DeleteDocumentAsync(documentLink).Result;
+                //var statusCode = azureCosmosDBClient.DeleteDocumentAsync(documentLink).Result;
             }
             Console.WriteLine(datasets.Count);
         }
@@ -1664,7 +1663,7 @@
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "Dataset");
             // Collation: asc and desc is ascending and descending
             IList<JObject> datasets = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(
-                new SqlQuerySpec(@"SELECT * FROM c WHERE c.dataFabric = 'SQL'")).Result;
+                (@"SELECT * FROM c WHERE c.dataFabric = 'SQL'")).Result;
             foreach (JObject dataset in datasets)
             {
                 Console.WriteLine(dataset["id"].ToString());
@@ -1681,7 +1680,7 @@
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "PartitionedTestRun");
             // Collation: asc and desc is ascending and descending
             IList<JObject> testRuns = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(
-                new SqlQuerySpec(@"SELECT * FROM c WHERE contains(c.message, 'E_VCCLIENT_USER_FAILURE') and not  contains(c.message, '0x83090b74') and c.status != 'Failed' and c.createTime > '2021-01-28T0' order by c.createTime desc")).Result;
+                (@"SELECT * FROM c WHERE contains(c.message, 'E_VCCLIENT_USER_FAILURE') and not  contains(c.message, '0x83090b74') and c.status != 'Failed' and c.createTime > '2021-01-28T0' order by c.createTime desc")).Result;
             foreach (JObject testRun in testRuns)
             {
                 Console.WriteLine(testRun["id"]);
@@ -1696,7 +1695,7 @@
         {
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "DatasetTest");
             // Collation: asc and desc is ascending and descending
-            IList<JObject> datasetTests = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c where c.dataFabric = 'Cosmos' and c.status = 'Enabled'")).Result;
+            IList<JObject> datasetTests = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>((@"SELECT * FROM c where c.dataFabric = 'Cosmos' and c.status = 'Enabled'")).Result;
             foreach (JObject datasetTest in datasetTests)
             {
                 string curTime = DateTime.UtcNow.ToString("o");
@@ -1714,7 +1713,7 @@
         {
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "DatasetTest");
             // Collation: asc and desc is ascending and descending
-            IList<JObject> datasetTests = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c where c.dataFabric = 'Cosmos' and c.status = 'Disabled'")).Result;
+            IList<JObject> datasetTests = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>((@"SELECT * FROM c where c.dataFabric = 'Cosmos' and c.status = 'Disabled'")).Result;
 
             // Enable 1 cosmos datasetTest every 7 minute
             int enableCountOnce = 1, periodOnce = 7 * 60 * 1000;
@@ -1741,7 +1740,7 @@
         {
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "DatasetTest");
             // Collation: asc and desc is ascending and descending
-            IList<JObject> datasetTests = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c where c.dataFabric = 'Cosmos' and c.status = 'Disabled'")).Result;
+            IList<JObject> datasetTests = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>((@"SELECT * FROM c where c.dataFabric = 'Cosmos' and c.status = 'Disabled'")).Result;
 
             // Enable 1 cosmos datasetTest every 15 minute
             int periodOnce = 15 * 60 * 1000;
@@ -1783,7 +1782,7 @@
             Console.WriteLine("QueryAlertSettingDemo:");
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "AlertSettings");
             // Collation: asc and desc is ascending and descending
-            IList<JObject> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(
+            IList<JObject> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>((
                 @"SELECT distinct c.owningTeamId,c.targetIcMConnector,c.containerPublicId, c.routingId FROM c")).Result;
             foreach (JObject jObject in list)
             {
@@ -1791,7 +1790,7 @@
             }
             Console.WriteLine(list.Count);
 
-            list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(
+            list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>((
                @"SELECT * FROM c where c.routingId = 'IDEAS://SMB'")).Result;
             foreach (JObject jObject in list)
             {
@@ -1799,7 +1798,7 @@
             }
             Console.WriteLine(list.Count);
 
-            list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(
+            list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>((
                @"SELECT distinct c.targetIcMConnector,c.containerPublicId FROM c")).Result;
             foreach (JObject jObject in list)
             {
@@ -1817,7 +1816,7 @@
             queryStr = @"SELECT * FROM c where c.datasetTestName = 'DimCampaign Default CosmosAvailability Test'";
 
             // Collation: asc and desc is ascending and descending
-            IList<JObject> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(queryStr)).Result;
+            IList<JObject> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>((queryStr)).Result;
             foreach (JObject jObject in list)
             {
                 Console.WriteLine(jObject);
@@ -1831,7 +1830,7 @@
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "ScheduleMonitorReport");
 
             // Remove useless
-            IList<JObject> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(
+            IList<JObject> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>((
                 @"SELECT top 1000 * FROM c where is_defined(c.incidentId)")).Result;
             while (list.Any())
             {
@@ -1845,7 +1844,7 @@
                     Console.WriteLine(id);
                     azureCosmosDBClient.UpsertDocumentAsync(report).Wait();
                 }
-                list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(
+                list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>((
                 @"SELECT top 1000 * FROM c where is_defined(c.incidentId)")).Result;
             }
         }
@@ -1859,7 +1858,7 @@
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "ScheduleMonitorReport");
 
             // Remove useless
-            IList<JObject> removedList = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(
+            IList<JObject> removedList = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>((
                 @"SELECT * FROM c where c.reportStartDate != '2020-11-20T00:00:00Z'")).Result;
             Console.WriteLine("Remove useless instances:");
             foreach (var remove in removedList)
@@ -1867,10 +1866,10 @@
                 string id = remove["id"].ToString();
                 Console.WriteLine(id);
                 string documentLink = GetDocumentLink("DataCop", "ScheduleMonitorReport", id);
-                ResourceResponse<Document> resource = azureCosmosDBClient.DeleteDocumentAsync(documentLink).Result;
+                var resource = azureCosmosDBClient.DeleteDocumentAsync(documentLink).Result;
             }
 
-            IList<JObject> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(
+            IList<JObject> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>((
                 @"SELECT * FROM c where c.reportStartDate = '2020-11-20T00:00:00Z'")).Result;
             foreach (JObject jObject in list)
             {
@@ -1918,11 +1917,11 @@
         {
             Console.WriteLine("QueryAlertSettingInDatasetTestsDemo:");
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "DatasetTest");
-            IList<JObject> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT distinct c.alertSettingId FROM c where c.status = 'Enabled'")).Result;
+            IList<JObject> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>((@"SELECT distinct c.alertSettingId FROM c where c.status = 'Enabled'")).Result;
 
             AzureCosmosDBClient alertSettingsAzureCosmosDBClient = new AzureCosmosDBClient("DataCop", "AlertSettings");
             // Collation: asc and desc is ascending and descending
-            IList<JObject> alertSettings = alertSettingsAzureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(
+            IList<JObject> alertSettings = alertSettingsAzureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>((
                 @"SELECT * FROM c")).Result;
             Console.WriteLine(alertSettings.Count);
             Console.WriteLine(list.Count);
@@ -1954,7 +1953,7 @@
         {
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "Dataset");
             // Collation: asc and desc is ascending and descending
-            IList<JObject> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c where c.dataFabric = 'CosmosView'")).Result;
+            IList<JObject> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>((@"SELECT * FROM c where c.dataFabric = 'CosmosView'")).Result;
             foreach (JObject jObject in list)
             {
                 Console.WriteLine(jObject);
@@ -1965,7 +1964,7 @@
         {
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "PartitionedTestRun");
             // Collation: asc and desc is ascending and descending
-            IList<JObject> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c where c.id = 'ba51c2ee-de0b-4b36-9793-3eca1a893af1'")).Result;
+            IList<JObject> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>((@"SELECT * FROM c where c.id = 'ba51c2ee-de0b-4b36-9793-3eca1a893af1'")).Result;
             foreach (JObject jObject in list)
             {
                 Console.WriteLine(jObject["testContent"].ToString());
@@ -1986,7 +1985,7 @@
             string sqlQueryString = @"SELECT * FROM c" +
                                                          $" WHERE c.datasetTestId='{datasetTestId}' and c.timeStamp='{timeStamp.ToString("s")}' and c.grain='{grain.ToString()}'";
             Console.WriteLine(sqlQueryString);
-            IList<JObject> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(sqlQueryString)).Result;
+            IList<JObject> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>((sqlQueryString)).Result;
             foreach (JObject jObject in list)
             {
                 Console.WriteLine(jObject);
@@ -1998,7 +1997,7 @@
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "ServiceMonitor");
 
             string sqlQueryString = @"SELECT * FROM c where c.isEnabled = true";
-            IList<JObject> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(sqlQueryString)).Result;
+            IList<JObject> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>((sqlQueryString)).Result;
             foreach (JObject jObject in list)
             {
                 Console.WriteLine(jObject);
@@ -2036,7 +2035,7 @@
                 var startDate = startTime.AddDays(i);
                 var endDate = startDate.AddDays(1);
                 string sqlQueryString = $"SELECT count(0) as count_num FROM c where (c.dataFabric= 'ADLS' or c.dataFabric= 'CosmosStream') and c.timestamp > '{startDate:o}' and c.timestamp < '{endDate:o}'";
-                IList<JObject> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(sqlQueryString)).Result;
+                IList<JObject> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>((sqlQueryString)).Result;
 
                 Console.WriteLine($"{startDate:o} - {endDate:o}: {list[0]["count_num"]}");
             }
@@ -2085,14 +2084,14 @@
         private static void QueryTestRunsByDatasets()
         {
             AzureCosmosDBClient datasetCosmosDBClient = new AzureCosmosDBClient("DataCop", "Dataset");
-            IList<JObject> azureDatasets = datasetCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(
+            IList<JObject> azureDatasets = datasetCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>((
                 @"SELECT c.id FROM c WHERE c.createdBy = 'BuildDeployment' and (c.dataFabric = 'CosmosView' or c.dataFabric = 'CosmosStream')")).Result;
             Console.WriteLine($"BuildDeployment cosmos view dataset cout: {azureDatasets.Count}");
 
             var datasetIdsStr = string.Join(",", azureDatasets.Select(d => $"'{d["id"]}'"));
 
             AzureCosmosDBClient datasetTestCosmosDBClient = new AzureCosmosDBClient("DataCop", "PartitionedTestRun");
-            IList<JObject> testRuns = datasetTestCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec($@"SELECT * FROM c WHERE c.datasetId in ({datasetIdsStr})")).Result;
+            IList<JObject> testRuns = datasetTestCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(($@"SELECT * FROM c WHERE c.datasetId in ({datasetIdsStr})")).Result;
             foreach (JObject testRun in testRuns)
             {
                 Console.WriteLine(testRun);
@@ -2127,12 +2126,12 @@
         private static void QueryDataCopScores()
         {
             var azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "TestRunResultForScore");
-            var counts = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT count(1) FROM c")).Result;
+            var counts = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>((@"SELECT count(1) FROM c")).Result;
             foreach (var count in counts)
             {
                 Console.WriteLine($"count: {count}");
             }
-            var dataCopScores = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT top 1000 * FROM c")).Result;
+            var dataCopScores = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>((@"SELECT top 1000 * FROM c")).Result;
             Console.WriteLine("DataCopScores: ");
             foreach (var dataCopScore in dataCopScores)
             {
@@ -2216,7 +2215,7 @@
                 @"c.reportStartTimeStamp > '2020-11-11'",
             };
             IList<JObject> list = GetQueryResult("DataCop", "ServiceMonitorReport", null, filters);
-            //IList<JObject> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(sqlQueryString.ToString())).Result;
+            //IList<JObject> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>((sqlQueryString.ToString())).Result;
             foreach (JObject jObject in list)
             {
                 Console.WriteLine(jObject);
@@ -2267,7 +2266,7 @@
             }
 
             // The reuslt schema is not json, so we cannot use JObject, or it will throw a serialization error.
-            IList<JToken> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JToken>(new SqlQuerySpec(queryStr.ToString())).Result;
+            IList<JToken> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JToken>((queryStr.ToString())).Result;
             return long.Parse(list[0].ToString());
         }
 
@@ -2299,7 +2298,7 @@
             }
 
             // The reuslt schema is not json, so we cannot use JObject, or it will throw a serialization error.
-            return azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(queryStr.ToString())).Result;
+            return azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>((queryStr.ToString())).Result;
         }
 
 
@@ -2314,7 +2313,7 @@
             }
 
             // The reuslt schema is not json, so we cannot use JObject, or it will throw a serialization error.
-            IList<JToken> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JToken>(new SqlQuerySpec(queryStr.ToString())).Result;
+            IList<JToken> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JToken>((queryStr.ToString())).Result;
             return long.Parse(list[0].ToString());
         }
 
@@ -2343,7 +2342,7 @@
             {
                 try
                 {
-                    IList<JObject> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(tryQuey)).Result;
+                    IList<JObject> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>((tryQuey)).Result;
                 }
                 catch (AggregateException ae)
                 {
@@ -2362,7 +2361,7 @@
             watch.Start();
             for (int i = 0; i < len; i++)
             {
-                IList<JToken> counts = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JToken>(new SqlQuerySpec(countQuery)).Result;
+                IList<JToken> counts = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JToken>((countQuery)).Result;
             }
 
             Console.WriteLine($"select count time cost: {watch.ElapsedMilliseconds} ms");
@@ -2372,7 +2371,7 @@
         {
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "Dataset");
             // Collation: asc and desc is ascending and descending
-            IList<JObject> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c where c.kenshoData != null and c.isEnabled = true")).Result;
+            IList<JObject> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>((@"SELECT * FROM c where c.kenshoData != null and c.isEnabled = true")).Result;
             foreach (JObject jObject in list)
             {
                 Console.WriteLine(jObject);
@@ -2402,10 +2401,9 @@
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "PartitionedTestRun");
             string id = "900c3f79-79e1-45e1-82ff-17f308a62179";
             string partitionKey = "2020-04-03T00:00:00Z";
-            string documentLink = UriFactory.CreateDocumentUri("DataCop", "PartitionedTestRun", id).ToString();
-            var reqOptions = new RequestOptions { PartitionKey = new PartitionKey(partitionKey) };
-            ResourceResponse<Document> resource = azureCosmosDBClient.DeleteDocumentAsync(documentLink, reqOptions).Result;
-            Console.WriteLine(resource);
+            string documentLink = GetDocumentLink("DataCop", "PartitionedTestRun", id).ToString();
+            var statusCode = azureCosmosDBClient.DeleteDocumentAsync("DataCop", "PartitionedTestRun", id, partitionKey).Result;
+            Console.WriteLine(statusCode);
         }
 
         private static void DeleteTestRuns()
@@ -2477,7 +2475,7 @@
 
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "PartitionedTestRun");
             // Collation: asc and desc is ascending and descending
-            IList<JObject> testRuns = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(sqlQueryString.ToString())).Result;
+            IList<JObject> testRuns = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>((sqlQueryString.ToString())).Result;
             while (testRuns.Count > 0)
             {
                 foreach (JObject testRun in testRuns)
@@ -2487,10 +2485,9 @@
                     Console.WriteLine(id);
                     try
                     {
-                        string documentLink = UriFactory.CreateDocumentUri("DataCop", "PartitionedTestRun", id).ToString();
-                        var reqOptions = new RequestOptions { PartitionKey = new PartitionKey(partitionKeyInJson) };
-                        ResourceResponse<Document> resource = azureCosmosDBClient.DeleteDocumentAsync(documentLink, reqOptions).Result;
-                        Console.WriteLine(resource);
+                        string documentLink = GetDocumentLink("DataCop", "PartitionedTestRun", id).ToString();
+                        var statusCode = azureCosmosDBClient.DeleteDocumentAsync(documentLink, partitionKeyInJson).Result;
+                        Console.WriteLine(statusCode);
                     }
                     catch (Exception e)
                     {
@@ -2499,7 +2496,7 @@
                     }
                 }
                 Console.WriteLine($"Remove TestRun count: {testRuns.Count}");
-                testRuns = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(sqlQueryString.ToString())).Result;
+                testRuns = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>((sqlQueryString.ToString())).Result;
             }
         }
 
@@ -2507,7 +2504,7 @@
         {
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "PartitionedTestRun");
             // Collation: asc and desc is ascending and descending
-            IList<JObject> testRuns = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT top 1000 * FROM c WHERE c.status = 'Waiting' and contains(c.partitionKey, 'T00:00:00') order by c.createTime desc")).Result;
+            IList<JObject> testRuns = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>((@"SELECT top 1000 * FROM c WHERE c.status = 'Waiting' and contains(c.partitionKey, 'T00:00:00') order by c.createTime desc")).Result;
             while (testRuns.Count > 0)
             {
                 foreach (JObject testRun in testRuns)
@@ -2517,10 +2514,9 @@
                     try
                     {
                         string partitionKey = ((DateTime)testRun["partitionKey"]).ToString("s");
-                        string documentLink = UriFactory.CreateDocumentUri("DataCop", "PartitionedTestRun", id).ToString();
-                        var reqOptions = new RequestOptions { PartitionKey = new PartitionKey(partitionKey) };
-                        ResourceResponse<Document> resource = azureCosmosDBClient.DeleteDocumentAsync(documentLink, reqOptions).Result;
-                        Console.WriteLine(resource);
+                        string documentLink = GetDocumentLink("DataCop", "PartitionedTestRun", id).ToString();
+                        var statusCode = azureCosmosDBClient.DeleteDocumentAsync(documentLink, partitionKey).Result;
+                        Console.WriteLine(statusCode);
                     }
                     catch (Exception e)
                     {
@@ -2529,17 +2525,16 @@
                     try
                     {
                         string partitionKey = ((DateTime)testRun["partitionKey"]).ToString("s") + "Z";
-                        string documentLink = UriFactory.CreateDocumentUri("DataCop", "PartitionedTestRun", id).ToString();
-                        var reqOptions = new RequestOptions { PartitionKey = new PartitionKey(partitionKey) };
-                        ResourceResponse<Document> resource = azureCosmosDBClient.DeleteDocumentAsync(documentLink, reqOptions).Result;
-                        Console.WriteLine(resource);
+                        string documentLink = GetDocumentLink("DataCop", "PartitionedTestRun", id).ToString();
+                        var statusCode = azureCosmosDBClient.DeleteDocumentAsync(documentLink, partitionKey).Result;
+                        Console.WriteLine(statusCode);
                     }
                     catch (Exception e)
                     {
                         Console.WriteLine(e.Message);
                     }
                 }
-                testRuns = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT top 1000 * FROM c WHERE c.status = 'Waiting' and contains(c.partitionKey, 'T00:00:00') order by c.createTime desc")).Result;
+                testRuns = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>((@"SELECT top 1000 * FROM c WHERE c.status = 'Waiting' and contains(c.partitionKey, 'T00:00:00') order by c.createTime desc")).Result;
             }
         }
 
@@ -2548,7 +2543,7 @@
         {
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "Alert");
             // Collation: asc and desc is ascending and descending
-            IList<JObject> alerts = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT top 1000 * FROM c WHERE not is_defined(c.incidentId)")).Result;
+            IList<JObject> alerts = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>((@"SELECT top 1000 * FROM c WHERE not is_defined(c.incidentId)")).Result;
             while (alerts.Count > 0)
             {
                 foreach (JObject alert in alerts)
@@ -2556,10 +2551,10 @@
                     string id = alert["id"].ToString();
                     Console.WriteLine(id);
                     string documentLink = GetDocumentLink("DataCop", "Alert", id);
-                    ResourceResponse<Document> resource = azureCosmosDBClient.DeleteDocumentAsync(documentLink).Result;
-                    //Console.WriteLine(resource);
+                    var statusCode = azureCosmosDBClient.DeleteDocumentAsync(documentLink).Result;
+                    //Console.WriteLine(statusCode);
                 }
-                alerts = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT top 1000 * FROM c WHERE not is_defined(c.incidentId)")).Result;
+                alerts = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>((@"SELECT top 1000 * FROM c WHERE not is_defined(c.incidentId)")).Result;
             }
         }
 
@@ -2567,14 +2562,14 @@
         {
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "Alert");
             // Collation: asc and desc is ascending and descending
-            IList<JObject> alerts = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT top 200 * FROM c WHERE c.owningTeamId = 'IDEAS\\IDEAsDataCopTest' and not is_defined(c.impactedTestRunIds) ORDER BY c._ts DESC")).Result;
+            IList<JObject> alerts = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>((@"SELECT top 200 * FROM c WHERE c.owningTeamId = 'IDEAS\\IDEAsDataCopTest' and not is_defined(c.impactedTestRunIds) ORDER BY c._ts DESC")).Result;
             foreach (JObject alert in alerts)
             {
                 string id = alert["id"].ToString();
                 Console.WriteLine(id);
                 string documentLink = GetDocumentLink("DataCop", "Alert", id);
-                ResourceResponse<Document> resource = azureCosmosDBClient.DeleteDocumentAsync(documentLink).Result;
-                Console.WriteLine(resource);
+                var statusCode = azureCosmosDBClient.DeleteDocumentAsync(documentLink).Result;
+                Console.WriteLine(statusCode);
             }
         }
 
@@ -2583,7 +2578,7 @@
             AzureCosmosDBClient alertSettingsCosmosDBClient = new AzureCosmosDBClient("DataCop", "AlertSettings");
 
             // Filter out duplicates alertSettings
-            IList<JObject> alertSettingJObjects = alertSettingsCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c")).Result;
+            IList<JObject> alertSettingJObjects = alertSettingsCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>((@"SELECT * FROM c")).Result;
             //var alertSettingDict = ClusterAlertSettings(alertSettingJObjects);
             //Console.WriteLine(alertSettingJObjects.Count);
             //Console.WriteLine(alertSettingDict.Count);
@@ -2594,7 +2589,7 @@
 
             //// Filter out alertSetting identifier used by datasetTest
             //AzureCosmosDBClient datasetTestCosmosDBClient = new AzureCosmosDBClient("DataCop", "DatasetTest");
-            //IList<JObject> datasetTestJObjects = datasetTestCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT distinct c.alertSettingId FROM c where c.status = 'Enabled' and is_defined(c.alertSettingId)")).Result;
+            //IList<JObject> datasetTestJObjects = datasetTestCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>((@"SELECT distinct c.alertSettingId FROM c where c.status = 'Enabled' and is_defined(c.alertSettingId)")).Result;
             //HashSet<string> alertSettingIdsSet = new HashSet<string>();
             //foreach (JObject datasetTestJObject in datasetTestJObjects)
             //{
@@ -2753,7 +2748,7 @@
             string resultExpirePeriod = "2.00:00:00";
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "PartitionedTestRun");
             // Collation: asc and desc is ascending and descending
-            IList<JObject> testRuns = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec($@"SELECT * FROM c WHERE c.dataFabric= 'Cosmos' and c.resultExpirePeriod = '{resultExpirePeriod}'")).Result;
+            IList<JObject> testRuns = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(($@"SELECT * FROM c WHERE c.dataFabric= 'Cosmos' and c.resultExpirePeriod = '{resultExpirePeriod}'")).Result;
             foreach (JObject testRun in testRuns)
             {
                 string id = testRun["id"].ToString();
@@ -2764,12 +2759,12 @@
                 Console.WriteLine(testRun["partitionKey"]);
                 string partitionKey = testRun["partitionKey"].ToString();
                 partitionKey = JsonConvert.SerializeObject(DateTime.Parse(testRun["partitionKey"].ToString())).Trim('"');
-                string documentLink = UriFactory.CreateDocumentUri("DataCop", "Dataset", id).ToString();
+                string documentLink = GetDocumentLink("DataCop", "Dataset", id).ToString();
                 Console.WriteLine(id);
                 Console.WriteLine(partitionKey);
                 //var reqOptions = new RequestOptions { PartitionKey = new PartitionKey(partitionKey) };
-                //ResourceResponse<Document> resource = azureCosmosDBClient.DeleteDocumentAsync(documentLink, reqOptions).Result;
-                //Console.WriteLine(resource);
+                //var statusCode = azureCosmosDBClient.DeleteDocumentAsync(documentLink, reqOptions).Result;
+                //Console.WriteLine(statusCode);
             }
         }
         private static void DisableAbortedTest()
@@ -2780,7 +2775,7 @@
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "PartitionedTestRun");
 
             IList<JObject> testRuns = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(
-                new SqlQuerySpec($@"SELECT distinct c.datasetId FROM c WHERE c.dataFabric = 'ADLS' and c.status = 'Aborted' and contains(c.message, 'Forbidden') and c.createTime > '{startDate:o}' order by c.createTime desc")).Result;
+                ($@"SELECT distinct c.datasetId FROM c WHERE c.dataFabric = 'ADLS' and c.status = 'Aborted' and contains(c.message, 'Forbidden') and c.createTime > '{startDate:o}' order by c.createTime desc")).Result;
             foreach (var testRun in testRuns)
             {
                 datasetIds.Add(testRun["datasetId"].ToString());

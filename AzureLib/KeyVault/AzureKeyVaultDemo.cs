@@ -4,7 +4,6 @@ namespace AzureLib.KeyVault
     using System;
     using System.Collections.Generic;
     using System.Net.Http;
-    using System.Threading.Tasks;
     using Microsoft.Azure.KeyVault;
     using Microsoft.Azure.KeyVault.Models;
     using Microsoft.Azure.Services.AppAuthentication;

@@ -1,9 +1,9 @@
 ﻿namespace CSharpDemo.IDEAs
 {
+    using AzureLib.CosmosDB;
     using AzureLib.KeyVault;
     using CSharpDemo.Azure.CosmosDB;
     using CSharpDemo.FileOperation;
-    using Microsoft.Azure.Documents;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
     using System;
@@ -161,7 +161,7 @@
                 if (id.Equals("01883b87-5b20-40f4-90f2-2ce6cbdfa766"))
                 {
 
-                    var jObjectInCosmosDb = azureCosmosDBClient.FindFirstOrDefaultItemAsync<JObject>(new SqlQuerySpec($"SELECT * FROM c where c.id = '{id}'")).Result;
+                    var jObjectInCosmosDb = azureCosmosDBClient.FindFirstOrDefaultItemAsync<JObject>($"SELECT * FROM c where c.id = '{id}'").Result;
                     if (jObjectInCosmosDb != null)
                     {
 

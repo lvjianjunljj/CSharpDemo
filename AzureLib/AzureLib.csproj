@@ -114,7 +114,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AzureCosmosDBClient.cs" />
+    <Compile Include="CosmosDB\AzureCosmosDBClient.cs" />
+    <Compile Include="CosmosDB\CosmosDBDocumentClient.cs" />
     <Compile Include="KeyVault\AzureKeyVaultDemo.cs" />
     <Compile Include="KeyVault\ISecretProvider.cs" />
     <Compile Include="KeyVault\KeyVaultSecretProvider.cs" />
