@@ -300,6 +300,8 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DataCopLogProvider.cs" />
+    <Compile Include="DataCopLogQueryDemo.cs" />
     <Compile Include="CloudScopeLogProvider.cs" />
     <Compile Include="CloudScopeLogQueryDemo.cs" />
     <Compile Include="BuildLogEntry.cs" />

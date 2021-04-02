@@ -50,14 +50,14 @@
             //EnableAllCosmosDatasetTestSuccessively();
             //EnableAllCosmosDatasetTestWhenNoActiveMessage();
 
-            GetTestRunMessagesForEveryDataset();
+            //GetTestRunMessagesForEveryDataset();
             //QueryTestRunStatusForDatasets();
             //GetDataFactoriesInCosmosViewMonitors();
 
             //QueryAlertSettingDemo();
             //QueryScheduleMonitorReportDemo();
             //QueryAlertSettingInDatasetTestsDemo();
-            //QueryDataSetDemo();
+            QueryDataSetDemo();
             //QueryTestRunTestContentDemo();
             //QueryMonitroReportDemo();
             //QueryServiceMonitorDemo();
@@ -1954,7 +1954,7 @@
         {
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "Dataset");
             // Collation: asc and desc is ascending and descending
-            IList<JObject> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c where c.id = 'b3969342-a5ef-44a3-bb14-afbdefbf5aba'")).Result;
+            IList<JObject> list = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(new SqlQuerySpec(@"SELECT * FROM c where c.dataFabric = 'CosmosView'")).Result;
             foreach (JObject jObject in list)
             {
                 Console.WriteLine(jObject);

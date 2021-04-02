@@ -8,9 +8,9 @@
     {
         static void Main(string[] args)
         {
-
-            //ADFLogQueryDemo.MainMethod();
-            CloudScopeLogQueryDemo.MainMethod();
+            //BuildLogQueryDemo.MainMethod();
+            //CloudScopeLogQueryDemo.MainMethod();
+            DataCopLogQueryDemo.MainMethod();
 
             if (Debugger.IsAttached)
             {
