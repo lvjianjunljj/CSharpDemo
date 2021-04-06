@@ -13,11 +13,13 @@
         {
             Console.WriteLine("Start Log Analytics demo process: ");
             Initialize(@"datacop-prod");
-            CosmosWorkerLogDemo();
+
+            CosmosWorkerFallbackLogQuery();
         }
 
-        private static void CosmosWorkerLogDemo()
+        private static void CosmosWorkerFallbackLogQuery()
         {
+            Console.WriteLine(@"Start querying CosmosWorkerFallbackLog...");
             string queryString = "CosmosWorkerTrace_CL ";
             queryString += @"| where TagId_g == 'a83c16b8-c7c1-4676-b6b0-2dd8b4ca2a14' ";
             queryString += @"| where Message endswith 'Success\'.' ";

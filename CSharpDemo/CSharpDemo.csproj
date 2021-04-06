@@ -202,7 +202,6 @@
     <Compile Include="Constant.cs" />
     <Compile Include="ConstructorDemo.cs" />
     <Compile Include="ConvertDemo.cs" />
-    <Compile Include="Azure\CosmosDB\AzureCosmosDBTestClass.cs" />
     <Compile Include="CSharpInDepth\Part1\LINQDemo.cs" />
     <Compile Include="CSharpInDepth\Part2\CSharp2\GenericsDemo.cs" />
     <Compile Include="CSharpInDepth\Part2\CSharp2\NullableDemo.cs" />
