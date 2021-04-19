@@ -140,7 +140,7 @@
 
         private static void DownloadViewScripts()
         {
-            var testRunMessagesPath = @"D:\data\company_work\M365\IDEAs\datacop\cosmosworker\builddeployment\allTestRuns.json";
+            var testRunMessagesPath = @"D:\data\company_work\M365\IDEAs\datacop\cosmosworker\builddeployment\udp_mdp\allTestRuns.json";
             var viewsFolder = @"D:\IDEAs\repos\CosmosViewMonitor\cosmos_views";
 
             // Remove all the files in the folder first to make sure it does not contains the view we don't need.

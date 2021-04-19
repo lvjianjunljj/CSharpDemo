@@ -48,14 +48,14 @@
             //EnableAllCosmosDatasetTestSuccessively();
             //EnableAllCosmosDatasetTestWhenNoActiveMessage();
 
-            //GetTestRunMessagesForEveryDataset();
+            GetTestRunMessagesForEveryDataset();
             //QueryTestRunStatusForDatasets();
             //GetDataFactoriesInCosmosViewMonitors();
 
             //QueryAlertSettingDemo();
             //QueryScheduleMonitorReportDemo();
             //QueryAlertSettingInDatasetTestsDemo();
-            QueryDataSetDemo();
+            //QueryDataSetDemo();
             //QueryTestRunTestContentDemo();
             //QueryMonitroReportDemo();
             //QueryServiceMonitorDemo();
@@ -311,7 +311,11 @@
 
         private static void GetTestRunMessagesForEveryDataset()
         {
-            string folderPath = @"D:\data\company_work\M365\IDEAs\datacop\cosmosworker\builddeployment";
+            if (!Directory.Exists(CosmosViewErrorMessageOperation.RootFolderPath))
+            {
+                Directory.CreateDirectory(CosmosViewErrorMessageOperation.RootFolderPath);
+            }
+
             DateTime nowDate = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, DateTime.UtcNow.Day);
             // Just collect the testRuns created by the last thirty days.
             string startDateStrFilter = nowDate.AddDays(-30).ToString("s");
@@ -320,7 +324,7 @@
             AzureCosmosDBClient testRunCosmosDBClient = new AzureCosmosDBClient("DataCop", "PartitionedTestRun");
             // Collation: asc and desc is ascending and descending
             IList<JObject> azureDatasets = datasetCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>((
-                @"SELECT * FROM c where c.dataFabric = 'CosmosView' and c.createdBy = 'BuildDeployment' and c.isEnabled = true")).Result;
+                @"SELECT * FROM c where c.dataFabric = 'CosmosView' and c.createdBy = 'BuildDeployment' and c.isEnabled = true and ont contains(c.buildEntityId, 'PLSCoreData')")).Result;
             Console.WriteLine($"azureDataset count: '{azureDatasets.Count}'");
 
             JArray allTestRunMessages = new JArray();
@@ -400,7 +404,7 @@
 
                 allTestRunMessages.Add(testRunMessage);
             }
-            File.WriteAllText(Path.Combine(folderPath, @"allTestRuns.json"), allTestRunMessages.ToString());
+            File.WriteAllText(Path.Combine(CosmosViewErrorMessageOperation.RootFolderPath, @"allTestRuns.json"), allTestRunMessages.ToString());
         }
 
         private static string GetADLSStreamPaths(Func<string, string> getPathFunc)
@@ -1481,8 +1485,6 @@
                 "1a8079f8-1885-41ce-8ab5-1717fd885632",
                 "916e9311-8cdb-4cf4-99b5-0b65e562757b"
             };
-            JArray jsons = JArray.Parse(File.ReadAllText(@"D:\data\company_work\M365\IDEAs\datacop\cosmosworker\builddeployment\allTestRuns.json"));
-            ids = jsons.Select(j => j["datasetId"].ToString()).ToArray();
 
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "Dataset");
             IList<JObject> datasets = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>((
@@ -1498,7 +1500,7 @@
 
         private static void QueryTestRunStatusForDatasets()
         {
-            JArray jsons = JArray.Parse(File.ReadAllText(@"D:\data\company_work\M365\IDEAs\datacop\cosmosworker\builddeployment\allTestRuns.json"));
+            JArray jsons = JArray.Parse(File.ReadAllText(Path.Combine(CosmosViewErrorMessageOperation.RootFolderPath, @"allTestRuns.json")));
             var datasetIds = jsons.Select(j => j["datasetId"].ToString()).ToArray();
 
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "PartitionedTestRun");

@@ -2,7 +2,6 @@
 {
     using AzureLib.CosmosDB;
     using AzureLib.KeyVault;
-    using CSharpDemo.Azure.CosmosDB;
     using CSharpDemo.FileOperation;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;

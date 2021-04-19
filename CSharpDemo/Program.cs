@@ -19,7 +19,7 @@
     {
         static void Main(string[] args)
         {
-            //AzureCosmosDBOperation.MainMethod();
+            AzureCosmosDBOperation.MainMethod();
             //AzureServiceBus.MainMethod();
 
             //QueryIncidents.MainMethod();
@@ -30,7 +30,7 @@
             //AzureActiveDirectoryToken.MainMethod();
             //AzureKeyVaultDemo.MainMethod();
             //CsprojCheck.MainMethod();
-            //CosmosViewErrorMessageOperation.MainMethod();
+            CosmosViewErrorMessageOperation.MainMethod();
 
             //CloudScopeOperation.MainMethod();
 

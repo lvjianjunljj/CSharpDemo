@@ -14,8 +14,8 @@
     {
         private static string CloudScopeSubmitJobUrl = @"http://cloudscope-prod-gdpr.asecloudscopeprod.p.azurewebsites.net/api/virtualCluster/ideas-prod-c14/submitJob?workloadQueueName=gdpr";
         private static string CloudScopeJobInfoUrlFormat = @"http://cloudscope-prod-gdpr.asecloudscopeprod.p.azurewebsites.net/api/virtualCluster/ideas-prod-c14/jobInfo/{0}";
-        private static string TestRunMessagesPath = @"D:\data\company_work\M365\IDEAs\datacop\cosmosworker\builddeployment\allTestRuns.json";
-        private static string JobStatusesPath = @"D:\data\company_work\M365\IDEAs\datacop\cosmosworker\builddeployment\allJobStatuses_prod.json";
+        private static string TestRunMessagesPath = Path.Combine(CosmosViewErrorMessageOperation.RootFolderPath, @"allTestRuns.json");
+        private static string JobStatusesPath = Path.Combine(CosmosViewErrorMessageOperation.RootFolderPath, @"allJobStatuses_prod.json");
 
         private static string Token;
 

@@ -3,13 +3,12 @@
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
     using System;
-    using System.Collections;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
     using System.Text.RegularExpressions;
 
-    class CosmosViewErrorMessageOperation
+    public class CosmosViewErrorMessageOperation
     {
         private const string GitRootLink = @"https://o365exchange.visualstudio.com/O365%20Core/_git/";
         private const string PLSReposRootPath = @"D:\IDEAs\pls_repos";
@@ -26,6 +25,7 @@
         private static Regex NoViewStreamInfoMatchRegex = new Regex(
                         @"Could not get stream info for (?<view>.*\.view)");
 
+        public static string RootFolderPath = @"D:\data\company_work\M365\IDEAs\datacop\cosmosworker\builddeployment\udp_mdp";
         public static void MainMethod()
         {
             // Need to run "AzureCosmosDBOperation.GetTestRunMessagesForEveryDataset()" to upload all cosmos view file to git.
@@ -62,7 +62,7 @@
             }
             Console.WriteLine(viewFileInfos.Count);
 
-            var testRunMessagesPath = @"D:\data\company_work\M365\IDEAs\datacop\cosmosworker\builddeployment\allTestRuns.json";
+            var testRunMessagesPath = Path.Combine(CosmosViewErrorMessageOperation.RootFolderPath, @"allTestRuns.json");
             JArray testRunMessages = JArray.Parse(File.ReadAllText(testRunMessagesPath));
 
             JArray detailsJArray = new JArray();
@@ -152,8 +152,8 @@
             lines.Add(string.Empty);
             lines.AddRange(missedMessageLines);
 
-            File.WriteAllLines(@"D:\data\company_work\M365\IDEAs\datacop\cosmosworker\builddeployment\messageLines.tsv", lines);
-            File.WriteAllText(@"D:\data\company_work\M365\IDEAs\datacop\cosmosworker\builddeployment\details_attach.json", detailsJArray.ToString());
+            File.WriteAllLines(Path.Combine(CosmosViewErrorMessageOperation.RootFolderPath, @"messageLines.tsv"), lines);
+            File.WriteAllText(Path.Combine(CosmosViewErrorMessageOperation.RootFolderPath, @"details_attach.json"), detailsJArray.ToString());
 
 
             Console.WriteLine($"missCount: {missedMessageLines.Count}");
