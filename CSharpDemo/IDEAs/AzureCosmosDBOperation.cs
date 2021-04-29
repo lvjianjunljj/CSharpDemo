@@ -1551,21 +1551,45 @@
         {
             string dataFactoriesFolder = @"D:\IDEAs\repos\DBInterfaces\SharedInterfaces\linkedServices\Prod\DataFactory";
             var dataFactoryFilePaths = Directory.EnumerateFiles(dataFactoriesFolder);
+            IList<string> dataFactoryNames = new List<string>();
             foreach (var dataFactoryFilePath in dataFactoryFilePaths)
             {
-                Console.WriteLine(dataFactoryFilePath);
+                var dataFactoryJson = JObject.Parse(File.ReadAllText(dataFactoryFilePath));
+                var enabledFeatures = new HashSet<string>(dataFactoryJson["enabledFeatures"].Select(c => c.ToString()).ToList<string>());
+                //if (enabledFeatures.Contains("EnableDataCopSlaTestsForCosmosViews"))
+                dataFactoryNames.Add(dataFactoryJson["dataFactoryName"].ToString());
             }
+
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "AlertSettings");
             IList<JObject> alertSettings = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>((@"SELECT * from c")).Result;
+
+            HashSet<string> dataFactories = new HashSet<string>();
             foreach (JObject alertSetting in alertSettings)
             {
-                Console.WriteLine(alertSetting);
+                if (!alertSetting.ContainsKey("dataFactories"))
+                {
+                    continue;
+                }
+
+                foreach (var dataFactory in alertSetting["dataFactories"].Select(c => c.ToString()).ToList<string>())
+                {
+                    dataFactories.Add(dataFactory);
+                }
             }
+
+            foreach (var dataFactoryName in dataFactoryNames)
+            {
+                if (!dataFactories.Contains(dataFactoryName.ToUpper()))
+                {
+                    Console.WriteLine(dataFactoryName);
+                }
+            }
+
 
         }
 
 
-private static void GetDatasetsCountForEveryDataFactory()
+        private static void GetDatasetsCountForEveryDataFactory()
         {
             Dictionary<string, int> enabledDatasetCounts = new Dictionary<string, int>();
             Dictionary<string, int> disabledDatasetCounts = new Dictionary<string, int>();
