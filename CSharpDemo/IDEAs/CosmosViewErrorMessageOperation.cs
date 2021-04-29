@@ -24,6 +24,14 @@
                         @"Verify that streamset parameters are correct and that it contains at least one structured stream\.\.\.\. at token '(?<stream>.*)'");
         private static Regex NoViewStreamInfoMatchRegex = new Regex(
                         @"Could not get stream info for (?<view>.*\.view)");
+        private static Regex UserDefinedErrorMatchRegex = new Regex(
+                        "E_CSC_USER_PREPROCESSORUSERDEFINEDERROR: User defined error: \"(?<error>.*)\"\nDescription");
+        private static Regex SameSourceMatchRegex = new Regex(
+                        @"Script contains two different (resources|references) with identical file name: '(?<file>.*)'");
+        private static Regex FileNotFoundMatchRegex = new Regex(
+                        @"E_STORE_USER_FILENOTFOUND: File not found or access denied: '(?<file>.*)'");
+        private static Regex DynamicViewMatchRegex = new Regex(
+                        @"E_CSC_USER_DYNAMICVIEWADDITIONALRESOURCE: Dynamic View referenced an additional resource '(?<resource>.*)'");
 
         public static string RootFolderPath = @"D:\data\company_work\M365\IDEAs\datacop\cosmosworker\builddeployment\udp_mdp";
         public static void MainMethod()
@@ -45,8 +53,8 @@
             }
 
 
-            Console.WriteLine(allViewFilePaths.Length);
-            Console.WriteLine(viewFolders.Count);
+            Console.WriteLine($"View Files Count {allViewFilePaths.Length}");
+            Console.WriteLine($"View Folders Count: {viewFolders.Count}");
 
 
             int count = 0;
@@ -60,11 +68,30 @@
                     viewFileInfos.Add(info);
                 }
             }
-            Console.WriteLine(viewFileInfos.Count);
+            Console.WriteLine($"View File Infos Count: {viewFileInfos.Count}");
 
             var testRunMessagesPath = Path.Combine(CosmosViewErrorMessageOperation.RootFolderPath, @"allTestRuns.json");
             JArray testRunMessages = JArray.Parse(File.ReadAllText(testRunMessagesPath));
 
+            HashSet<string> dataFactoryNames = new HashSet<string>();
+            foreach (var testRunMessage in testRunMessages)
+            {
+                string dataFactoryName = testRunMessage["dataFactoryName"].ToString();
+                dataFactoryNames.Add(dataFactoryName);
+            }
+
+            foreach (var dataFactoryName in dataFactoryNames)
+            {
+                WriteSummaryResultToJsonFile(dataFactoryName, testRunMessages, viewFileInfos);
+            }
+
+
+
+            Console.WriteLine(@"End CollecterrorContent...");
+        }
+
+        private static void WriteSummaryResultToJsonFile(string dataFactoryName, JArray testRunMessages, HashSet<ViewFileInfo> viewFileInfos)
+        {
             JArray detailsJArray = new JArray();
             var nameNotExistLines = new List<string>() { @"Wrong column name(The name 'XXXX' does not exist in the current context):", "View name\tName\tView file link\tJson file link\tOwner" };
             var namespaceNotExistLines = new List<string>() { @"Leak of reference(The type or namespace name 'XXXX' does not exist in the namespace 'YYYY'): ", "View name\tTarget namespace\tSource namespace\tView file link\tJson file link\tOwner" };
@@ -72,9 +99,22 @@
             var expectedTokenLines = new List<string>() { @"Wrong token(Correct the script syntax, using expected token(s) as a guide.... at token 'XXXX'): ", "View name\tToken\tView file link\tJson file link\tOwner" };
             var structuredStreamTokenLines = new List<string>() { @"Stream set issue(Verify that streamset parameters are correct and that it contains at least one structured stream.... at token 'XXXX'): ", "View name\tStructured Stream\tView file link\tJson file link\tOwner" };
             var viewStreamInfoLines = new List<string>() { @"No view stream(Could not get stream info for XXXX): ", "View name\tStream\tView file link\tJson file link\tOwner" };
+            var userDefinedErrorLines = new List<string>() { @"User defined error(User defined error: XXXX): ", "View name\tError\tView file link\tJson file link\tOwner" };
+            var sameSourceLines = new List<string>() { @"Two different resources/references(Script contains two different resources/references with identical file name: 'XXXX)': ", "View name\tFileName\tView file link\tJson file link\tOwner" };
+            var fileNotFoundLines = new List<string>() { @"File not found or access denied(E_STORE_USER_FILENOTFOUND: File not found or access denied: 'XXXX'): ", "View name\tFilePath\tView file link\tJson file link\tOwner" };
+            var dynamicViewLines = new List<string>() { @"Aditional resource(Dynamic View referenced an additional resource 'XXXX'): ", "View name\tResource\tView file link\tJson file link\tOwner" };
+
+
+
             var missedMessageLines = new List<string>() { @"Missed messages: ", "View name\tMissed message\tView file link\tJson file link\tOwner" };
             foreach (var testRunMessage in testRunMessages)
             {
+                string curDataFactoryName = testRunMessage["dataFactoryName"].ToString();
+                if (!curDataFactoryName.Equals(dataFactoryName))
+                {
+                    continue;
+                }
+
                 JObject detailJson = new JObject();
                 //string datasetId = testRunMessage["datasetId"].ToString();
                 var messages = testRunMessage["messages"].ToArray();
@@ -101,6 +141,13 @@
                 var lineMessage = $"{viewName}\t{errorContent}\t{viewGitLink}\t{jsonGitLink}\t{viewOwnerName}";
                 switch (tag)
                 {
+                    case 0:
+                        missedMessageLines.Add(lineMessage);
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine($"Not catch error message for dataset '{testRunMessage["datasetId"]}'.");
+                        //The default foreground color for console is gray.
+                        Console.ForegroundColor = ConsoleColor.Gray;
+                        break;
                     case 1:
                         if (!errorContent.Equals("worldwide") && !errorContent.Equals("True") && !errorContent.Equals("False"))
                         {
@@ -123,11 +170,16 @@
                         viewStreamInfoLines.Add(lineMessage);
                         break;
                     case 7:
-                        missedMessageLines.Add(lineMessage);
-                        Console.ForegroundColor = ConsoleColor.Red;
-                        Console.WriteLine(testRunMessage["datasetId"]);
-                        //The default foreground color for console is gray.
-                        Console.ForegroundColor = ConsoleColor.Gray;
+                        userDefinedErrorLines.Add(lineMessage);
+                        break;
+                    case 8:
+                        sameSourceLines.Add(lineMessage);
+                        break;
+                    case 9:
+                        fileNotFoundLines.Add(lineMessage);
+                        break;
+                    case 10:
+                        dynamicViewLines.Add(lineMessage);
                         break;
                     default:
                         Console.WriteLine($"Wrong tag value: {tag}");
@@ -150,35 +202,42 @@
             lines.Add(string.Empty);
             lines.AddRange(viewStreamInfoLines);
             lines.Add(string.Empty);
+            lines.AddRange(userDefinedErrorLines);
+            lines.Add(string.Empty);
+            lines.AddRange(sameSourceLines);
+            lines.Add(string.Empty);
+            lines.AddRange(fileNotFoundLines);
+            lines.Add(string.Empty);
+            lines.AddRange(dynamicViewLines);
+
+            lines.Add(string.Empty);
             lines.AddRange(missedMessageLines);
 
-            File.WriteAllLines(Path.Combine(CosmosViewErrorMessageOperation.RootFolderPath, @"messageLines.tsv"), lines);
-            File.WriteAllText(Path.Combine(CosmosViewErrorMessageOperation.RootFolderPath, @"details_attach.json"), detailsJArray.ToString());
+            var folderPath = Path.Combine(CosmosViewErrorMessageOperation.RootFolderPath, dataFactoryName);
+            if (!Directory.Exists(folderPath))
+            {
+                Directory.CreateDirectory(folderPath);
+            }
 
-
-            Console.WriteLine($"missCount: {missedMessageLines.Count}");
-            Console.WriteLine(@"End CollecterrorContent...");
+            File.WriteAllLines(Path.Combine(folderPath, @"messageLines.tsv"), lines);
+            File.WriteAllText(Path.Combine(folderPath, @"details_attach.json"), detailsJArray.ToString());
         }
 
         private static ViewFileInfo GetViewFileInfo(HashSet<ViewFileInfo> viewFileInfos, string viewName, string version)
         {
             ViewFileInfo viewFileInfo = null;
-            var selectedViewFileInfos = viewFileInfos.Where(v => v.ViewName.Equals(viewName)).ToArray();
+            var selectedViewFileInfos = viewFileInfos.Where(v => v.ViewName.Equals(viewName) && v.Version.Equals(version)).ToArray();
 
-            if (selectedViewFileInfos.Length == 0)
-            {
-                //throw new FileNotFoundException($"There is no selected view file info for view name '{viewName}'");
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"There is no selected view file info for view name '{viewName}'");
-                Console.ForegroundColor = ConsoleColor.Gray;
-            }
-            else if (selectedViewFileInfos.Length == 1)
+            if (selectedViewFileInfos.Length == 1)
             {
                 viewFileInfo = selectedViewFileInfos[0];
             }
             else
             {
-                viewFileInfo = selectedViewFileInfos.Where(v => v.Version.Equals(version)).Single();
+                //throw new FileNotFoundException($"There is no selected view file info for view name '{viewName}'");
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"There is {selectedViewFileInfos.Length} selected view file info for view name '{viewName}'");
+                Console.ForegroundColor = ConsoleColor.Gray;
             }
 
             return viewFileInfo;
@@ -190,15 +249,36 @@
             foreach (var jsonFilePath in jsonFilePaths)
             {
                 JObject json = JObject.Parse(File.ReadAllText(jsonFilePath));
-                if (!json.ContainsKey("fileName") ||
-                    !json["fileName"].ToString().EndsWith(@".view") ||
-                    !json.ContainsKey("version") ||
+                if (!json.ContainsKey("version") ||
                     !json.ContainsKey("name"))
                 {
                     continue;
                 }
 
-                var viewFilePath = Path.Combine(Path.GetDirectoryName(jsonFilePath), json["fileName"].ToString());
+                // For the template output view file, the file name does not need to be defined in the json file,
+                // View file name is just the same as json file name
+                var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(jsonFilePath);
+                var viewFilePath = Path.Combine(Path.GetDirectoryName(jsonFilePath), fileNameWithoutExtension + ".view");
+                if (File.Exists(viewFilePath))
+                {
+                    yield return new ViewFileInfo
+                    {
+                        ViewName = json["name"].ToString(),
+                        // We add a leading character "v" .
+                        Version = @"v" + json["version"].ToString(),
+                        JsonFilePath = jsonFilePath,
+                        ViewFilePath = viewFilePath,
+                    };
+                }
+
+
+                if (!json.ContainsKey("fileName") ||
+                    !json["fileName"].ToString().EndsWith(@".view"))
+                {
+                    continue;
+                }
+
+                viewFilePath = Path.Combine(Path.GetDirectoryName(jsonFilePath), json["fileName"].ToString());
                 if (!File.Exists(viewFilePath))
                 {
                     continue;
@@ -413,8 +493,93 @@
                 return 6;
             }
 
+            string error = string.Empty;
+            foreach (var message in messages)
+            {
+                var userDefinedErrorMatch = UserDefinedErrorMatchRegex.Match(message.ToString());
+                if (userDefinedErrorMatch.Success)
+                {
+                    var curError = userDefinedErrorMatch.Result("${error}").ToString();
+                    if (string.IsNullOrEmpty(error) || !error.Equals(curError))
+                    {
+                        errorMessage = message.ToString();
+                        error = curError;
+                    }
+                }
+            }
+
+            if (!string.IsNullOrEmpty(error))
+            {
+                errorContent = error;
+                return 7;
+            }
+
+            string fileName = string.Empty;
+            foreach (var message in messages)
+            {
+                var sameSourceMatch = SameSourceMatchRegex.Match(message.ToString());
+                if (sameSourceMatch.Success)
+                {
+                    var curFileName = sameSourceMatch.Result("${file}").ToString();
+                    if (string.IsNullOrEmpty(fileName) || !fileName.Equals(curFileName))
+                    {
+                        errorMessage = message.ToString();
+                        fileName = curFileName;
+                    }
+                }
+            }
+
+            if (!string.IsNullOrEmpty(fileName))
+            {
+                errorContent = fileName;
+                return 8;
+            }
+
+            string filePath = string.Empty;
+            foreach (var message in messages)
+            {
+                var fileNotFoundMatch = FileNotFoundMatchRegex.Match(message.ToString());
+                if (fileNotFoundMatch.Success)
+                {
+                    var curFilePath = fileNotFoundMatch.Result("${file}").ToString();
+                    if (string.IsNullOrEmpty(fileName) || !fileName.Equals(curFilePath))
+                    {
+                        errorMessage = message.ToString();
+                        filePath = curFilePath;
+                    }
+                }
+            }
+
+            if (!string.IsNullOrEmpty(filePath))
+            {
+                errorContent = filePath;
+                return 9;
+            }
+
+            string resource = string.Empty;
+            foreach (var message in messages)
+            {
+                var fileNotFoundMatch = DynamicViewMatchRegex.Match(message.ToString());
+                if (fileNotFoundMatch.Success)
+                {
+                    var curResource = fileNotFoundMatch.Result("${resource}").ToString();
+                    if (string.IsNullOrEmpty(fileName) || !fileName.Equals(curResource))
+                    {
+                        errorMessage = message.ToString();
+                        resource = curResource;
+                    }
+                }
+            }
+
+            if (!string.IsNullOrEmpty(resource))
+            {
+                errorContent = resource;
+                return 10;
+            }
+
+
             errorContent = @"";
-            return 7;
+            return 0;
         }
 
     }

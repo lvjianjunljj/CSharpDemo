@@ -40,6 +40,7 @@
             //UpsertDatasetDemo();
             //UpsertDatasetTestDemo();
             //UpdateBuildDeploymentViewBooleanParameters();
+            //UpdateWrongDataFabricInDatasets();
 
 
             //DisableDatasets();
@@ -48,9 +49,11 @@
             //EnableAllCosmosDatasetTestSuccessively();
             //EnableAllCosmosDatasetTestWhenNoActiveMessage();
 
-            GetTestRunMessagesForEveryDataset();
+            //GetTestRunMessagesForEveryDataset();
             //QueryTestRunStatusForDatasets();
             //GetDataFactoriesInCosmosViewMonitors();
+            //GetDatasetsCountForEveryDataFactory();
+            //GetDisabledDatasetsWithoutRightModifiedTime();
 
             //QueryAlertSettingDemo();
             //QueryScheduleMonitorReportDemo();
@@ -72,6 +75,8 @@
             //QueryServiceMonitorReports();
             //QueryDatasetCount();
             //QueryTestRunCountByDatasetId();
+            GetAlertSettingsForEveryDataFactory();
+
 
             //DeleteTestRunDemo();
             //DeleteTestRuns();
@@ -324,12 +329,14 @@
             AzureCosmosDBClient testRunCosmosDBClient = new AzureCosmosDBClient("DataCop", "PartitionedTestRun");
             // Collation: asc and desc is ascending and descending
             IList<JObject> azureDatasets = datasetCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>((
-                @"SELECT * FROM c where c.dataFabric = 'CosmosView' and c.createdBy = 'BuildDeployment' and c.isEnabled = true and ont contains(c.buildEntityId, 'PLSCoreData')")).Result;
+                @"SELECT * FROM c where c.dataFabric = 'CosmosView' and c.createdBy = 'BuildDeployment' and c.isEnabled = true and not contains(c.buildEntityId, 'PLSCoreData')")).Result;
             Console.WriteLine($"azureDataset count: '{azureDatasets.Count}'");
 
             JArray allTestRunMessages = new JArray();
             foreach (JObject azureDataset in azureDatasets)
             {
+                string buildEntityId = azureDataset["buildEntityId"].ToString();
+                var dataFactoryName = buildEntityId.Substring(0, buildEntityId.IndexOf("/"));
                 string datasetId = azureDataset["id"].ToString();
                 string datasetName = azureDataset["name"].ToString();
                 Console.WriteLine(datasetId);
@@ -371,6 +378,7 @@
 
                 JObject testRunMessage = new JObject();
                 testRunMessage["datasetId"] = datasetId;
+                testRunMessage["dataFactoryName"] = dataFactoryName;
                 testRunMessage["datasetName"] = datasetName;
                 var messages = new JArray();
                 var testRunIds = new JArray();
@@ -1539,6 +1547,119 @@
             }
         }
 
+        private static void GetAlertSettingsForEveryDataFactory()
+        {
+            string dataFactoriesFolder = @"D:\IDEAs\repos\DBInterfaces\SharedInterfaces\linkedServices\Prod\DataFactory";
+            var dataFactoryFilePaths = Directory.EnumerateFiles(dataFactoriesFolder);
+            foreach (var dataFactoryFilePath in dataFactoryFilePaths)
+            {
+                Console.WriteLine(dataFactoryFilePath);
+            }
+            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "AlertSettings");
+            IList<JObject> alertSettings = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>((@"SELECT * from c")).Result;
+            foreach (JObject alertSetting in alertSettings)
+            {
+                Console.WriteLine(alertSetting);
+            }
+
+        }
+
+
+private static void GetDatasetsCountForEveryDataFactory()
+        {
+            Dictionary<string, int> enabledDatasetCounts = new Dictionary<string, int>();
+            Dictionary<string, int> disabledDatasetCounts = new Dictionary<string, int>();
+            HashSet<string> dataFactoryNames = new HashSet<string>();
+
+            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "Dataset");
+            IList<JObject> datasets = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>((
+                @"SELECT * FROM c WHERE c.createdBy = 'BuildDeployment'")).Result;
+
+            foreach (JObject dataset in datasets)
+            {
+                string buildEntityId = dataset["buildEntityId"].ToString();
+                var dataFactoryName = buildEntityId.Substring(0, buildEntityId.IndexOf("/"));
+                var isEnabled = bool.Parse(dataset["isEnabled"].ToString());
+                if (!dataFactoryNames.Contains(dataFactoryName))
+                {
+                    dataFactoryNames.Add(dataFactoryName);
+                    enabledDatasetCounts.Add(dataFactoryName, 0);
+                    disabledDatasetCounts.Add(dataFactoryName, 0);
+                }
+
+                if (isEnabled)
+                {
+                    enabledDatasetCounts[dataFactoryName]++;
+                }
+                else
+                {
+                    disabledDatasetCounts[dataFactoryName]++;
+                }
+            }
+
+            Console.WriteLine($"datasets count: {datasets.Count}");
+            Console.WriteLine($"dataFactories count: {dataFactoryNames.Count}");
+
+            List<string> dataFactoryNameList = new List<string>(dataFactoryNames);
+            dataFactoryNameList.Sort();
+            foreach (var dataFactoryName in dataFactoryNameList)
+            {
+                Console.WriteLine(dataFactoryName);
+                Console.WriteLine(enabledDatasetCounts[dataFactoryName]);
+                Console.WriteLine(disabledDatasetCounts[dataFactoryName]);
+            }
+
+            // Outout the data factories just contains disabled datasets but no enabled dataset
+            foreach (var dataFactoryName in dataFactoryNameList)
+            {
+                if (enabledDatasetCounts[dataFactoryName] == 0)
+                {
+                    Console.WriteLine(dataFactoryName);
+                }
+            }
+        }
+
+        private static void GetDisabledDatasetsWithoutRightModifiedTime()
+        {
+            AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "Dataset");
+            IList<JObject> datasets = azureCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>((
+                @"SELECT * FROM c WHERE c.createdBy = 'BuildDeployment'")).Result;
+            Dictionary<string, int> dataFactoryNames = new Dictionary<string, int>();
+
+            DateTime dtDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc);
+            foreach (JObject dataset in datasets)
+            {
+                if (bool.Parse(dataset["isEnabled"].ToString()))
+                {
+                    continue;
+                }
+                var ts = long.Parse(dataset["_ts"].ToString());
+                DateTime tsTime = dtDateTime.AddSeconds(ts);
+                var lastModifiedTime = DateTime.Parse(dataset["lastModifiedTime"].ToString());
+                var tsHourlyTime = tsTime.Date.AddHours(tsTime.Hour);
+                var lastModifiedHourlyTime = lastModifiedTime.Date.AddHours(lastModifiedTime.Hour).ToUniversalTime();
+                Console.WriteLine(tsHourlyTime.ToString("o"));
+                Console.WriteLine(lastModifiedHourlyTime.ToString("o"));
+                if (!tsHourlyTime.Equals(lastModifiedHourlyTime))
+                {
+                    string buildEntityId = dataset["buildEntityId"].ToString();
+                    var dataFactoryName = buildEntityId.Substring(0, buildEntityId.IndexOf("/"));
+                    if (!dataFactoryNames.ContainsKey(dataFactoryName))
+                    {
+                        dataFactoryNames.Add(dataFactoryName, 0);
+                    }
+
+                    dataFactoryNames[dataFactoryName]++;
+                }
+            }
+
+            foreach (var dataFactoryName in dataFactoryNames.Keys)
+            {
+                Console.WriteLine(dataFactoryName);
+                Console.WriteLine(dataFactoryNames[dataFactoryName]);
+            }
+        }
+
         private static void UpsertDatasetDemo()
         {
             Console.WriteLine("Upsert demo Dataset.");
@@ -1556,6 +1677,38 @@
             var demoDatasetTestJson = JObject.Parse(File.ReadAllText(demoDatasetTestFilePath));
             AzureCosmosDBClient azureCosmosDBClient = new AzureCosmosDBClient("DataCop", "DatasetTest");
             azureCosmosDBClient.UpsertDocumentAsync(demoDatasetTestJson).Wait();
+            Console.WriteLine("End.");
+        }
+
+        private static void UpdateWrongDataFabricInDatasets()
+        {
+            Console.WriteLine("UpdateWrongDataFabricInDatasets.");
+            AzureCosmosDBClient datasetCosmosDBClient = new AzureCosmosDBClient("DataCop", "Dataset");
+            AzureCosmosDBClient datasetTestCosmosDBClient = new AzureCosmosDBClient("DataCop", "DatasetTest");
+            // Collation: asc and desc is ascending and descending
+            IList<JObject> datasets = datasetCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(@"SELECT * FROM c where c.dataFabric = 1").Result;
+            foreach (var dataset in datasets)
+            {
+                var datasetId = dataset["id"].ToString();
+                Console.WriteLine($"Dataset id: '{datasetId}'");
+                IList<JObject> datasetTests = datasetTestCosmosDBClient.GetAllDocumentsInQueryAsync<JObject>(
+                    ($"SELECT * FROM c WHERE c.datasetId = '{datasetId}'")).Result;
+                if (datasetTests.Count == 0)
+                {
+                    continue;
+                }
+
+                var testContentType = datasetTests[0]["testContentType"].ToString();
+                if (testContentType.Equals(@"AdlsAvailability"))
+                {
+                    dataset["dataFabric"] = @"ADLS";
+                    datasetCosmosDBClient.UpsertDocumentAsync(dataset).Wait();
+                }
+
+                datasetCosmosDBClient.UpsertDocumentAsync(dataset).Wait();
+            }
+
+
             Console.WriteLine("End.");
         }
 
