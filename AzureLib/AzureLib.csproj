@@ -116,8 +116,10 @@
   <ItemGroup>
     <Compile Include="CosmosDB\AzureCosmosDBClient.cs" />
     <Compile Include="CosmosDB\CosmosDBDocumentClient.cs" />
+    <Compile Include="KeyVault\AppIdKeyVaultSecretProvider.cs" />
     <Compile Include="KeyVault\AzureKeyVaultDemo.cs" />
     <Compile Include="KeyVault\ISecretProvider.cs" />
+    <Compile Include="KeyVault\KeyVaultHelper.cs" />
     <Compile Include="KeyVault\KeyVaultSecretProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

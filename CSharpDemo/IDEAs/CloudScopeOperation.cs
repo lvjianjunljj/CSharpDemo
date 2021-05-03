@@ -12,8 +12,9 @@
 
     class CloudScopeOperation
     {
-        private static string CloudScopeSubmitJobUrl = @"http://cloudscope-prod-gdpr.asecloudscopeprod.p.azurewebsites.net/api/virtualCluster/ideas-prod-c14/submitJob?workloadQueueName=gdpr";
-        private static string CloudScopeJobInfoUrlFormat = @"http://cloudscope-prod-gdpr.asecloudscopeprod.p.azurewebsites.net/api/virtualCluster/ideas-prod-c14/jobInfo/{0}";
+        private static string VirtualCluster = @"";
+        private static string CloudScopeSubmitJobUrlFormat = @"http://cloudscope-prod-gdpr.asecloudscopeprod.p.azurewebsites.net/api/virtualCluster/{0}/submitJob?workloadQueueName=gdpr";
+        private static string CloudScopeJobInfoUrlFormat = @"http://cloudscope-prod-gdpr.asecloudscopeprod.p.azurewebsites.net/api/virtualCluster/{0}/jobInfo/{0}";
         private static string TestRunMessagesPath = Path.Combine(CosmosViewErrorMessageOperation.RootFolderPath, @"allTestRuns.json");
         private static string JobStatusesPath = Path.Combine(CosmosViewErrorMessageOperation.RootFolderPath, @"allJobStatuses_prod.json");
 
@@ -22,9 +23,8 @@
         public static void MainMethod()
         {
             Initialize(@"datacop-prod");
-            //AddDatasetNames();
-            //SubmitFailedCosmosjob();
-            UpdateJobStatuses();
+            SubmitFailedCosmosjob();
+            //UpdateJobStatuses();
         }
 
         private static void Initialize(string keyVaultName)
@@ -33,10 +33,13 @@
             // Prod resource； api://9576eb06-ef2f-4f45-a131-e33d0e7ffb00
 
             // For ideas-prod-c14
+            VirtualCluster = "ideas-prod-c14";
             string tenantId = @"cdc5aeea-15c5-4db6-b079-fcadd2505dc2";
             string resource = @"api://9576eb06-ef2f-4f45-a131-e33d0e7ffb00";
+
             // For ideas-prod-build-c14
-            // string tenantId = @"72f988bf-86f1-41af-91ab-2d7cd011db47";
+            //VirtualCluster = "ideas-prod-build-c14";
+            //string tenantId = @"72f988bf-86f1-41af-91ab-2d7cd011db47";
             //string resource = @"api://d42d6163-88e5-4339-bbb3-28ec2fb3c574";
 
             ISecretProvider secretProvider = KeyVaultSecretProvider.Instance;
@@ -45,55 +48,12 @@
             Token = AzureActiveDirectoryToken.GetAccessTokenV1Async(tenantId, clientId, clientSecret, resource).Result;
         }
 
-        private static void AddDatasetNames()
-        {
-            // Need to run CosmosDemo.FunctionDemo.DownloadViewScripts() first.
-            Console.WriteLine(@"Sending submit job requests start...");
-
-            JArray testRunMessages = JArray.Parse(File.ReadAllText(TestRunMessagesPath));
-            JArray jobStatuses = JArray.Parse(File.ReadAllText(JobStatusesPath));
-            var jobStatuses2 = new JArray();
-            var dict = new Dictionary<string, string>();
-            foreach (var testRunMessage in testRunMessages)
-            {
-                Console.WriteLine(testRunMessage["datasetId"]);
-                Console.WriteLine(testRunMessage["datasetName"]);
-                dict.Add(testRunMessage["datasetId"].ToString(), testRunMessage["datasetName"].ToString());
-            }
-
-            foreach (var jobStatus in jobStatuses)
-            {
-                var jobStatus2 = new JObject();
-                jobStatus2["datasetId"] = jobStatus["datasetId"];
-                jobStatus2["datasetName"] = dict[jobStatus["datasetId"].ToString()];
-                jobStatus2["testDates"] = jobStatus["testDates"];
-                jobStatus2["jobIds"] = jobStatus["jobIds"];
-                jobStatus2["states"] = jobStatus["states"];
-                jobStatus2["errors"] = jobStatus["errors"];
-                jobStatuses2.Add(jobStatus2);
-            }
-
-            File.WriteAllText(JobStatusesPath.Replace(".json", "2.json"), jobStatuses2.ToString());
-            Console.WriteLine(@"Sending submit job requests end...");
-        }
-
         private static void SubmitFailedCosmosjob()
         {
             // Need to run CosmosDemo.FunctionDemo.DownloadViewScripts() first.
             Console.WriteLine(@"Sending submit job requests start...");
 
-            var viewsFolder = @"D:\IDEAs\repos\CosmosViewMonitor\cosmos_views";
-
             JArray testRunMessages = JArray.Parse(File.ReadAllText(TestRunMessagesPath));
-            JArray datasetViewDict = JArray.Parse(File.ReadAllText(Path.Combine(viewsFolder, @"datasetViewDict.json")));
-
-            Dictionary<string, string> viewFilePaths = new Dictionary<string, string>();
-            foreach (var datasetView in datasetViewDict)
-            {
-                var viewFilePath = Path.Combine(viewsFolder, datasetView["viewFileName"].ToString());
-                viewFilePaths.Add(datasetView["datasetId"].ToString(), viewFilePath);
-            }
-
             var jobStatuses = new JArray();
             foreach (var testRunMessage in testRunMessages)
             {
@@ -207,14 +167,14 @@
             var values = new Dictionary<string, string>
             {
                 { "Script", scriptStr},
-                {"PipelineRunId", Guid.NewGuid().ToString()},
-                {"Compression", "false"},
-                {"FriendlyName", "Submit Scope Example by api(jianjlv)"},
-                {"Priority", "1000"},
-                {"TokenAllocation","0"},
-                {"VirtualClusterPercentAllocation","0"},
-                {"NebulaCommandLineArgs"," -on adl "},
-                {"ScriptParams", scriptParams.ToString()}
+                { "PipelineRunId", Guid.NewGuid().ToString()},
+                { "Compression", "false"},
+                { "FriendlyName", "Submit Scope Example by api(jianjlv)"},
+                { "Priority", "1000"},
+                { "TokenAllocation","0"},
+                { "VirtualClusterPercentAllocation","0"},
+                { "NebulaCommandLineArgs"," -on adl "},
+                { "ScriptParams", scriptParams.ToString()}
             };
 
             return SendSubmitJobRequest(token, values);
@@ -225,13 +185,13 @@
             var values = new Dictionary<string, string>
             {
                 { "Script", scriptStr},
-                {"PipelineRunId", Guid.NewGuid().ToString()},
-                {"Compression", "false"},
-                {"FriendlyName", "Submit Scope Example by api(jianjlv)"},
-                {"Priority", "1000"},
-                {"TokenAllocation","0"},
-                {"VirtualClusterPercentAllocation","0"},
-                {"NebulaCommandLineArgs"," -on adl "},
+                { "PipelineRunId", Guid.NewGuid().ToString()},
+                { "Compression", "false"},
+                { "FriendlyName", "Submit Scope Example by api(jianjlv)"},
+                { "Priority", "1000"},
+                { "TokenAllocation","0"},
+                { "VirtualClusterPercentAllocation", "0"},
+                { "NebulaCommandLineArgs", " -on adl "}
             };
 
             return SendSubmitJobRequest(token, values);
@@ -242,7 +202,7 @@
             HttpClient client = new HttpClient();
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, CloudScopeSubmitJobUrl)
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, string.Format(CloudScopeSubmitJobUrlFormat, VirtualCluster))
             {
                 Content = new FormUrlEncodedContent(values)
             };
@@ -257,7 +217,7 @@
             HttpClient client = new HttpClient();
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, string.Format(CloudScopeJobInfoUrlFormat, jobId));
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, string.Format(CloudScopeJobInfoUrlFormat, VirtualCluster, jobId));
 
             var response = client.SendAsync(request).Result;
 

@@ -1,6 +1,5 @@
 ﻿namespace CSharpDemo
 {
-    using AzureLib.KeyVault;
     using CSharpDemo.FileOperation;
     using CSharpDemo.IDEAs;
     using CSharpDemo.InvalidCastExceptionDemo;
@@ -19,7 +18,7 @@
     {
         static void Main(string[] args)
         {
-            AzureCosmosDBOperation.MainMethod();
+            //AzureCosmosDBOperation.MainMethod();
             //AzureServiceBus.MainMethod();
 
             //QueryIncidents.MainMethod();
@@ -32,7 +31,10 @@
             //CsprojCheck.MainMethod();
             //CosmosViewErrorMessageOperation.MainMethod();
 
-            //CloudScopeOperation.MainMethod();
+            CloudScopeOperation.MainMethod();
+
+
+
 
             if (Debugger.IsAttached)
             {
