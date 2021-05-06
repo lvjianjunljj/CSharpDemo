@@ -17,6 +17,7 @@
         private static string WorkloadQueueName = "";
         private static readonly string CloudScopeSubmitJobUrlFormat = @"http://cloudscope-prod-{0}.asecloudscopeprod.p.azurewebsites.net/api/virtualCluster/{1}/submitJob?workloadQueueName={2}";
         private static readonly string CloudScopeJobInfoUrlFormat = @"http://cloudscope-prod-{0}.asecloudscopeprod.p.azurewebsites.net/api/virtualCluster/{1}/jobInfo/{2}";
+        private static readonly string CloudScopeCancelJobUrlFormat = @"http://cloudscope-prod-{0}.asecloudscopeprod.p.azurewebsites.net/api/virtualCluster/{1}/cancelJob/{2}";
         private static readonly string TestRunMessagesPath = Path.Combine(CosmosViewErrorMessageOperation.RootFolderPath, @"allTestRuns.json");
         private static readonly string JobStatusesPath = Path.Combine(CosmosViewErrorMessageOperation.RootFolderPath, @"allJobStatuses_prod.json");
 
@@ -25,8 +26,9 @@
         public static void MainMethod()
         {
             Initialize(@"datacop-prod");
-            SubmitFailedCosmosjob();
+            //SubmitFailedCosmosjob();
             //UpdateJobStatuses();
+            CancelUselessScopeJobs();
         }
 
         private static void Initialize(string keyVaultName)
@@ -44,7 +46,7 @@
             //string resource = @"api://9576eb06-ef2f-4f45-a131-e33d0e7ffb00";
             //string clientId = secretProvider.GetSecretAsync(keyVaultName, "GdprClientId").Result;
             //string clientSecret = secretProvider.GetSecretAsync(keyVaultName, "GdprClientSecret").Result;
-            
+
             // For ideas-prod-build-c14
             Service = @"pls";
             VirtualCluster = @"ideas-prod-build-c14";
@@ -145,6 +147,20 @@
             Console.WriteLine(@"Writing job statuses end...");
         }
 
+        private static void CancelUselessScopeJobs()
+        {
+            Console.WriteLine(@"Cancel Useless Scope Jobs start...");
+            string uselessJobInfosFilePath = @"D:\data\company_work\M365\IDEAs\datacop\cosmosworker\builddeployment\udp_mdp\uselessJobInfos.txt";
+            var uselessJobInfoLines = File.ReadAllLines(uselessJobInfosFilePath);
+            foreach (var uselessJobInfoLine in uselessJobInfoLines)
+            {
+                var jobId = uselessJobInfoLine.Substring(33, 36);
+                Console.WriteLine($"jobId: '{jobId}'");
+                var response = SendCancelJobRequest(jobId.ToString(), Token);
+                Console.WriteLine(response);
+            }
+        }
+
         private static Dictionary<string, string> GetParameters(string cosmosScriptContent)
         {
             Dictionary<string, string> parameters = new Dictionary<string, string>();
@@ -208,17 +224,27 @@
 
         private static string SendSubmitJobRequest(string token, Dictionary<string, string> values)
         {
-            HttpClient client = new HttpClient();
-            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, string.Format(CloudScopeSubmitJobUrlFormat, Service, VirtualCluster, WorkloadQueueName))
+            try
             {
-                Content = new FormUrlEncodedContent(values)
-            };
 
-            var response = client.SendAsync(request).Result;
+                HttpClient client = new HttpClient();
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, string.Format(CloudScopeSubmitJobUrlFormat, Service, VirtualCluster, WorkloadQueueName))
+                {
+                    Content = new FormUrlEncodedContent(values)
+                };
 
-            return response.Content.ReadAsStringAsync().Result;
+                var response = client.SendAsync(request).Result;
+
+                // This Cloud Scope Api will return scope job id
+                return response.Content.ReadAsStringAsync().Result;
+            }
+            catch
+            {
+                // Just return a string.Empty if failed to submit scope job
+                return string.Empty;
+            }
         }
 
         private static string SendJobInfoRequest(string jobId, string token)
@@ -227,6 +253,18 @@
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, string.Format(CloudScopeJobInfoUrlFormat, Service, VirtualCluster, jobId));
+
+            var response = client.SendAsync(request).Result;
+
+            return response.Content.ReadAsStringAsync().Result;
+        }
+
+        private static string SendCancelJobRequest(string jobId, string token)
+        {
+            HttpClient client = new HttpClient();
+            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Put, string.Format(CloudScopeCancelJobUrlFormat, Service, VirtualCluster, jobId));
 
             var response = client.SendAsync(request).Result;
 

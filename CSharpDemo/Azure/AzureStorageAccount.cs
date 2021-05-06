@@ -14,8 +14,9 @@ namespace CSharpDemo.Azure
          */
         public static void MainMethod()
         {
-            CloudStorageAccount storageAccount = CloudStorageAccount.Parse(
-                @"DefaultEndpointsProtocol=https;AccountName=csharpmvcwebapistorage;AccountKey=CP5Ss5prdGOsnKB8yljQWOuydXLxXaRcK+ibb4gxpWGiJjvxhlVEF5quK3XJNhesefliBjWpLke5z5ofafc3QA==");
+            string accountName = "";
+            string accountKey = "";
+            CloudStorageAccount storageAccount = CloudStorageAccount.Parse(string.Format(@"DefaultEndpointsProtocol=https;AccountName={0};AccountKey={1}", accountName, accountKey));
             // Create a CloudFileClient object for credentialed access to Azure Files.
             CloudFileClient fileClient = storageAccount.CreateCloudFileClient();
 

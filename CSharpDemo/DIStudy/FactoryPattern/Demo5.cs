@@ -25,7 +25,7 @@ namespace CSharpDemo.DIStudy.FactoryPattern
 
             IUserBll userBll = container.Resolve<IUserBll>();
             Console.WriteLine(userBll.GetHashCode());
-            bool login = userBll.Login("12345678901", "qwerty");
+            bool login = userBll.Login("12345678901", "Password");
             Console.WriteLine(login);
 
             login = userBll.Login("10987654321", "ytrewq");

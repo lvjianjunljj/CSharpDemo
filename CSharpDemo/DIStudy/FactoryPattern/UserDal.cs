@@ -39,7 +39,7 @@ namespace CSharpDemo.DIStudy.FactoryPattern
 
     public class UserDal : IUserDal
     {
-        private const string StaticPassword = "qwerty";
+        private const string StaticPassword = "Password";
         private const string StaticPhone = "12345678901";
 
         public bool Exists(string phone, string password)
