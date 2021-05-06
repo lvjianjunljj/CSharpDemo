@@ -12,11 +12,13 @@
 
     class CloudScopeOperation
     {
-        private static string VirtualCluster = @"";
-        private static string CloudScopeSubmitJobUrlFormat = @"http://cloudscope-prod-gdpr.asecloudscopeprod.p.azurewebsites.net/api/virtualCluster/{0}/submitJob?workloadQueueName=gdpr";
-        private static string CloudScopeJobInfoUrlFormat = @"http://cloudscope-prod-gdpr.asecloudscopeprod.p.azurewebsites.net/api/virtualCluster/{0}/jobInfo/{0}";
-        private static string TestRunMessagesPath = Path.Combine(CosmosViewErrorMessageOperation.RootFolderPath, @"allTestRuns.json");
-        private static string JobStatusesPath = Path.Combine(CosmosViewErrorMessageOperation.RootFolderPath, @"allJobStatuses_prod.json");
+        private static string Service = "";
+        private static string VirtualCluster = "";
+        private static string WorkloadQueueName = "";
+        private static readonly string CloudScopeSubmitJobUrlFormat = @"http://cloudscope-prod-{0}.asecloudscopeprod.p.azurewebsites.net/api/virtualCluster/{1}/submitJob?workloadQueueName={2}";
+        private static readonly string CloudScopeJobInfoUrlFormat = @"http://cloudscope-prod-{0}.asecloudscopeprod.p.azurewebsites.net/api/virtualCluster/{1}/jobInfo/{2}";
+        private static readonly string TestRunMessagesPath = Path.Combine(CosmosViewErrorMessageOperation.RootFolderPath, @"allTestRuns.json");
+        private static readonly string JobStatusesPath = Path.Combine(CosmosViewErrorMessageOperation.RootFolderPath, @"allJobStatuses_prod.json");
 
         private static string Token;
 
@@ -29,22 +31,29 @@
 
         private static void Initialize(string keyVaultName)
         {
+            ISecretProvider secretProvider = KeyVaultSecretProvider.Instance;
+
             // PPE resource: api://ead06413-cb7c-408e-a533-2cdbe58bf3a6
             // Prod resource； api://9576eb06-ef2f-4f45-a131-e33d0e7ffb00
 
             // For ideas-prod-c14
-            VirtualCluster = "ideas-prod-c14";
-            string tenantId = @"cdc5aeea-15c5-4db6-b079-fcadd2505dc2";
-            string resource = @"api://9576eb06-ef2f-4f45-a131-e33d0e7ffb00";
-
+            //Service = @"gdpr";
+            //VirtualCluster = @"ideas-prod-c14";
+            //WorkloadQueueName = @"gdpr";
+            //string tenantId = @"cdc5aeea-15c5-4db6-b079-fcadd2505dc2";
+            //string resource = @"api://9576eb06-ef2f-4f45-a131-e33d0e7ffb00";
+            //string clientId = secretProvider.GetSecretAsync(keyVaultName, "GdprClientId").Result;
+            //string clientSecret = secretProvider.GetSecretAsync(keyVaultName, "GdprClientSecret").Result;
+            
             // For ideas-prod-build-c14
-            //VirtualCluster = "ideas-prod-build-c14";
-            //string tenantId = @"72f988bf-86f1-41af-91ab-2d7cd011db47";
-            //string resource = @"api://d42d6163-88e5-4339-bbb3-28ec2fb3c574";
+            Service = @"pls";
+            VirtualCluster = @"ideas-prod-build-c14";
+            WorkloadQueueName = @"build"; // The default value is "build".
+            string tenantId = @"72f988bf-86f1-41af-91ab-2d7cd011db47";
+            string resource = @"api://d42d6163-88e5-4339-bbb3-28ec2fb3c574";
+            string clientId = secretProvider.GetSecretAsync(keyVaultName, "PlsAadAuthAppId").Result;
+            string clientSecret = secretProvider.GetSecretAsync(keyVaultName, "PlsAadAuthAppSecret").Result;
 
-            ISecretProvider secretProvider = KeyVaultSecretProvider.Instance;
-            string clientId = secretProvider.GetSecretAsync(keyVaultName, "GdprClientId").Result;
-            string clientSecret = secretProvider.GetSecretAsync(keyVaultName, "GdprClientSecret").Result;
             Token = AzureActiveDirectoryToken.GetAccessTokenV1Async(tenantId, clientId, clientSecret, resource).Result;
         }
 
@@ -202,7 +211,7 @@
             HttpClient client = new HttpClient();
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, string.Format(CloudScopeSubmitJobUrlFormat, VirtualCluster))
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, string.Format(CloudScopeSubmitJobUrlFormat, Service, VirtualCluster, WorkloadQueueName))
             {
                 Content = new FormUrlEncodedContent(values)
             };
@@ -217,7 +226,7 @@
             HttpClient client = new HttpClient();
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, string.Format(CloudScopeJobInfoUrlFormat, VirtualCluster, jobId));
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, string.Format(CloudScopeJobInfoUrlFormat, Service, VirtualCluster, jobId));
 
             var response = client.SendAsync(request).Result;
 
