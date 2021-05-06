@@ -49,7 +49,7 @@
             //EnableAllCosmosDatasetTestSuccessively();
             //EnableAllCosmosDatasetTestWhenNoActiveMessage();
 
-            //GetTestRunMessagesForEveryDataset();
+            GetTestRunMessagesForEveryDataset();
             //QueryTestRunStatusForDatasets();
             //GetDataFactoriesInCosmosViewMonitors();
             //GetDatasetsCountForEveryDataFactory();
@@ -75,7 +75,7 @@
             //QueryServiceMonitorReports();
             //QueryDatasetCount();
             //QueryTestRunCountByDatasetId();
-            GetAlertSettingsForEveryDataFactory();
+            //GetAlertSettingsForEveryDataFactory();
 
 
             //DeleteTestRunDemo();
@@ -376,10 +376,13 @@
                     continue;
                 }
 
-                JObject testRunMessage = new JObject();
-                testRunMessage["datasetId"] = datasetId;
-                testRunMessage["dataFactoryName"] = dataFactoryName;
-                testRunMessage["datasetName"] = datasetName;
+                JObject testRunMessage = new JObject
+                {
+                    ["datasetId"] = datasetId,
+                    ["dataFactoryName"] = dataFactoryName,
+                    ["datasetName"] = datasetName
+                };
+
                 var messages = new JArray();
                 var testRunIds = new JArray();
                 var testDates = new JArray();
@@ -394,7 +397,8 @@
                         cosmosVC = testRun["testContent"]["cosmosVC"].ToString();
                     }
 
-                    if (!string.IsNullOrEmpty(cosmosScriptContent) && !testRun["testContent"]["cosmosScriptContent"].ToString().Equals(cosmosScriptContent))
+                    // Just define the cosmos script content one time based on the latest testRun.
+                    if (string.IsNullOrEmpty(cosmosScriptContent))
                     {
                         cosmosScriptContent = testRun["testContent"]["cosmosScriptContent"].ToString();
                     }
